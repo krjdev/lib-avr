@@ -1,0 +1,13 @@
+*.hex
+*.srec
+*.elf
+*.lst
+*.map
+*.so
+*.so*
+*.o
+*~
+*.*.swp
+*.*.kate-swp
+.directory
+doc/
