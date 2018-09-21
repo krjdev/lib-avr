@@ -2,6 +2,9 @@
 *.srec
 *.elf
 *.lst
+*.eep
+*.lss
+*.sym
 *.map
 *.so
 *.so*
