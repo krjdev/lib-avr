@@ -128,7 +128,7 @@ int i2c_master_init(uint32_t speed)
     if (speed > 400000)
         return -1;
     
-    TWBR = (F_CPU/8 * speed) - 2;
+    TWBR = ((((F_CPU / speed) / 1) - 16 ) / 2);
     return 0;
 }
 
