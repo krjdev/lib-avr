@@ -5,11 +5,11 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 
+ * Modified : 2018-09-24
  * Revised  : 
  * Version  : 0.1.0.0
  * License  : ISC (see file LICENSE.txt)
- * Target   : Atmel ATmega2560
+ * Target   : Atmel AVR Series
  *
  * NOTE: This code is currently below version 1.0, and therefore is considered
  * to be lacking in some functionality or documentation, or may not be fully
@@ -17,14 +17,12 @@
  *
  */
 
-#include <avr/io.h>
-
 #include "spi.h"
 
 void spi_master_init(void)
 {
     /* set MOSI, SCK and SS as output */
-    DDRB = (1 << DDB2) | (1 << DDB1) | (1 << DDB0);
+    SPI_PORT = (1 << SPI_MOSI) | (1 << SPI_SCK) | (1 << SPI_SS);
     
     /* enable SPI, set master */
     SPCR = (1 << SPE) | (1 << MSTR);
