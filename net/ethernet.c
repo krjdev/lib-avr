@@ -45,27 +45,27 @@ mac_addr_t *ethernet_str_to_mac(const char *str)
     
     memcpy(&tmp[0], &str[i], 2);
     tmp[2] = '\0';
-    sscanf(&tmp[0], "%x", p->ma_byte0);
+    sscanf(tmp, "%hhx", &p->ma_byte0);
     i += 3;
     memcpy(&tmp[0], &str[i], 2);
     tmp[2] = '\0';
-    sscanf(&tmp[0], "%x", p->ma_byte1);
+    sscanf(tmp, "%hhx", &p->ma_byte1);
     i += 3;
     memcpy(&tmp[0], &str[i], 2);
     tmp[2] = '\0';
-    sscanf(&tmp[0], "%x", p->ma_byte2);
+    sscanf(tmp, "%hhx", &p->ma_byte2);
     i += 3;
-    memcpy(&tmp[0], &str[i], 2);
+    memcpy(tmp, &str[i], 2);
     tmp[2] = '\0';
-    sscanf(&tmp[0], "%x", p->ma_byte3);
+    sscanf(tmp, "%hhx", &p->ma_byte3);
     i += 3;
-    memcpy(&tmp[0], &str[i], 2);
+    memcpy(tmp, &str[i], 2);
     tmp[2] = '\0';
-    sscanf(&tmp[0], "%x", p->ma_byte4);
+    sscanf(tmp, "%hhx", &p->ma_byte4);
     i += 3;
-    memcpy(&tmp[0], &str[i], 2);
+    memcpy(tmp, &str[i], 2);
     tmp[2] = '\0';
-    sscanf(&tmp[0], "%x", p->ma_byte5);
+    sscanf(tmp, "%hhx", &p->ma_byte5);
     return p;
 }
 
@@ -81,7 +81,7 @@ char *ethernet_mac_to_str(mac_addr_t *mac)
     if (!p)
         return NULL;
     
-    sprintf(p, "%X:%X:%X:%X:%X:%X", mac->ma_byte0, mac->ma_byte1, 
+    sprintf(p, "%02X:%02X:%02X:%02X:%02X:%02X", mac->ma_byte0, mac->ma_byte1, 
             mac->ma_byte2, mac->ma_byte3, mac->ma_byte4, mac->ma_byte5);
     return p;
 }
