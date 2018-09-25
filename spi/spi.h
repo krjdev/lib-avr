@@ -23,12 +23,20 @@
 #include <stdint.h>
 #include <avr/io.h>
 
-#define SPI_PORT    DDRB
-#define SPI_MOSI    DDB2
-#define SPI_SCK     DDB1
-#define SPI_SS      DDB0
+#define SPI_PORT        DDRB
+#define SPI_MOSI        DDB2
+#define SPI_SCK         DDB1
+#define SPI_SS          DDB0
 
-extern void spi_master_init(void);
+#define SPI_FOSC_2      0
+#define SPI_FOSC_4      1
+#define SPI_FOSC_8      2
+#define SPI_FOSC_16     3
+#define SPI_FOSC_32     4
+#define SPI_FOSC_64     5
+#define SPI_FOSC_128    6
+
+extern void spi_master_init(int speed);
 extern void spi_master_send(uint8_t *data, int len);
 extern void spi_master_recv(uint8_t *data, int len);
 

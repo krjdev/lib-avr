@@ -19,13 +19,39 @@
 
 #include "spi.h"
 
-void spi_master_init(void)
+void spi_master_init(int speed)
 {
     /* set MOSI, SCK and SS as output */
-    SPI_PORT = (1 << SPI_MOSI) | (1 << SPI_SCK) | (1 << SPI_SS);
+    SPI_PORT |= (1 << SPI_MOSI) | (1 << SPI_SCK) | (1 << SPI_SS);
     
     /* enable SPI, set master */
-    SPCR = (1 << SPE) | (1 << MSTR);
+    SPCR |= (1 << SPE) | (1 << MSTR);
+
+    /* set speed */
+    switch (speed) {
+    case SPI_FOSC_2:
+        SPSR |= (1 << SPI2X);
+        break;
+    case SPI_FOSC_4:
+        break;
+    case SPI_FOSC_8:
+        SPSR |= (1 << SPI2X);
+        break;
+    case SPI_FOSC_16:
+        SPCR |= (1 << SPR0);
+        break;
+    case SPI_FOSC_32:
+        SPSR |= (1 << SPI2X);
+        break;
+    case SPI_FOSC_64:
+        SPCR |= (1 << SPR1);
+        break;
+    case SPI_FOSC_128:
+        SPCR |= (1 << SPR0) | (1 << SPR1);
+        break;
+    default:
+        return;
+    }
 }
 
 void spi_master_send(uint8_t *data, int len)
