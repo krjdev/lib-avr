@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef LIBAVR_PCF8574_H
-#define LIBAVR_PCF8574_H
+#ifndef LIBAVR_I2C_PCF8574_H
+#define LIBAVR_I2C_PCF8574_H
 
 #include <stdint.h>
 

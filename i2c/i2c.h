@@ -19,8 +19,8 @@
 
 #include <stdint.h>
 
-#ifndef LIBAVR_I2C_H
-#define LIBAVR_I2C_H
+#ifndef LIBAVR_I2C_I2C_H
+#define LIBAVR_I2C_I2C_H
 
 extern int i2c_master_init(uint32_t speed);
 extern int i2c_master_send(uint8_t addr, uint8_t *data, int len);
