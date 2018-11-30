@@ -42,6 +42,28 @@ int spi\_master\_init(int speed)
 int spi\_master\_send(uint8\_t *data, int len)  
 int spi\_master\_recv(uint8\_t *data, int len)
 
+## 1-Wire interface (Software based - bitbang)
+
+**Files:**  
+onewire/sw-onewire.h  
+onewire/sw-onewire.c
+
+**Functions:**  
+void onewire\_init(void)  
+int onewire\_reset(void)  
+int onewire\_send(uint8\_t *data, int len)  
+int onewire\_recv(uint8\_t *data, int len)
+
+### CRC check function for the 1-Wire interace
+
+**Files:**  
+lib/crc8\_dallas.h  
+lib/crc8\_dallas.c
+
+**Functions:**  
+int crc8\_dallas\_calc(uint8\_t *data, int len)  
+int crc8\_dallas\_check(uint8\_t *data, int len, uint8\_t crc)
+
 ### ENC28J60 ethernet controller driver (Alpha Version - No receive function)
 
 **Files:**  
