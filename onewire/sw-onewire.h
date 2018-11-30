@@ -23,11 +23,16 @@
 #include <stdint.h>
 #include <avr/io.h>
 
-#define DQ_TX_CONFIG    (DDRH = (1 << PH0))
-#define DQ_TX_HIGH      (PORTH |= (1 << PH0))
-#define DQ_TX_LOW       (PORTH &= ~(1 << PH0))
-#define DQ_RX_PORT      PINH
-#define DQ_RX_PIN       (1 << PINH1)
+#define DQ_TX_CONFIG                (DDRH = (1 << PH0))
+#define DQ_TX_HIGH                  (PORTH |= (1 << PH0))
+#define DQ_TX_LOW                   (PORTH &= ~(1 << PH0))
+#define DQ_RX_PORT                  PINH
+#define DQ_RX_PIN                   (1 << PINH1)
+
+#define ONEWIRE_CMD_ROM_SEARCH      0xF0
+#define ONEWIRE_CMD_ROM_READ        0x33
+#define ONEWIRE_CMD_ROM_MATCH       0x55
+#define ONEWIRE_CMD_ROM_SKIP        0xCC
 
 extern void onewire_init(void);
 extern int onewire_reset(void);
