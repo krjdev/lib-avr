@@ -7,7 +7,7 @@
  * Created  : 2018-09-28
  * Modified : 2018-12-01
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -35,9 +35,16 @@
 #define ONEWIRE_CMD_ROM_SKIP        0xCC
 #define ONEWIRE_CMD_ALARM_SEARCH    0xEC
 
+typedef struct onewire_id {
+    uint8_t oi_family;
+    uint8_t oi_serial[6];
+    uint8_t oi_crc;
+} onewire_id_t;
+
 extern void onewire_init(void);
 extern int onewire_reset(void);
 extern int onewire_send(uint8_t *data, int len);
 extern int onewire_recv(uint8_t *data, int len);
+extern onewire_id_t *onewire_read_rom(void);
 
 #endif

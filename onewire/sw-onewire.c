@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-28
- * Modified : 2018-11-29
+ * Modified : 2018-12-01
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -17,9 +17,12 @@
  *
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <util/delay.h>
 
 #include "sw-onewire.h"
+#include "../lib/crc8_dallas.h"
 
 void onewire_init(void)
 {
@@ -111,4 +114,29 @@ int onewire_recv(uint8_t *data, int len)
     }
     
     return 0;
+}
+
+onewire_id_t *onewire_read_rom(void)
+{
+    uint8_t cmd;
+    uint8_t buf[8];
+    onewire_id_t *p;
+    
+    onewire_reset();
+    cmd = ONEWIRE_CMD_ROM_READ;
+    onewire_send(&cmd, 1);
+    onewire_recv(buf, 8);
+    
+    if (!crc8_dallas_check(buf, 7, buf[7]))
+        return NULL;
+    
+    p = (onewire_id_t *) malloc(sizeof(onewire_id_t));
+    
+    if (!p)
+        return NULL;
+    
+    p->oi_family = buf[0];
+    memcpy(&(p->oi_serial[0]), &buf[1], 6);
+    p->oi_crc = buf[7];
+    return p;
 }
