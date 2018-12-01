@@ -7,7 +7,7 @@
  * Created  : 2018-09-28
  * Modified : 2018-12-01
  * Revised  : 
- * Version  : 0.1.1.0
+ * Version  : 0.1.2.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -139,4 +139,28 @@ onewire_id_t *onewire_read_rom(void)
     memcpy(&(p->oi_serial[0]), &buf[1], 6);
     p->oi_crc = buf[7];
     return p;
+}
+
+int onewire_get_family(onewire_id_t *oid, uint8_t *family)
+{
+    if (!oid)
+        return -1;
+    
+    if (!family)
+        return -1;
+    
+    (*family) = oid->oi_family;
+    return 0;
+}
+
+int onewire_get_serial(onewire_id_t *oid, uint8_t *buf)
+{
+    if (!oid)
+        return -1;
+    
+    if (!buf)
+        return -1;
+    
+    memcpy(&buf, oid->oi_serial, 6);
+    return 0;
 }
