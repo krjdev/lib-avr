@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-11-30
- * Modified : 
+ * Modified : 2018-12-02
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.0.0 - Alpha
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,7 +22,12 @@
 
 #include <stdint.h>
 
+#define TYPE_DS18S20        0
+#define TYPE_DS18B20        1
+
 #define RESOLUTION_9BIT     9
+#define RESOLUTION_10BIT    10 /* Only on DS18B20 available */
+#define RESOLUTION_11BIT    11 /* Only on DS18B20 available */
 #define RESOLUTION_12BIT    12
 
 typedef struct ds18x20_temp {
@@ -32,7 +37,7 @@ typedef struct ds18x20_temp {
     uint8_t dt_cpc;
 } ds18x20_temp_t;
 
-extern void ds18x20_init(int res);
+extern void ds18x20_init(int typ, int res);
 extern ds18x20_temp_t *ds18x20_get_temp_data(void);
 
 #endif
