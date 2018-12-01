@@ -7,9 +7,9 @@
  * Created  : 2018-07-14
  * Modified : 2018-12-01
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
- * Target   : Atmel AVR Series
+ * Target   : Atmel AVR ATMEGA2560
  *
  * NOTE: This code is currently below version 1.0, and therefore is considered
  * to be lacking in some functionality or documentation, or may not be fully
@@ -162,6 +162,44 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
         UCSR2B |= (1 << RXEN2) | (1 << TXEN2);
         break;
     }
+    case UART_DEV_UART3:
+    {
+        UBRR3H = _HIGH(ubrr);
+        UBRR3L = _LOW(ubrr);
+        
+        switch (p->u_databit) {
+        case UART_DATA_5:
+            break;
+        case UART_DATA_6:
+            UCSR3C = (1 << UCSZ30);
+            break;
+        case UART_DATA_7:
+            UCSR3C = (1 << UCSZ31);
+            break;
+        case UART_DATA_8:
+            UCSR3C = (1 << UCSZ30) | (1 << UCSZ31);
+            break;
+        case UART_DATA_9:
+            UCSR3C = (1 << UCSZ30) | (1 << UCSZ31);
+            UCSR3B = (1 << UCSZ32);
+            break;
+        default:
+            return NULL; /* should never be reached */
+        }
+        
+        switch (p->u_stopbit) {
+        case UART_STOP_1:
+            break;
+        case UART_STOP_2:
+            UCSR3C |= (1 << USBS3);
+            break;
+        default:
+            return NULL; /* should never be reached */
+        }
+        
+        UCSR3B |= (1 << RXEN3) | (1 << TXEN3);
+        break;
+    }
     default:
         free(p);
         return NULL;
@@ -184,6 +222,9 @@ void uart_close(uart_t *uart)
         break;
     case UART_DEV_UART2:
         UCSR2B &= ~(1 << RXEN2) | (1 << TXEN2);
+        break;
+    case UART_DEV_UART3:
+        UCSR3B &= ~(1 << RXEN3) | (1 << TXEN3);
         break;
     default:
         return;
@@ -223,6 +264,11 @@ int uart_send(uart_t *uart, uint8_t *data, int len)
                 ;
             UDR2 = data[i];
             break;
+        case UART_DEV_UART3:
+            while (!(UCSR3A & (1 << UDRE3)))
+                ;
+            UDR3 = data[i];
+            break;
         default:
             return -1;
         }
@@ -259,6 +305,11 @@ int uart_recv(uart_t *uart, uint8_t *data, int len)
             while (!(UCSR2A & (1 << RXC2)))
                 ;
             *(data + i) = UDR2;
+            break;
+        case UART_DEV_UART3:
+            while (!(UCSR3A & (1 << RXC3)))
+                ;
+            *(data + i) = UDR3;
             break;
         default:
             return -1;
@@ -305,4 +356,3 @@ char uart_getc(uart_t *uart)
     uart_recv(uart, buf, 1);
     return (char) buf[0];
 }
-

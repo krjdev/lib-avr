@@ -7,9 +7,9 @@
  * Created  : 2018-07-14
  * Modified : 2018-12-01
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
- * Target   : Atmel AVR Series
+ * Target   : Atmel AVR ATMEGA2560
  *
  * NOTE: This code is currently below version 1.0, and therefore is considered
  * to be lacking in some functionality or documentation, or may not be fully
@@ -26,6 +26,7 @@
 #define UART_DEV_UART0  0
 #define UART_DEV_UART1  1
 #define UART_DEV_UART2  2
+#define UART_DEV_UART3  3
 
 /* Data bits */
 #define UART_DATA_5     5
