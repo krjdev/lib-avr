@@ -5,7 +5,7 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-28
- * Modified : 2018-11-29
+ * Modified : 2018-12-01
  * Revised  : 
  * Version  : 0.1.0.0
  * License  : ISC (see file LICENSE.txt)
@@ -33,6 +33,7 @@
 #define ONEWIRE_CMD_ROM_READ        0x33
 #define ONEWIRE_CMD_ROM_MATCH       0x55
 #define ONEWIRE_CMD_ROM_SKIP        0xCC
+#define ONEWIRE_CMD_ALARM_SEARCH    0xEC
 
 extern void onewire_init(void);
 extern int onewire_reset(void);
