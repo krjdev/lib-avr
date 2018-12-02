@@ -42,29 +42,7 @@ int spi\_master\_init(int speed)
 int spi\_master\_send(uint8\_t *data, int len)  
 int spi\_master\_recv(uint8\_t *data, int len)
 
-## 1-Wire interface (Software based - bitbang)
-
-**Files:**  
-onewire/sw-onewire.h  
-onewire/sw-onewire.c
-
-**Functions:**  
-void onewire\_init(void)  
-int onewire\_reset(void)  
-int onewire\_send(uint8\_t *data, int len)  
-int onewire\_recv(uint8\_t *data, int len)
-
-### CRC check function for the 1-Wire interace
-
-**Files:**  
-lib/crc8\_dallas.h  
-lib/crc8\_dallas.c
-
-**Functions:**  
-int crc8\_dallas\_calc(uint8\_t *data, int len)  
-int crc8\_dallas\_check(uint8\_t *data, int len, uint8\_t crc)
-
-### ENC28J60 ethernet controller driver (Alpha Version - No receive function)
+### Microchip ENC28J60 ethernet controller driver (Alpha Version - No receive function)
 
 **Files:**  
 spi/enc28j60.h  
@@ -79,6 +57,41 @@ int enc28j60\_link\_up(void)
 int enc28j60\_frame\_count(void)  
 uint16\_t enc28j60\_free\_space(void)  
 int enc28j60\_send(eth\_frame\_t *frame)
+
+## 1-Wire interface (Software based - bitbang)
+
+**Files:**  
+onewire/sw-onewire.h  
+onewire/sw-onewire.c
+
+**Functions:**  
+void onewire\_init(void)  
+int onewire\_reset(void)  
+int onewire\_send(uint8\_t *data, int len)  
+int onewire\_recv(uint8\_t *data, int len)__
+onewire\_id\_t *onewire\_read\_rom(void)__
+int onewire\_get\_family(onewire\_id\_t *oid, uint8\_t *family)__
+int onewire\_get\_serial(onewire\_id\_t *oid, uint8\_t *buf)
+
+### CRC check function for the 1-Wire interface
+
+**Files:**  
+lib/crc8\_dallas.h  
+lib/crc8\_dallas.c
+
+**Functions:**  
+int crc8\_dallas\_calc(uint8\_t *data, int len)  
+int crc8\_dallas\_check(uint8\_t *data, int len, uint8\_t crc)
+
+### Dallas/Maxim DS18x20 driver (Alpha version)
+
+**Files:**  
+onewire/ds18x20.h  
+onewire/ds18x20.c
+
+**Functions:**  
+void ds18x20\_init(int typ, int res)  
+int ds18x20\_temp\_t *ds18x20\_get\_temp\_data(void)
 
 ## Network libraries
 
