@@ -1,6 +1,6 @@
 /**
  *
- * File Name: sw-onewire.h
+ * File Name: sw-onewire.c
  * Title    : Software based (bitbang) 1-Wire library source
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
