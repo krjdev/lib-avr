@@ -7,7 +7,7 @@
  * Created  : 2018-09-28
  * Modified : 2018-12-02
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -207,7 +207,7 @@ int onewire_read_rom(ow_id_t *owid)
     return 0;
 }
 
-int onewire_search_rom(ow_id_t **owids, int len)
+int onewire_search_rom(int type, ow_id_t **owids, int len)
 {
     int owids_cnt;
     uint8_t cmd;
@@ -250,7 +250,11 @@ int onewire_search_rom(ow_id_t **owids, int len)
         first = 0;
         rep_i = 1;
         
-        cmd = ONEWIRE_CMD_ROM_SEARCH;
+        if (type == TYPE_SEARCH_ALL)
+            cmd = ONEWIRE_CMD_ROM_SEARCH;
+        else
+            cmd = ONEWIRE_CMD_ALARM_SEARCH;
+        
         onewire_send(&cmd, 1);
         bit_pos = 0;
         not = 0;
