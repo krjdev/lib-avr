@@ -68,9 +68,9 @@ onewire/sw-onewire.c
 void onewire\_init(void)  
 int onewire\_reset(void)  
 int onewire\_send(uint8\_t *data, int len)  
-int onewire\_recv(uint8\_t *data, int len)__
-onewire\_id\_t *onewire\_read\_rom(void)__
-int onewire\_get\_family(onewire\_id\_t *oid, uint8\_t *family)__
+int onewire\_recv(uint8\_t *data, int len)  
+onewire\_id\_t *onewire\_read\_rom(void)  
+int onewire\_get\_family(onewire\_id\_t *oid, uint8\_t *family)  
 int onewire\_get\_serial(onewire\_id\_t *oid, uint8\_t *buf)
 
 ### CRC check function for the 1-Wire interface
