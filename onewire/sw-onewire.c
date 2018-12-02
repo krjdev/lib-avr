@@ -161,6 +161,6 @@ int onewire_get_serial(onewire_id_t *oid, uint8_t *buf)
     if (!buf)
         return -1;
     
-    memcpy(&buf, oid->oi_serial, 6);
+    memcpy(buf, oid->oi_serial, 6);
     return 0;
 }
