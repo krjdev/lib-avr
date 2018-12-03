@@ -74,7 +74,8 @@ int onewire\_search\_rom(int type, ow\_id\_t **owids, int len)
 int onewire\_match\_rom(ow\_id\_t *owid)  
 int onewire\_skip\_rom(void)  
 int onewire\_get\_family(onewire\_id\_t *oid, uint8\_t *family)  
-int onewire\_get\_serial(onewire\_id\_t *oid, uint8\_t *buf)
+int onewire\_get\_serial(onewire\_id\_t *oid, uint8\_t *buf)  
+int onewire\_get\_crc(ow\_id\_t *owid, uint8\_t *crc)
 
 ### CRC check function for the 1-Wire interface
 
