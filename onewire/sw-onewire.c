@@ -7,7 +7,7 @@
  * Created  : 2018-09-28
  * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.2.2.0
+ * Version  : 0.2.3.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -339,6 +339,18 @@ int onewire_match_rom(ow_id_t *owid)
     cmd[8] = owid->oi_crc;
     
     onewire_send(cmd, 9);
+    return 0;
+}
+
+int onewire_skip_rom(void)
+{
+    uint8_t cmd;
+    
+    if (!onewire_reset())
+        return -1;
+    
+    cmd = ONEWIRE_CMD_ROM_SKIP;
+    onewire_send(&cmd, 1);
     return 0;
 }
 

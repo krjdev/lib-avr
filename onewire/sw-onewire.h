@@ -7,7 +7,7 @@
  * Created  : 2018-09-28
  * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.2.2.0
+ * Version  : 0.2.3.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -45,6 +45,7 @@ extern int onewire_recv(uint8_t *data, int len);
 extern int onewire_read_rom(ow_id_t *owid);
 extern int onewire_search_rom(int type, ow_id_t **owids, int len);
 extern int onewire_match_rom(ow_id_t *owid);
+extern int onewire_skip_rom(void);
 extern int onewire_get_family(ow_id_t *owid, uint8_t *family);
 extern int onewire_get_serial(ow_id_t *owid, uint8_t *buf);
 extern int onewire_get_crc(ow_id_t *owid, uint8_t *crc);
