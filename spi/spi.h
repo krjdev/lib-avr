@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2018-09-24
+ * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -28,6 +28,7 @@
 #define SPI_SCK         DDB1
 #define SPI_SS          DDB0
 
+/* Speed */
 #define SPI_FOSC_2      0
 #define SPI_FOSC_4      1
 #define SPI_FOSC_8      2
@@ -36,7 +37,13 @@
 #define SPI_FOSC_64     5
 #define SPI_FOSC_128    6
 
-extern void spi_master_init(int speed);
+/* SPI mode */
+#define SPI_MODE_0      0
+#define SPI_MODE_1      1
+#define SPI_MODE_2      2
+#define SPI_MODE_3      3
+
+extern void spi_master_init(int mode, int speed);
 extern void spi_master_send(uint8_t *data, int len);
 extern void spi_master_recv(uint8_t *data, int len);
 

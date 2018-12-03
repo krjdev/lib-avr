@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2018-09-24
+ * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -19,13 +19,10 @@
 
 #include "spi.h"
 
-void spi_master_init(int speed)
+void spi_master_init(int mode, int speed)
 {
     /* set MOSI, SCK and SS as output */
     SPI_PORT |= (1 << SPI_MOSI) | (1 << SPI_SCK) | (1 << SPI_SS);
-    
-    /* enable SPI, set master */
-    SPCR |= (1 << SPE) | (1 << MSTR);
 
     /* set speed */
     switch (speed) {
@@ -52,6 +49,25 @@ void spi_master_init(int speed)
     default:
         return;
     }
+    
+    switch (mode) {
+    case SPI_MODE_0:
+        break;
+    case SPI_MODE_1:
+        SPCR |= (1 << CPHA);
+        break;
+    case SPI_MODE_2:
+        SPCR |= (1 << CPOL);
+        break;
+    case SPI_MODE_3:
+        SPCR |= (1 << CPOL) | (1 << CPHA);
+        break;
+    default:
+        return;
+    }
+    
+    /* enable SPI, set master */
+    SPCR |= (1 << SPE) | (1 << MSTR);
 }
 
 void spi_master_send(uint8_t *data, int len)
