@@ -7,7 +7,7 @@
  * Created  : 2018-12-01
  * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -39,6 +39,7 @@
 #define FAMILY_DS2430A          0x14
 
 #define MEMORY_SIZE             32
+#define APPREG_SIZE             8
 
 static void write_scratchpad(uint8_t addr, uint8_t *buf, int len)
 {
@@ -184,11 +185,8 @@ int ds2430a_write_memory(uint8_t addr, uint8_t *buf, int len)
         return -1;
     
     write_scratchpad(addr, buf, len);
-    
-    if (onewire_read_rom(&owid) == -1)
-        return -1;
-    
     copy_scratchpad();
+    _delay_ms(10);
     return 0;
 }
 
@@ -218,10 +216,105 @@ int ds2430a_read_memory(uint8_t addr, uint8_t *buf, int len)
         return -1;
     
     read_memory(addr, len);
+    read_scratchpad(addr, buf, len);
+    return 0;
+}
+
+int ds2430a_write_app_reg(uint8_t addr, uint8_t *buf, int len)
+{
+    ow_id_t owid;
+    uint8_t family;
+    
+    if (addr > (APPREG_SIZE - 1))
+        return -1;
+    
+    if (!buf)
+        return -1;
+    
+    if (len < 1)
+        return -1;
+    
+    if (len > (APPREG_SIZE - addr))
+        return -1;
     
     if (onewire_read_rom(&owid) == -1)
         return -1;
     
-    read_scratchpad(addr, buf, len);
+    onewire_get_family(&owid, &family);
+    
+    if (family != FAMILY_DS2430A)
+        return -1;
+    
+    write_appreg(addr, buf, len);
+    return 0;
+}
+
+int ds2430a_read_app_reg(uint8_t addr, uint8_t *buf, int len)
+{
+    ow_id_t owid;
+    uint8_t family;
+    
+    if (addr > (APPREG_SIZE - 1))
+        return -1;
+    
+    if (!buf)
+        return -1;
+    
+    if (len < 1)
+        return -1;
+    
+    if (len > (APPREG_SIZE - addr))
+        return -1;
+    
+    if (onewire_read_rom(&owid) == -1)
+        return -1;
+    
+    onewire_get_family(&owid, &family);
+    
+    if (family != FAMILY_DS2430A)
+        return -1;
+    
+    read_appreg(addr, buf, len);
+    return 0;
+}
+
+int ds2430a_lock_app_reg(void)
+{
+    ow_id_t owid;
+    uint8_t family;
+    uint8_t status;
+    
+    if (onewire_read_rom(&owid) == -1)
+        return -1;
+    
+    onewire_get_family(&owid, &family);
+    
+    if (family != FAMILY_DS2430A)
+        return -1;
+    
+    read_status(&status);
+    
+    if (status != 0xFF)
+        return -1;
+    
+    copy_lock_appreg();
+    _delay_ms(10);
+    return 0;
+}
+
+int ds2430a_read_status(uint8_t *status)
+{
+    ow_id_t owid;
+    uint8_t family;
+    
+    if (onewire_read_rom(&owid) == -1)
+        return -1;
+    
+    onewire_get_family(&owid, &family);
+    
+    if (family != FAMILY_DS2430A)
+        return -1;
+    
+    read_status(status);
     return 0;
 }

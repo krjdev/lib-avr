@@ -7,7 +7,7 @@
  * Created  : 2018-12-01
  * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -25,5 +25,9 @@
 extern void ds2430a_init(void);
 extern int ds2430a_write_memory(uint8_t addr, uint8_t *buf, int len);
 extern int ds2430a_read_memory(uint8_t addr, uint8_t *buf, int len);
+extern int ds2430a_write_app_reg(uint8_t addr, uint8_t *buf, int len);
+extern int ds2430a_read_app_reg(uint8_t addr, uint8_t *buf, int len);
+extern int ds2430a_lock_app_reg(void);
+extern int ds2430a_read_status(uint8_t *status);
 
 #endif
