@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 
+ * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -33,7 +33,7 @@ int pcf8574_write(gpio_t *gpio, uint8_t data)
     if (!gpio)
         return -1;
     
-    ret = i2c_master_send(gpio->addr, &tmp, 1);
+    ret = i2c_master_send(I2C_OPT_NORMAL, gpio->addr, NULL, 0, &tmp, 1);
     
     if (ret == -1)
         return -1;
@@ -48,7 +48,7 @@ int pcf8574_read(gpio_t *gpio, uint8_t *data)
     if (!gpio)
         return -1;
     
-    ret = i2c_master_recv(gpio->addr, data, 1);
+    ret = i2c_master_recv(I2C_OPT_NORMAL, gpio->addr, NULL, 0, data, 1);
     
     if (ret == -1)
         return -1;
