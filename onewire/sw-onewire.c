@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-28
- * Modified : 2018-12-02
+ * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.2.1.0
+ * Version  : 0.2.2.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -321,6 +321,25 @@ int onewire_search_rom(int type, ow_id_t **owids, int len)
     }
     
     return owids_cnt;
+}
+
+int onewire_match_rom(ow_id_t *owid)
+{
+    uint8_t cmd[9];
+    
+    if (!owid)
+        return -1;
+    
+    if (!onewire_reset())
+        return -1;
+    
+    cmd[0] = ONEWIRE_CMD_ROM_MATCH;
+    cmd[1] = owid->oi_family;
+    memcpy(&cmd[2], owid->oi_serial, 6);
+    cmd[8] = owid->oi_crc;
+    
+    onewire_send(cmd, 9);
+    return 0;
 }
 
 int onewire_get_family(ow_id_t *owid, uint8_t *family)
