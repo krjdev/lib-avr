@@ -95,7 +95,18 @@ onewire/ds18x20.c
 
 **Functions:**  
 void ds18x20\_init(int typ, int res)  
-int ds18x20\_temp\_t *ds18x20\_get\_temp\_data(void)
+int ds18x20\_get\_temp\_data(ds18x20\_temp\_t *dt)
+
+### Dallas/Maxim DS2430A driver (Alpha version)
+
+**Files:**  
+onewire/ds2430a.h  
+onewire/ds2430a.c
+
+**Functions:**  
+void ds2430a\_init(void)  
+int ds2430a\_write_\memory(uint8\_t addr, uint8\_t *buf, int len)  
+int ds2430a_\read\_memory(uint8\_t addr, uint8\_t *buf, int len)
 
 ## Network libraries
 
