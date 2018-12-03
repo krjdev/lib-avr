@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-11-30
- * Modified : 2018-12-02
+ * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.1.0.0 - Alpha
+ * Version  : 0.1.2.0 - Alpha
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -38,6 +38,6 @@ typedef struct ds18x20_temp {
 } ds18x20_temp_t;
 
 extern void ds18x20_init(int typ, int res);
-extern ds18x20_temp_t *ds18x20_get_temp_data(void);
+extern int ds18x20_get_temp_data(ds18x20_temp_t *dt);
 
 #endif

@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-11-30
- * Modified : 2018-12-02
+ * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.1.0.0 - Alpha
+ * Version  : 0.1.2.0 - Alpha
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -142,17 +142,17 @@ void ds18x20_init(int typ, int res)
     onewire_init();
 }
 
-ds18x20_temp_t *ds18x20_get_temp_data(void)
+int ds18x20_get_temp_data(ds18x20_temp_t *dt)
 {
     uint8_t cmd;
     uint8_t data[9];
     uint8_t family;
-    onewire_id_t *oi;
-    ds18x20_temp_t *p;
+    ow_id_t owid;
     
-    oi = onewire_read_rom();
-    onewire_get_family(oi, &family);
-    free(oi);
+    if (onewire_read_rom(&owid) == -1)
+        return -1;
+    
+    onewire_get_family(&owid, &family);
     
     cmd = CMD_CONVERT_T;
     onewire_send(&cmd, 1);
@@ -173,25 +173,21 @@ ds18x20_temp_t *ds18x20_get_temp_data(void)
         case RESOLUTION_12BIT:
             _delay_ms(CONVTIME_12BIT);
         default:
-            return NULL;
+            return -1;
         }
     }
     
-    oi = onewire_read_rom();
-    free(oi);
+    if (onewire_read_rom(&owid) == -1)
+        return -1;
+    
     read_scratchpad(data);
     
     if (!crc8_dallas_check(data, 8, data[REG_CRC]))
-        return NULL;
+        return -1;
     
-    p = (ds18x20_temp_t *) malloc(sizeof(ds18x20_temp_t));
-    
-    if (!p)
-        return NULL;
-    
-    p->dt_templ = data[REG_TEMPL];
-    p->dt_temph = data[REG_TEMPH];
-    p->dt_cr = data[REG_COUNTRE];
-    p->dt_cpc = data[REG_COUNTPC];
-    return p;
+    dt->dt_templ = data[REG_TEMPL];
+    dt->dt_temph = data[REG_TEMPH];
+    dt->dt_cr = data[REG_COUNTRE];
+    dt->dt_cpc = data[REG_COUNTPC];
+    return 0;
 }
