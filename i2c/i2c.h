@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-21
- * Modified : 
+ * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,9 +22,22 @@
 #ifndef LIBAVR_I2C_I2C_H
 #define LIBAVR_I2C_I2C_H
 
+#define I2C_OPT_NORMAL      0
+#define I2C_OPT_NOSTOP      1
+
 extern int i2c_master_init(uint32_t speed);
-extern int i2c_master_send(uint8_t addr, uint8_t *data, int len);
-extern int i2c_master_recv(uint8_t addr, uint8_t *data, int len);
+extern int i2c_master_send(int opt, 
+                           uint8_t addr, 
+                           uint8_t *cmd, 
+                           int cmd_len, 
+                           uint8_t *data, 
+                           int data_len);
+extern int i2c_master_recv(int opt, 
+                           uint8_t addr, 
+                           uint8_t *cmd, 
+                           int cmd_len, 
+                           uint8_t *data, 
+                           int data_len);
 extern int i2c_get_error(void);
 
 #endif
