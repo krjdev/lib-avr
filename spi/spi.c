@@ -7,7 +7,7 @@
  * Created  : 2018-09-22
  * Modified : 2018-12-03
  * Revised  : 
- * Version  : 0.3.0.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
