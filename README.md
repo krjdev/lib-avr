@@ -2,7 +2,7 @@
 
 Device driver and libraries for Microchip (Atmel) AVR Series
 
-## I2C interface (Master mode only)
+## I2C Interface (Master mode only)
 
 **Files:**  
 i2c/i2c.h  
@@ -14,7 +14,7 @@ int i2c\_master\_send(uint8\_t addr, uint8\_t *data, int len)
 int i2c\_master\_recv(uint8\_t addr, uint8\_t *data, int len)  
 int i2c\_get\_error(void)
 
-### NXP PCF8574(A) GPIO driver
+### NXP PCF8574(A) 8-Bit Remote I/O expander driver
 
 **Files:**  
 i2c/pcf8574.h  
@@ -31,18 +31,29 @@ int pcf8574\_get\_npins(gpio\_t *gpio)
 int pcf8574\_set\_pin(gpio\_t *gpio, int pin, int value)  
 int pcf8574\_get\_pin(gpio\_t *gpio, int pin, int *value)
 
-## SPI interface (Master mode only)
+### NXP PCF8591 8-Bit A/D and D/A coverter driver (alpha version)
+
+**Files:**  
+i2c/pcf8591.h  
+i2c/pcf8591.c
+
+**Functions:**  
+void pcf8591\_init(void)  
+int pcf8591\_get\_adc(uint8\_t subaddr, int config, int channel, uint8\_t *value)  
+int pcf8591\_set\_dac(uint8\_t subaddr, uint8\_t *value)
+
+## SPI Interface (Master mode only)
 
 **Files:**  
 spi/spi.h  
 spi/spi.c
 
 **Functions:**  
-int spi\_master\_init(int speed)  
+int spi\_master\_init(int mode, int speed)  
 int spi\_master\_send(uint8\_t *data, int len)  
 int spi\_master\_recv(uint8\_t *data, int len)
 
-### Microchip ENC28J60 ethernet controller driver (Alpha Version - No receive function)
+### Microchip ENC28J60 Ethernet controller driver (alpha version - No receive function)
 
 **Files:**  
 spi/enc28j60.h  
@@ -58,7 +69,7 @@ int enc28j60\_frame\_count(void)
 uint16\_t enc28j60\_free\_space(void)  
 int enc28j60\_send(eth\_frame\_t *frame)
 
-## 1-Wire interface (Software based - bitbang)
+## Dallas/Maxim 1-Wire Interface (Software-based)
 
 **Files:**  
 onewire/sw-onewire.h  
@@ -87,7 +98,7 @@ lib/crc8\_dallas.c
 int crc8\_dallas\_calc(uint8\_t *data, int len)  
 int crc8\_dallas\_check(uint8\_t *data, int len, uint8\_t crc)
 
-### Dallas/Maxim DS18x20 driver (Alpha version)
+### Dallas/Maxim DS18S20 and DS18B20 Digital Thermometer driver (Alpha version - Single device)
 
 **Files:**  
 onewire/ds18x20.h  
@@ -97,7 +108,7 @@ onewire/ds18x20.c
 void ds18x20\_init(int typ, int res)  
 int ds18x20\_get\_temp\_data(ds18x20\_temp\_t *dt)
 
-### Dallas/Maxim DS2430A driver (Alpha version)
+### Dallas/Maxim DS2430A 256-Bit EEPROM driver (Alpha version - Single device)
 
 **Files:**  
 onewire/ds2430a.h  
@@ -106,7 +117,11 @@ onewire/ds2430a.c
 **Functions:**  
 void ds2430a\_init(void)  
 int ds2430a\_write_\memory(uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a_\read\_memory(uint8\_t addr, uint8\_t *buf, int len)
+int ds2430a_\read\_memory(uint8\_t addr, uint8\_t *buf, int len)  
+int ds2430a\_write\_app\_reg(uint8\_t addr, uint8\_t *buf, int len)  
+int ds2430a\_read\_app\_reg(uint8\_t addr, uint8\_t *buf, int len)  
+int ds2430a\_lock\_app\_reg(void)  
+int ds2430a\_read\_status(uint8\_t *status)
 
 ## Network libraries
 
