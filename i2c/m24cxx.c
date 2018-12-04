@@ -128,7 +128,7 @@ int m24cxx_write(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len
     }
     
     for (i = 0; i < len; i++) {
-        ret = i2c_master_send(I2C_OPT_NORMAL, i2c_addr, NULL, 0, buf, len);
+        ret = i2c_master_send(I2C_OPT_NORMAL, i2c_addr, NULL, 0, buf[i], len);
         
         if (ret == -1)
             return -1;
@@ -209,7 +209,7 @@ int m24cxx_read(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len)
     }
     
     for (i = 0; i < len; i++) {
-        ret = i2c_master_recv(I2C_OPT_NORMAL, i2c_addr, NULL, 0, buf, len);
+        ret = i2c_master_recv(I2C_OPT_NORMAL, i2c_addr, NULL, 0, buf[i], len);
         
         if (ret == -1)
             return -1;
