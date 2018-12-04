@@ -10,8 +10,8 @@ i2c/i2c.c
 
 **Functions:**  
 int i2c\_master\_init(uint32\_t speed)  
-int i2c\_master\_send(uint8\_t addr, uint8\_t *data, int len)  
-int i2c\_master\_recv(uint8\_t addr, uint8\_t *data, int len)  
+int i2c\_master\_send(int opt, uint8\_t addr, uint8\_t cmd, int cmd\_len, uint8\_t *data, int data\_len)  
+int i2c\_master\_recv(int opt, uint8\_t addr, uint8\_t cmd, int cmd\_len, uint8\_t *data, int data\_len)  
 int i2c\_get\_error(void)
 
 ### NXP PCF8574(A) 8-Bit Remote I/O expander driver
@@ -41,6 +41,17 @@ i2c/pcf8591.c
 void pcf8591\_init(void)  
 int pcf8591\_get\_adc(uint8\_t subaddr, int config, int channel, uint8\_t *value)  
 int pcf8591\_set\_dac(uint8\_t subaddr, uint8\_t *value)
+
+### STmicroelectronics M24C01 - M24C64 I2C EEPROM driver (alpha version)
+
+**Files:**  
+i2c/m24cxx.h  
+i2c/m24cxx.c
+
+**Functions:**  
+void m24cxx_init(void)  
+int m24cxx_write(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)  
+int m24cxx_read(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)
 
 ## SPI Interface (Master mode only)
 
