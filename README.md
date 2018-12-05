@@ -31,7 +31,7 @@ int pcf8574\_get\_npins(gpio\_t *gpio)
 int pcf8574\_set\_pin(gpio\_t *gpio, int pin, int value)  
 int pcf8574\_get\_pin(gpio\_t *gpio, int pin, int *value)
 
-### NXP PCF8591 8-Bit A/D and D/A coverter driver (alpha version)
+### NXP PCF8591 8-Bit A/D and D/A converter driver (alpha version)
 
 **Files:**  
 i2c/pcf8591.h  
