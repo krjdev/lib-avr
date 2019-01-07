@@ -3,11 +3,11 @@
  * File Name: sw-onewire.h
  * Title    : Software based (bitbang) 1-Wire library header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-28
- * Modified : 2018-12-03
+ * Modified : 2019-01-06
  * Revised  : 
- * Version  : 0.2.3.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -33,21 +33,22 @@
 #define TYPE_SEARCH_ALARM           1
 
 typedef struct ow_id {
-    uint8_t oi_family;
-    uint8_t oi_serial[6];
-    uint8_t oi_crc;
-} ow_id_t;
+    uint8_t or_family;
+    uint8_t or_serial[6];
+    uint8_t or_crc;
+} ow_rom_t;
 
 extern void onewire_init(void);
 extern int onewire_reset(void);
 extern int onewire_send(uint8_t *data, int len);
 extern int onewire_recv(uint8_t *data, int len);
-extern int onewire_read_rom(ow_id_t *owid);
-extern int onewire_search_rom(int type, ow_id_t **owids, int len);
-extern int onewire_match_rom(ow_id_t *owid);
+extern int onewire_read_rom(ow_rom_t *rom);
+extern int onewire_search_rom(int type, ow_rom_t *roms, int num);
+extern int onewire_search_family(int type, uint8_t family, ow_rom_t *roms, int num);
+extern int onewire_match_rom(ow_rom_t *rom);
 extern int onewire_skip_rom(void);
-extern int onewire_get_family(ow_id_t *owid, uint8_t *family);
-extern int onewire_get_serial(ow_id_t *owid, uint8_t *buf);
-extern int onewire_get_crc(ow_id_t *owid, uint8_t *crc);
+extern int onewire_get_family(ow_rom_t *rom, uint8_t *family);
+extern int onewire_get_serial(ow_rom_t *rom, uint8_t *buf);
+extern int onewire_get_crc(ow_rom_t *rom, uint8_t *crc);
 
 #endif

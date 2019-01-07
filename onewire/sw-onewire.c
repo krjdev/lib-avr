@@ -3,11 +3,11 @@
  * File Name: sw-onewire.c
  * Title    : Software based (bitbang) 1-Wire library source
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-28
- * Modified : 2018-12-03
+ * Modified : 2019-01-06
  * Revised  : 
- * Version  : 0.2.3.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,6 +23,9 @@
 
 #include "sw-onewire.h"
 #include "../lib/crc8_dallas.h"
+
+#define _ISCLR(reg, bit)            (((reg) | (1 << (bit))) ^ (reg))
+#define _ISSET(reg, bit)            ((reg) & (1 << (bit)))
 
 #define ONEWIRE_CMD_ROM_SEARCH      0xF0
 #define ONEWIRE_CMD_ROM_READ        0x33
@@ -65,32 +68,32 @@ static uint8_t read_bit(void)
     return ret;
 }
 
-static void owid_set_bit(ow_id_t *owid, uint8_t pos, uint8_t val)
+static void rom_set_bit(ow_rom_t *rom, uint8_t pos, uint8_t val)
 {
     if (pos >= 0 && pos <= 7) {
         if (val)
-            owid->oi_family |= (1 << pos);
+            rom->or_family |= (1 << pos);
     } else if (pos >= 8 && pos <= 15) {
         if (val)
-            owid->oi_serial[0] |= (1 << (pos - 8));
+            rom->or_serial[0] |= (1 << (pos - 8));
     } else if (pos >= 16 && pos <= 23) {
         if (val)
-            owid->oi_serial[1] |= (1 << (pos - 16));
+            rom->or_serial[1] |= (1 << (pos - 16));
     } else if (pos >= 24 && pos <= 31) {
         if (val)
-            owid->oi_serial[2] |= (1 << (pos - 24));
+            rom->or_serial[2] |= (1 << (pos - 24));
     } else if (pos >= 32 && pos <= 39) {
         if (val)
-            owid->oi_serial[3] |= (1 << (pos - 32));
+            rom->or_serial[3] |= (1 << (pos - 32));
     } else if (pos >= 40 && pos <= 47) {
         if (val)
-            owid->oi_serial[4] |= (1 << (pos - 40));
+            rom->or_serial[4] |= (1 << (pos - 40));
     } else if (pos >= 48 && pos <= 55) {
         if (val)
-            owid->oi_serial[5] |= (1 << (pos - 48));
+            rom->or_serial[5] |= (1 << (pos - 48));
     } else {
         if (val)
-            owid->oi_crc |= (1 << (pos - 56));
+            rom->or_crc |= (1 << (pos - 56));
     }
 }
 
@@ -186,7 +189,7 @@ int onewire_recv(uint8_t *data, int len)
     return 0;
 }
 
-int onewire_read_rom(ow_id_t *owid)
+int onewire_read_rom(ow_rom_t *rom)
 {
     uint8_t cmd;
     uint8_t buf[8];
@@ -201,15 +204,16 @@ int onewire_read_rom(ow_id_t *owid)
     if (!crc8_dallas_check(buf, 7, buf[7]))
         return -1;
     
-    owid->oi_family = buf[0];
-    memcpy(&(owid->oi_serial[0]), &buf[1], 6);
-    owid->oi_crc = buf[7];
+    rom->or_family = buf[0];
+    memcpy(&(rom->or_serial[0]), &buf[1], 6);
+    rom->or_crc = buf[7];
     return 0;
 }
 
-int onewire_search_rom(int type, ow_id_t **owids, int len)
+int onewire_search_rom(int type, ow_rom_t *roms, int num)
 {
-    int owids_cnt;
+    int rom_id;
+    int rom_cnt;
     uint8_t cmd;
     uint8_t r_bit;
     uint8_t r_bit_c;
@@ -221,31 +225,30 @@ int onewire_search_rom(int type, ow_id_t **owids, int len)
     int rep_o;
     int rep_i;
     int first;
-    ow_id_t *p_owid, *p_owid_n;
     
+    if ((roms == NULL) && (num > 0))
+        return -1;
+    
+    rom_cnt = 0;
     rep_o = 1;
     first = 1;
     
     while (rep_o) {
         if (!onewire_reset()) {
-            return -1;
+            return 0;
         }
     
         if (first) {
-            owids_cnt = 0;
-            
-            p_owid = (ow_id_t *) malloc(sizeof(ow_id_t));
-            
-            if (!p_owid) {
-                return -1;
-            }
-            
-            memset(p_owid, 0, sizeof(ow_id_t));
-            owids[owids_cnt] = p_owid;
-            owids_cnt++;
+            rom_id = 0;
+            if (rom_id < num)
+                memset(&roms[rom_id], 0, sizeof(ow_rom_t));
             oth = 0;
-        } else
-            p_owid = p_owid_n;
+        } else {
+            rom_id++;
+            
+            if (rom_id < num)
+                memset(&roms[rom_id], 0, sizeof(ow_rom_t));
+        }
         
         first = 0;
         rep_i = 1;
@@ -265,27 +268,22 @@ int onewire_search_rom(int type, ow_id_t **owids, int len)
             dis = 0;
             
             if (r_bit && !r_bit_c) {
-                owid_set_bit(p_owid, bit_pos, 1);
+                if (rom_id < num)
+                    rom_set_bit(&roms[rom_id], bit_pos, 1);
             } else if (!r_bit && r_bit_c) {
-                owid_set_bit(p_owid, bit_pos, 0);
+                if (rom_id < num)
+                    rom_set_bit(&roms[rom_id], bit_pos, 0);
             } else if (!r_bit && !r_bit_c) { 
                 if (!oth) {
-                    owid_set_bit(p_owid, bit_pos, 1);
+                    if (rom_id < num)
+                        rom_set_bit(&roms[rom_id], bit_pos, 1);
                     dir = 1;
-                    p_owid_n = (ow_id_t *) malloc(sizeof(ow_id_t));
-                    
-                    if (!p_owid_n) {
-                        return -1;
-                    }
-                    
-                    memset(p_owid_n, 0, sizeof(ow_id_t));
-                    owids[owids_cnt] = p_owid_n;
-                    owids_cnt++;
                     oth = 1;
                 } else {
-                    oth = 0;
-                    owid_set_bit(p_owid, bit_pos, 0);
+                    if (rom_id < num)
+                        rom_set_bit(&roms[rom_id], bit_pos, 0);
                     dir = 0;
+                    oth = 0;
                 }
                 
                 rep_o = 1;
@@ -311,6 +309,8 @@ int onewire_search_rom(int type, ow_id_t **owids, int len)
                     
                     if (!oth)
                         rep_o = 0;
+                    
+                    rom_cnt++;
                 } else
                     bit_pos++;
             } else {
@@ -320,23 +320,171 @@ int onewire_search_rom(int type, ow_id_t **owids, int len)
         }
     }
     
-    return owids_cnt;
+    return rom_cnt;
 }
 
-int onewire_match_rom(ow_id_t *owid)
+int onewire_search_family(int type, uint8_t family, ow_rom_t *roms, int num)
+{
+    int rom_id;
+    int rom_cnt;
+    uint8_t cmd;
+    uint8_t r_bit;
+    uint8_t r_bit_c;
+    int bit_pos;
+    int dis;
+    int dir;
+    int not;
+    int oth;
+    int rep_o;
+    int rep_i;
+    int first;
+    int i;
+    
+    if ((roms == NULL) && (num > 0))
+        return -1;
+    
+    rom_cnt = 0;
+    rep_o = 1;
+    first = 1;
+    
+    while (rep_o) {
+        if (!onewire_reset()) {
+            return 0;
+        }
+    
+        if (first) {
+            rom_id = 0;
+            if (rom_id < num)
+                memset(&roms[rom_id], 0, sizeof(ow_rom_t));
+            oth = 0;
+        } else {
+            rom_id++;
+            
+            if (rom_id < num)
+                memset(&roms[rom_id], 0, sizeof(ow_rom_t));
+        }
+        
+        first = 0;
+        rep_i = 1;
+        
+        if (type == TYPE_SEARCH_ALL)
+            cmd = ONEWIRE_CMD_ROM_SEARCH;
+        else
+            cmd = ONEWIRE_CMD_ALARM_SEARCH;
+        
+        onewire_send(&cmd, 1);
+        bit_pos = 0;
+        not = 0;
+        
+        for (i = 0; i < 8; i++) {
+            r_bit = read_bit();
+            r_bit_c = read_bit();
+            
+            if (r_bit && !r_bit_c && _ISSET(family, i)) {
+                if (rom_id < num)
+                    rom_set_bit(&roms[rom_id], bit_pos, 1);
+                
+                write_bit(r_bit);
+            } else if (!r_bit && r_bit_c && _ISCLR(family, i)) {
+                if (rom_id < num)
+                    rom_set_bit(&roms[rom_id], bit_pos, 0);
+                
+                write_bit(r_bit);
+            } else if (!r_bit && !r_bit_c) { 
+                if (_ISSET(family, i)) {
+                    if (rom_id < num)
+                        rom_set_bit(&roms[rom_id], bit_pos, 1);
+                    
+                    write_bit(1);
+                } else {
+                    if (rom_id < num)
+                        rom_set_bit(&roms[rom_id], bit_pos, 0);
+                    
+                    write_bit(0);
+                }
+            } else {
+                rep_o = 0;
+                rep_i = 0;
+            }
+            
+            bit_pos++;
+        }
+        
+        while (rep_i) {
+            r_bit = read_bit();
+            r_bit_c = read_bit();
+            dis = 0;
+            
+            if (r_bit && !r_bit_c) {
+                if (rom_id < num)
+                    rom_set_bit(&roms[rom_id], bit_pos, 1);
+            } else if (!r_bit && r_bit_c) {
+                if (rom_id < num)
+                    rom_set_bit(&roms[rom_id], bit_pos, 0);
+            } else if (!r_bit && !r_bit_c) { 
+                if (!oth) {
+                    if (rom_id < num)
+                        rom_set_bit(&roms[rom_id], bit_pos, 1);
+                    dir = 1;
+                    oth = 1;
+                } else {
+                    if (rom_id < num)
+                        rom_set_bit(&roms[rom_id], bit_pos, 0);
+                    dir = 0;
+                    oth = 0;
+                }
+                
+                rep_o = 1;
+                dis = 1;
+            } else {
+                not = 1;
+                rep_o = 1;
+                dir = 0;
+            }
+            
+            if (!not) {
+                if (!dis) {
+                    write_bit(r_bit);
+                } else {
+                    if (dir)
+                        write_bit(1);
+                    else
+                        write_bit(0);
+                }
+                
+                if (bit_pos == 63) {
+                    rep_i = 0;
+                    
+                    if (!oth)
+                        rep_o = 0;
+                    
+                    rom_cnt++;
+                } else
+                    bit_pos++;
+            } else {
+                not = 0;
+                rep_i = 0;
+            }
+        }
+    }
+    
+    return rom_cnt;
+}
+
+int onewire_match_rom(ow_rom_t *rom)
 {
     uint8_t cmd[9];
     
-    if (!owid)
+    if (!rom)
         return -1;
     
     if (!onewire_reset())
         return -1;
     
     cmd[0] = ONEWIRE_CMD_ROM_MATCH;
-    cmd[1] = owid->oi_family;
-    memcpy(&cmd[2], owid->oi_serial, 6);
-    cmd[8] = owid->oi_crc;
+    cmd[1] = rom->or_family;
+    memcpy(&cmd[2], rom->or_serial, 6);
+    cmd[8] = rom->or_crc;
     
     onewire_send(cmd, 9);
     return 0;
@@ -354,38 +502,42 @@ int onewire_skip_rom(void)
     return 0;
 }
 
-int onewire_get_family(ow_id_t *owid, uint8_t *family)
+int onewire_get_family(ow_rom_t *rom, uint8_t *family)
 {
-    if (!owid)
+    if (!rom)
         return -1;
     
     if (!family)
         return -1;
     
-    (*family) = owid->oi_family;
+    (*family) = rom->or_family;
     return 0;
 }
 
-int onewire_get_serial(ow_id_t *owid, uint8_t *buf)
+int onewire_get_serial(ow_rom_t *rom, uint8_t *buf)
 {
-    if (!owid)
+    int i, j;
+    
+    if (!rom)
         return -1;
     
     if (!buf)
         return -1;
     
-    memcpy(buf, owid->oi_serial, 6);
+    for (i = 0, j = 5; i < 6; i++, j--)
+        buf[i] = rom->or_serial[j];
+    
     return 0;
 }
 
-int onewire_get_crc(ow_id_t *owid, uint8_t *crc)
+int onewire_get_crc(ow_rom_t *rom, uint8_t *crc)
 {
-    if (!owid)
+    if (!rom)
         return -1;
     
     if (!crc)
         return -1;
     
-    (*crc) = owid->oi_crc;
+    (*crc) = rom->or_crc;
     return 0;
 }
