@@ -32,7 +32,7 @@
 #define TYPE_SEARCH_ALL             0
 #define TYPE_SEARCH_ALARM           1
 
-typedef struct ow_id {
+typedef struct ow_rom {
     uint8_t or_family;
     uint8_t or_serial[6];
     uint8_t or_crc;
