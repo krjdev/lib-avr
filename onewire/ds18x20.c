@@ -7,7 +7,7 @@
  * Created  : 2018-11-30
  * Modified : 2018-01-12
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -183,10 +183,10 @@ int ds18x20_get_temp(ow_rom_t *rom, int type, int res, float *temp)
     switch (res) {
     case RESOLUTION_9BIT:
         if (type == TYPE_DS18S20)
-            temp_ret = (float) temp_raw / 2.0;
+            temp_ret = (float) (int16_t) temp_raw / 2.0;
         else {
             temp_raw &= 0xFFF8;
-            temp_ret = (float) temp_raw / 16.0;
+            temp_ret = (float) (int16_t) temp_raw / 16.0;
         }
         break;
     case RESOLUTION_10BIT:
@@ -194,7 +194,7 @@ int ds18x20_get_temp(ow_rom_t *rom, int type, int res, float *temp)
             return -1;
         else {
             temp_raw &= 0xFFFC;
-            temp_ret = (float) temp_raw / 16.0;
+            temp_ret = (float) (int16_t) temp_raw / 16.0;
         }
         break;
     case RESOLUTION_11BIT:
@@ -202,16 +202,22 @@ int ds18x20_get_temp(ow_rom_t *rom, int type, int res, float *temp)
             return -1;
         else {
             temp_raw &= 0xFFFE;
-            temp_ret = (float) temp_raw / 16.0;
+            temp_ret = (float) (int16_t) temp_raw / 16.0;
         }
         break;
     case RESOLUTION_12BIT:
-        if (type == TYPE_DS18S20)
-            temp_ret = (float) temp_raw - 0.25 + 
-                       ((buf[REG_COUNTPC] - buf[REG_COUNTRE]) / 
-                       buf[REG_COUNTPC]);
-        else
-            temp_ret = (float) temp_raw / 16.0;
+        if (type == TYPE_DS18S20) {
+            if (temp_raw & 0x8000) {
+                temp_raw >>= 1;
+                temp_raw |= 0x8000;
+            } else
+                temp_raw >>= 1;
+            
+            temp_ret = (float) (int16_t) temp_raw - 0.25 + 
+                       (((float) buf[REG_COUNTPC] - (float) buf[REG_COUNTRE]) / 
+                       (float) buf[REG_COUNTPC]);
+        } else
+            temp_ret = (float) (int16_t) temp_raw / 16.0;
         break;
     default:
         return -1;
