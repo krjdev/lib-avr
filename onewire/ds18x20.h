@@ -3,11 +3,11 @@
  * File Name: ds18x20.h
  * Title    : Dallas/Maxim DS18S20 and DS18B20 library header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-11-30
- * Modified : 2018-12-03
+ * Modified : 2019-01-12
  * Revised  : 
- * Version  : 0.1.2.0 - Alpha
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,22 +22,23 @@
 
 #include <stdint.h>
 
+#include "sw-onewire.h"
+
 #define TYPE_DS18S20        0
 #define TYPE_DS18B20        1
 
 #define RESOLUTION_9BIT     9
-#define RESOLUTION_10BIT    10 /* Only on DS18B20 available */
-#define RESOLUTION_11BIT    11 /* Only on DS18B20 available */
+#define RESOLUTION_10BIT    10 /* DS18B20 only */
+#define RESOLUTION_11BIT    11 /* DS18B20 only */
 #define RESOLUTION_12BIT    12
 
-typedef struct ds18x20_temp {
-    uint8_t dt_templ;
-    uint8_t dt_temph;
-    uint8_t dt_cr;
-    uint8_t dt_cpc;
-} ds18x20_temp_t;
-
-extern void ds18x20_init(int typ, int res);
-extern int ds18x20_get_temp_data(ds18x20_temp_t *dt);
+extern void ds18x20_init(void);
+extern int ds18x20_read_rom(int type, ow_rom_t *rom);
+extern int ds18x20_search_rom(int type, ow_rom_t *roms, int num);
+extern int ds18x20_search_alarm(int type, ow_rom_t *roms, int num);
+extern int ds18x20_convert(ow_rom_t *rom);
+extern int ds18x20_get_temp(ow_rom_t *rom, int type, int res, float *temp);
+extern int ds18x20_set_resolution(ow_rom_t *rom, int res); /* DS18B20 only */
+extern int ds18x20_set_alarm(ow_rom_t *rom, int type, int8_t temp_high, int8_t temp_low);
 
 #endif
