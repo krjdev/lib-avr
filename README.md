@@ -110,15 +110,21 @@ lib/crc8\_dallas.c
 int crc8\_dallas\_calc(uint8\_t *data, int len)  
 int crc8\_dallas\_check(uint8\_t *data, int len, uint8\_t crc)
 
-### Dallas/Maxim DS18S20 and DS18B20 Digital Thermometer driver (Alpha version - Single device)
+### Dallas/Maxim DS18S20 and DS18B20 Digital Thermometer driver
 
 **Files:**  
 onewire/ds18x20.h  
 onewire/ds18x20.c
 
 **Functions:**  
-void ds18x20\_init(int typ, int res)  
-int ds18x20\_get\_temp\_data(ds18x20\_temp\_t *dt)
+void ds18x20\_init(void)  
+int ds18x20\_read\_rom(int type, ow\_rom\_t *rom)  
+int ds18x20\_search\_rom(int type, ow\_rom\_t *roms, int num)  
+int ds18x20\_search\_alarm(int type, ow\_rom\_t *roms, int num)  
+int ds18x20\_convert(ow\_rom\_t *rom)  
+int ds18x20\_get\_temp(ow\_rom\_t *rom, int type, int res, float *temp)  
+int ds18x20\_set\_resolution(ow\_rom\_t *rom, int res)  
+int ds18x20\_set\_alarm(ow\_rom\_t *rom, int type, int8\_t temp\_high, int8\_t temp\_low)
 
 ### Dallas/Maxim DS2430A 256-Bit EEPROM driver (Alpha version - Single device)
 
