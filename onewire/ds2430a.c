@@ -3,11 +3,11 @@
  * File Name: ds2430a.c
  * Title    : Dallas/Maxim DS2430A library source
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-12-01
- * Modified : 2018-12-03
+ * Modified : 2019-01-13
  * Revised  : 
- * Version  : 0.1.1.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -18,7 +18,6 @@
  */
 #include <util/delay.h>
 
-#include "sw-onewire.h"
 #include "../lib/crc8_dallas.h"
 #include "ds2430a.h"
 
@@ -159,11 +158,31 @@ void ds2430a_init(void)
     onewire_init();
 }
 
-int ds2430a_write_memory(uint8_t addr, uint8_t *buf, int len)
+int ds2430a_read_rom(ow_rom_t *rom)
 {
-    ow_id_t owid;
     uint8_t family;
     
+    if (!rom)
+        return -1;
+    
+    if (onewire_read_rom(rom) == -1)
+        return 0;
+    
+    onewire_get_family(rom, &family);
+    
+    if (family == FAMILY_DS2430A)
+        return 1;
+    
+    return 0;
+}
+
+int ds2430a_search_rom(ow_rom_t *roms, int num)
+{
+    return onewire_search_family(TYPE_SEARCH_ALL, FAMILY_DS2430A, roms, num);
+}
+
+int ds2430a_write_memory(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len)
+{
     if (addr > (MEMORY_SIZE - 1))
         return -1;
     
@@ -176,25 +195,29 @@ int ds2430a_write_memory(uint8_t addr, uint8_t *buf, int len)
     if (len > (MEMORY_SIZE - addr))
         return -1;
     
-    if (onewire_read_rom(&owid) == -1)
-        return -1;
-    
-    onewire_get_family(&owid, &family);
-    
-    if (family != FAMILY_DS2430A)
-        return -1;
+    if (rom) {
+        if (onewire_match_rom(rom) == -1)
+            return -1;
+    } else
+        if (onewire_skip_rom() == -1)
+            return -1;
     
     write_scratchpad(addr, buf, len);
+    
+    if (rom) {
+        if (onewire_match_rom(rom) == -1)
+            return -1;
+    } else
+        if (onewire_skip_rom() == -1)
+            return -1;
+    
     copy_scratchpad();
     _delay_ms(10);
     return 0;
 }
 
-int ds2430a_read_memory(uint8_t addr, uint8_t *buf, int len)
+int ds2430a_read_memory(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len)
 {
-    ow_id_t owid;
-    uint8_t family;
-    
     if (addr > (MEMORY_SIZE - 1))
         return -1;
     
@@ -207,24 +230,21 @@ int ds2430a_read_memory(uint8_t addr, uint8_t *buf, int len)
     if (len > (MEMORY_SIZE - addr))
         return -1;
     
-    if (onewire_read_rom(&owid) == -1)
-        return -1;
-    
-    onewire_get_family(&owid, &family);
-    
-    if (family != FAMILY_DS2430A)
-        return -1;
+    if (rom) {
+        if (onewire_match_rom(rom) == -1)
+            return -1;
+    } else
+        if (onewire_skip_rom() == -1)
+            return -1;
     
     read_memory(addr, len);
+    _delay_ms(10);
     read_scratchpad(addr, buf, len);
     return 0;
 }
 
-int ds2430a_write_app_reg(uint8_t addr, uint8_t *buf, int len)
+int ds2430a_write_app_reg(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len)
 {
-    ow_id_t owid;
-    uint8_t family;
-    
     if (addr > (APPREG_SIZE - 1))
         return -1;
     
@@ -237,23 +257,19 @@ int ds2430a_write_app_reg(uint8_t addr, uint8_t *buf, int len)
     if (len > (APPREG_SIZE - addr))
         return -1;
     
-    if (onewire_read_rom(&owid) == -1)
-        return -1;
-    
-    onewire_get_family(&owid, &family);
-    
-    if (family != FAMILY_DS2430A)
-        return -1;
+    if (rom) {
+        if (onewire_match_rom(rom) == -1)
+            return -1;
+    } else
+        if (onewire_skip_rom() == -1)
+            return -1;
     
     write_appreg(addr, buf, len);
     return 0;
 }
 
-int ds2430a_read_app_reg(uint8_t addr, uint8_t *buf, int len)
+int ds2430a_read_app_reg(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len)
 {
-    ow_id_t owid;
-    uint8_t family;
-    
     if (addr > (APPREG_SIZE - 1))
         return -1;
     
@@ -266,31 +282,27 @@ int ds2430a_read_app_reg(uint8_t addr, uint8_t *buf, int len)
     if (len > (APPREG_SIZE - addr))
         return -1;
     
-    if (onewire_read_rom(&owid) == -1)
-        return -1;
-    
-    onewire_get_family(&owid, &family);
-    
-    if (family != FAMILY_DS2430A)
-        return -1;
+    if (rom) {
+        if (onewire_match_rom(rom) == -1)
+            return -1;
+    } else
+        if (onewire_skip_rom() == -1)
+            return -1;
     
     read_appreg(addr, buf, len);
     return 0;
 }
 
-int ds2430a_lock_app_reg(void)
+int ds2430a_lock_app_reg(ow_rom_t *rom)
 {
-    ow_id_t owid;
-    uint8_t family;
     uint8_t status;
     
-    if (onewire_read_rom(&owid) == -1)
-        return -1;
-    
-    onewire_get_family(&owid, &family);
-    
-    if (family != FAMILY_DS2430A)
-        return -1;
+    if (rom) {
+        if (onewire_match_rom(rom) == -1)
+            return -1;
+    } else
+        if (onewire_skip_rom() == -1)
+            return -1;
     
     read_status(&status);
     
@@ -302,17 +314,16 @@ int ds2430a_lock_app_reg(void)
     return 0;
 }
 
-int ds2430a_read_status(uint8_t *status)
+int ds2430a_read_status(ow_rom_t *rom, uint8_t *status)
 {
-    ow_id_t owid;
-    uint8_t family;
-    
-    if (onewire_read_rom(&owid) == -1)
-        return -1;
-    
-    onewire_get_family(&owid, &family);
-    
-    if (family != FAMILY_DS2430A)
+    if (rom) {
+        if (onewire_match_rom(rom) == -1)
+            return -1;
+    } else
+        if (onewire_skip_rom() == -1)
+            return -1;
+        
+    if (!status)
         return -1;
     
     read_status(status);

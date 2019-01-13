@@ -3,11 +3,11 @@
  * File Name: ds2430a.h
  * Title    : Dallas/Maxim DS2430A library header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-12-01
- * Modified : 2018-12-03
+ * Modified : 2019-01-13
  * Revised  : 
- * Version  : 0.1.1.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,12 +22,16 @@
 
 #include <stdint.h>
 
+#include "sw-onewire.h"
+
 extern void ds2430a_init(void);
-extern int ds2430a_write_memory(uint8_t addr, uint8_t *buf, int len);
-extern int ds2430a_read_memory(uint8_t addr, uint8_t *buf, int len);
-extern int ds2430a_write_app_reg(uint8_t addr, uint8_t *buf, int len);
-extern int ds2430a_read_app_reg(uint8_t addr, uint8_t *buf, int len);
-extern int ds2430a_lock_app_reg(void);
-extern int ds2430a_read_status(uint8_t *status);
+extern int ds2430a_read_rom(ow_rom_t *rom);
+extern int ds2430a_search_rom(ow_rom_t *roms, int num);
+extern int ds2430a_write_memory(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len);
+extern int ds2430a_read_memory(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len);
+extern int ds2430a_write_app_reg(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len);
+extern int ds2430a_read_app_reg(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len);
+extern int ds2430a_lock_app_reg(ow_rom_t *rom);
+extern int ds2430a_read_status(ow_rom_t *rom, uint8_t *status);
 
 #endif
