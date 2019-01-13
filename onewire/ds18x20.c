@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-11-30
- * Modified : 2018-01-12
+ * Modified : 2018-01-13
  * Revised  : 
- * Version  : 0.2.0.1
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -100,8 +100,18 @@ void ds18x20_init(void)
 
 int ds18x20_read_rom(int type, ow_rom_t *rom)
 {
-    if (onewire_read_rom(rom) == -1)
+    uint8_t family;
+    
+    if (!rom)
         return -1;
+    
+    if (onewire_read_rom(rom) == -1)
+        return 0;
+    
+    onewire_get_family(rom, &family);
+    
+    if ((family == FAMILY_DS18S20) || (family == FAMILY_DS18B20))
+        return 1;
     
     return 0;
 }
