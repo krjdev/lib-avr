@@ -126,7 +126,7 @@ int ds18x20\_get\_temp(ow\_rom\_t *rom, int type, int res, float *temp)
 int ds18x20\_set\_resolution(ow\_rom\_t *rom, int res)  
 int ds18x20\_set\_alarm(ow\_rom\_t *rom, int type, int8\_t temp\_high, int8\_t temp\_low)
 
-### Dallas/Maxim DS2430A 256-Bit EEPROM driver (Alpha version - Single device)
+### Dallas/Maxim DS2430A 256-Bit EEPROM driver
 
 **Files:**  
 onewire/ds2430a.h  
@@ -134,12 +134,14 @@ onewire/ds2430a.c
 
 **Functions:**  
 void ds2430a\_init(void)  
-int ds2430a\_write_\memory(uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a_\read\_memory(uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a\_write\_app\_reg(uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a\_read\_app\_reg(uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a\_lock\_app\_reg(void)  
-int ds2430a\_read\_status(uint8\_t *status)
+int ds2430a\_read\_rom(ow\_rom\_t *rom)  
+int ds2430a\_search\_rom(ow\_rom\_t *roms, int num)  
+int ds2430a\_write\_memory(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
+int ds2430a\_read\_memory(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
+int ds2430a\_write\_app\_reg(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
+int ds2430a\_read\_app\_reg(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
+int ds2430a\_lock\_app\_reg(ow\_rom\_t *rom)  
+int ds2430a\_read\_status(ow\_rom\_t *rom, uint8\_t *status)
 
 ## Network libraries
 
