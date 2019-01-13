@@ -7,7 +7,7 @@
  * Created  : 2018-12-01
  * Modified : 2019-01-13
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -55,6 +55,7 @@ static void write_scratchpad(uint8_t addr, uint8_t *buf, int len)
     
     onewire_send(cmd, 2);
     onewire_send(buf, len);
+    onewire_reset();
 }
 
 static void read_scratchpad(uint8_t addr, uint8_t *buf, int len)
@@ -71,6 +72,7 @@ static void read_scratchpad(uint8_t addr, uint8_t *buf, int len)
     cmd[1] = addr;
     onewire_send(cmd, 2);
     onewire_recv(buf, len);
+    onewire_reset();
 }
 
 static void copy_scratchpad(void)
@@ -80,9 +82,11 @@ static void copy_scratchpad(void)
     cmd[0] = CMD_SCRATCHPAD_COPY;
     cmd[1] = VAL_KEY_COPY;
     onewire_send(cmd, 2);
+    _delay_ms(10);
+    onewire_reset();
 }
 
-static void read_memory(uint8_t addr, int len)
+static void read_memory(uint8_t addr, uint8_t *buf, int len)
 {
     uint8_t cmd[2];
     
@@ -97,6 +101,9 @@ static void read_memory(uint8_t addr, int len)
         cmd[1] = addr;
         onewire_send(cmd, 2);
     }
+    
+    onewire_recv(buf, len);
+    onewire_reset();
 }
 
 static void read_status(uint8_t *status)
@@ -109,6 +116,7 @@ static void read_status(uint8_t *status)
     onewire_send(cmd, 2);
     onewire_recv(&tmp, 1);
     (*status) = tmp;
+    onewire_reset();
 }
 
 static void write_appreg(uint8_t addr, uint8_t *buf, int len)
@@ -126,6 +134,7 @@ static void write_appreg(uint8_t addr, uint8_t *buf, int len)
     
     onewire_send(cmd, 2);
     onewire_send(buf, len);
+    onewire_reset();
 }
 
 static void read_appreg(uint8_t addr, uint8_t *buf, int len)
@@ -142,6 +151,7 @@ static void read_appreg(uint8_t addr, uint8_t *buf, int len)
     cmd[1] = addr;
     onewire_send(cmd, 2);
     onewire_recv(buf, len);
+    onewire_reset();
 }
 
 static void copy_lock_appreg(void)
@@ -151,6 +161,7 @@ static void copy_lock_appreg(void)
     cmd[0] = CMD_APPREG_COPY_LOCK;
     cmd[1] = VAL_KEY_COPY;
     onewire_send(cmd, 2);
+    onewire_reset();
 }
 
 void ds2430a_init(void)
@@ -212,7 +223,6 @@ int ds2430a_write_memory(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len)
             return -1;
     
     copy_scratchpad();
-    _delay_ms(10);
     return 0;
 }
 
@@ -237,9 +247,7 @@ int ds2430a_read_memory(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len)
         if (onewire_skip_rom() == -1)
             return -1;
     
-    read_memory(addr, len);
-    _delay_ms(10);
-    read_scratchpad(addr, buf, len);
+    read_memory(addr, buf, len);
     return 0;
 }
 
