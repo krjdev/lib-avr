@@ -7,7 +7,7 @@
  * Created  : 2018-11-30
  * Modified : 2018-01-13
  * Revised  : 
- * Version  : 0.2.1.0
+ * Version  : 0.2.2.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -110,8 +110,20 @@ int ds18x20_read_rom(int type, ow_rom_t *rom)
     
     onewire_get_family(rom, &family);
     
-    if ((family == FAMILY_DS18S20) || (family == FAMILY_DS18B20))
-        return 1;
+    switch (type) {
+    case TYPE_DS18S20:
+        if (family == FAMILY_DS18S20)
+            return 1;
+        else
+            return 0;
+    case TYPE_DS18B20:
+        if (family == FAMILY_DS18B20)
+            return 1;
+        else
+            return 0;
+    default:
+        return -1;
+    }
     
     return 0;
 }
