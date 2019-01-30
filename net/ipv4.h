@@ -7,7 +7,7 @@
  * Created  : 2018-09-24
  * Modified : 2019-01-30
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,12 +22,23 @@
 
 #include <stdint.h>
 
+#define IPV4_FLAG_DF    1
+#define IPV4_FLAG_MF    2
+
+#define IPV4_PROT_TCP   6
+#define IPV4_PROT_UDP   17
+
 typedef struct ipv4_addr {
     uint8_t ia_byte0;
     uint8_t ia_byte1;
     uint8_t ia_byte2;
     uint8_t ia_byte3;
 } ipv4_addr_t;
+
+typedef struct ipv4_range {
+    ipv4_addr_t ir_ip;
+    uint8_t ir_suf;
+} ipv4_range_t;
 
 typedef struct ipv4_hdr {
     unsigned char ih_ver : 4;
@@ -45,7 +56,30 @@ typedef struct ipv4_hdr {
     ipv4_addr_t ih_dst;
 } ipv4_hdr_t;
 
+ipv4_range_t rfc6890[] = {
+    { { 0, 0, 0, 0 }, 8 }, 
+    { { 10, 0, 0, 0 }, 8 }, 
+    { { 100, 64, 0, 0 }, 10 }, 
+    { { 127, 0, 0, 0 }, 8 }, 
+    { { 169, 254, 0, 0 }, 16 }, 
+    { { 172, 16, 0, 0 }, 12 }, 
+    { { 192, 0, 0, 0 }, 24 }, 
+    { { 192, 0, 0, 0 }, 29 }, 
+    { { 192, 0, 2, 0 }, 24 }, 
+    { { 192, 88, 99, 0 }, 24 }, 
+    { { 192, 168, 0, 0 }, 16 }, 
+    { { 198, 18, 0, 0 }, 15 },
+    { { 198, 51, 100, 0 }, 24 }, 
+    { { 203, 0, 113, 0 }, 24 }, 
+    { { 224, 0, 0, 0 }, 4 }, 
+    { { 240, 0, 0, 0 }, 4 },
+    { { 255, 255, 255, 255 }, 32 }
+};
+
 extern int ipv4_aton(const char *str, ipv4_addr_t *ip);
 extern int ipv4_ntoa(ipv4_addr_t *ip, char *str);
+extern int ipv4_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2);
+extern int ipv4_acpy(ipv4_addr_t *dst, ipv4_addr_t *src);
+extern int ipv4_is_broadcast(ipv4_addr_t *ip);
 
 #endif
