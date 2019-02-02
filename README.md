@@ -146,6 +146,29 @@ int ds2430a\_read\_status(ow\_rom\_t *rom, uint8\_t *status)
 
 ## Network libraries
 
+### ARP definitins and helper functions
+
+**Files:**  
+net/arp.h  
+net/arp.c
+
+**Functions:**  
+int arp\_pkt\_set\_oper(arp\_packet\_t *arp, uint16\_t oper)  
+int arp\_pkt\_set\_sha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
+int arp\_pkt\_set\_spa(arp\_packet\_t *arp, ipv4\_addr\_t *ip)  
+int arp\_pkt\_set\_tha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
+int arp\_pkt\_set\_tpa(arp\_packet\_t *arp, ipv4\_addr\_t *ip)  
+int arp\_pkt\_get\_oper(arp\_packet\_t *arp, uint16\_t *oper)  
+int arp\_pkt\_get\_sha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
+int arp\_pkt\_get\_spa(arp\_packet\_t *arp, ipv4\_addr\_t *ip)  
+int arp\_pkt\_get\_tha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
+int arp\_pkt\_get\_tpa(arp\_packet\_t *arp, ipv4\_addr\_t *ip)  
+int arp\_pkt\_get\_len(arp\_packet\_t *arp)  
+int arp\_buf\_to\_pkt(uint8\_t *buf, int len, arp\_packet\_t *arp)  
+int arp\_pkt\_to\_buf(arp\_packet\_t *arp, uint8\_t *buf)  
+int arp\_pkt\_create(arp\_packet\_t *arp)  
+int arp\_pkt\_valid(arp\_packet\_t *arp)
+
 ### Ethernet definitions and helper functions
 
 **Files:**  
