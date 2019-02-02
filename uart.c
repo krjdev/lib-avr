@@ -3,11 +3,11 @@
  * File Name: uart.c
  * Title    : UART (RS232) library source
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-07-14
- * Modified : 2018-12-01
+ * Modified : 2019-02-02
  * Revised  : 
- * Version  : 0.1.1.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR ATMEGA2560
  *
@@ -18,11 +18,65 @@
  */
 
 #include <stdlib.h>
+#include <avr/interrupt.h>
 #include <avr/io.h>
+
+#include "lib/fifo.h"
 #include "uart.h"
 
 #define _HIGH(u16)  ((uint8_t) (((u16) & 0xFF00) >> 8))
 #define _LOW(u16)   ((uint8_t) ((u16) & 0x00FF))
+
+#define RX_BUFSZ    32
+
+fifo_t *rx_buf_uart0;
+fifo_t *rx_buf_uart1;
+fifo_t *rx_buf_uart2;
+fifo_t *rx_buf_uart3;
+
+ISR(USART0_RX_vect)
+{
+    uint32_t tmp_sreg;
+    
+    tmp_sreg = SREG;
+    cli();
+    fifo_enqueue(rx_buf_uart0, UDR0);
+    sei();
+    SREG = tmp_sreg;
+}
+
+ISR(USART1_RX_vect)
+{
+    uint32_t tmp_sreg;
+    
+    tmp_sreg = SREG;
+    cli();
+    fifo_enqueue(rx_buf_uart1, UDR0);
+    sei();
+    SREG = tmp_sreg;
+}
+
+ISR(USART2_RX_vect)
+{
+    uint32_t tmp_sreg;
+    
+    tmp_sreg = SREG;
+    cli();
+    fifo_enqueue(rx_buf_uart2, UDR0);
+    sei();
+    SREG = tmp_sreg;
+}
+
+ISR(USART3_RX_vect)
+{
+    uint32_t tmp_sreg;
+    
+    tmp_sreg = SREG;
+    cli();
+    fifo_enqueue(rx_buf_uart3, UDR0);
+    sei();
+    SREG = tmp_sreg;
+}
 
 uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
 {
@@ -83,7 +137,9 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             return NULL; /* should never be reached */
         }
         
-        UCSR0B |= (1 << RXEN0) | (1 << TXEN0);
+        rx_buf_uart0 = fifo_init(RX_BUFSZ);
+        UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0);
+        sei();
         break;
     }
     case UART_DEV_UART1:
@@ -121,7 +177,9 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             return NULL; /* should never be reached */
         }
         
-        UCSR1B |= (1 << RXEN1) | (1 << TXEN1);
+        rx_buf_uart1 = fifo_init(RX_BUFSZ);
+        UCSR1B |= (1 << RXCIE1) | (1 << RXEN1) | (1 << TXEN1);
+        sei();
         break;
     }
     case UART_DEV_UART2:
@@ -159,7 +217,9 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             return NULL; /* should never be reached */
         }
         
-        UCSR2B |= (1 << RXEN2) | (1 << TXEN2);
+        rx_buf_uart2 = fifo_init(RX_BUFSZ);
+        UCSR2B |= (1 << RXCIE2) | (1 << RXEN2) | (1 << TXEN2);
+        sei();
         break;
     }
     case UART_DEV_UART3:
@@ -197,7 +257,9 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             return NULL; /* should never be reached */
         }
         
-        UCSR3B |= (1 << RXEN3) | (1 << TXEN3);
+        rx_buf_uart3 = fifo_init(RX_BUFSZ);
+        UCSR3B |= (1 << RXCIE3) | (1 << RXEN3) | (1 << TXEN3);
+        sei();
         break;
     }
     default:
@@ -213,18 +275,24 @@ void uart_close(uart_t *uart)
     if (!uart)
         return;
     
+    cli();
+    
     switch (uart->u_dev) {
     case UART_DEV_UART0:
-        UCSR0B &= ~(1 << RXEN0) | (1 << TXEN0); 
+        UCSR0B &= ~(1 << RXEN0) | (1 << TXEN0);
+        fifo_free(rx_buf_uart0);
         break;
     case UART_DEV_UART1:
         UCSR1B &= ~(1 << RXEN1) | (1 << TXEN1);
+        fifo_free(rx_buf_uart1);
         break;
     case UART_DEV_UART2:
         UCSR2B &= ~(1 << RXEN2) | (1 << TXEN2);
+        fifo_free(rx_buf_uart2);
         break;
     case UART_DEV_UART3:
         UCSR3B &= ~(1 << RXEN3) | (1 << TXEN3);
+        fifo_free(rx_buf_uart3);
         break;
     default:
         return;
@@ -278,7 +346,9 @@ int uart_send(uart_t *uart, uint8_t *data, int len)
 
 int uart_recv(uart_t *uart, uint8_t *data, int len)
 {
+    int ret = -1;
     int i;
+    uint8_t tmp;
     
     if (!uart)
         return -1;
@@ -292,67 +362,97 @@ int uart_recv(uart_t *uart, uint8_t *data, int len)
     for (i = 0; i < len; i++)
         switch (uart->u_dev) {
         case UART_DEV_UART0:
-            while (!(UCSR0A & (1 << RXC0)))
-                ;
-            *(data + i) = UDR0;
+            if (fifo_dequeue(rx_buf_uart0, &tmp) != -1) {
+                *(data + i) = tmp;
+                
+                if (ret == -1)
+                    ret = 1;
+                else
+                    ret++;
+            } else
+                return ret;
             break;
         case UART_DEV_UART1:
-            while (!(UCSR1A & (1 << RXC1)))
-                ;
-            *(data + i) = UDR1;
+            if (fifo_dequeue(rx_buf_uart1, &tmp) != -1) {
+                *(data + i) = tmp;
+                
+                if (ret == -1)
+                    ret = 1;
+                else
+                    ret++;
+            } else
+                return ret;
             break;
         case UART_DEV_UART2:
-            while (!(UCSR2A & (1 << RXC2)))
-                ;
-            *(data + i) = UDR2;
+            if (fifo_dequeue(rx_buf_uart2, &tmp) != -1) {
+                *(data + i) = tmp;
+                
+                if (ret == -1)
+                    ret = 1;
+                else
+                    ret++;
+            } else
+                return ret;
             break;
         case UART_DEV_UART3:
-            while (!(UCSR3A & (1 << RXC3)))
-                ;
-            *(data + i) = UDR3;
+            if (fifo_dequeue(rx_buf_uart3, &tmp) != -1) {
+                *(data + i) = tmp;
+                
+                if (ret == -1)
+                    ret = 1;
+                else
+                    ret++;
+            } else
+                return ret;
             break;
         default:
             return -1;
         }
     
-    return len;
+    return ret;
 }
 
-void uart_putc(uart_t *uart, char c)
+int uart_putc(uart_t *uart, char c)
 {
     uint8_t buf[1];
     
     if (!uart)
-        return;
+        return -1;
     
     buf[0] = (uint8_t) c;
     uart_send(uart, buf, 1);
+    return 0;
 }
 
-void uart_puts(uart_t *uart, const char *str)
+int uart_puts(uart_t *uart, const char *str)
 {
     int i = 0;
     uint8_t buf[1];
     
     if (!uart)
-        return;
+        return -1;
     
     if (!str)
-        return;
+        return -1;
     
     while (str[i] != '\0') {
         buf[0] = (uint8_t) str[i++];
         uart_send(uart, buf, 1);
     }
+    
+    return 0;
 }
 
-char uart_getc(uart_t *uart)
+int uart_getc(uart_t *uart, char *c)
 {
     uint8_t buf[1];
     
     if (!uart)
-        return 0;
+        return -1;
     
-    uart_recv(uart, buf, 1);
-    return (char) buf[0];
+    if (uart_recv(uart, buf, 1) == -1)
+        return -1;
+    
+    (*c) = (char) buf[0];
+    return 0;
 }

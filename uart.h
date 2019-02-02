@@ -3,11 +3,11 @@
  * File Name: uart.h
  * Title    : UART (RS232) library header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-07-14
- * Modified : 2018-12-01
+ * Modified : 2019-02-02
  * Revised  : 
- * Version  : 0.1.1.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR ATMEGA2560
  *
@@ -50,8 +50,8 @@ uart_t *uart_init(int dev, uint32_t baud, int datab, int stopb);
 void uart_close(uart_t *uart);
 int uart_send(uart_t *uart, uint8_t *data, int len);
 int uart_recv(uart_t *uart, uint8_t *data, int len);
-void uart_putc(uart_t *uart, char c);
-void uart_puts(uart_t *uart, const char *str);
-char uart_getc(uart_t *uart);
+int uart_putc(uart_t *uart, char c);
+int uart_puts(uart_t *uart, const char *str);
+int uart_getc(uart_t *uart, char *c);
 
 #endif
