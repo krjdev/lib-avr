@@ -7,7 +7,7 @@
  * Created  : 2018-09-24
  * Modified : 2019-02-02
  * Revised  : 
- * Version  : 0.2.0.1
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -181,7 +181,15 @@ int ethernet_frame_get_type(eth_frame_t *frame, uint16_t *type)
     return 0;
 }
 
-int ethernet_frame_get_payload(eth_frame_t *frame, uint8_t **buf, int *len)
+int ethernet_frame_get_payload_len(eth_frame_t *frame)
+{
+    if (!frame)
+        return -1;
+    
+    return frame->ef_payload_len;
+}
+
+int ethernet_frame_get_payload(eth_frame_t *frame, uint8_t **buf)
 {
     if (!frame)
         return -1;
@@ -189,11 +197,7 @@ int ethernet_frame_get_payload(eth_frame_t *frame, uint8_t **buf, int *len)
     if (!buf)
         return -1;
     
-    if (!len)
-        return -1;
-    
     (*buf) = frame->ef_payload_buf;
-    (*len) = frame->ef_payload_len;
     return 0;
 }
 
