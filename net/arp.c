@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 
+ * Modified : 2019-02-02
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -152,7 +152,7 @@ int arp_buf_to_pkt(uint8_t *buf, int len, arp_packet_t *arp)
     if (!buf)
         return -1;
     
-    if (len != 28)
+    if (len < 28)
         return -1;
     
     if (!arp)
