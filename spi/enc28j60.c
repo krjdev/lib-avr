@@ -1,13 +1,13 @@
 /**
  *
  * File Name: enc28j60.c
- * Title    : SPI device Microchip ENC28J60 ethernet controller library source
+ * Title    : SPI device Microchip ENC28J60 Ethernet controller library source
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2018-11-30
+ * Modified : 2019-02-02
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,8 +22,6 @@
 
 #include "enc28j60.h"
 #include "spi.h"
-
-#define ISCLR(reg, bit) 
 
 #define _HIGH(u16)          ((uint8_t) (((u16) & 0xFF00) >> 8))
 #define _LOW(u16)           ((uint8_t) ((u16) & 0x00FF))
@@ -325,6 +323,16 @@
     #define PHLCON_LACFG2   10 /* LEDA Configuration bit 2 */
     #define PHLCON_LACFG3   11 /* LEDA Configuration bit 3 */
 
+/* Transmit packet control byte flags */
+#define POVERRIDE   0 /* Per packet override bit */
+#define PCRCEN      1 /* Per packet CRC enable bit */
+#define PPADEN      2 /* Per packet padding enable bit */
+#define PHUGEEN     3 /* Per packet huge frame enable bit */
+
+/* Transmit status vector */
+
+uint16_t pkg_next;
+
 static int select_bank(uint8_t bank)
 {
     uint8_t send[2];
@@ -507,52 +515,15 @@ static void write_buffer(uint16_t addr, uint8_t *buf, int len)
     ENC28J60_DISABLE;
 }
 
-void enc28j60_set_mac(mac_addr_t *addr)
-{
-    write_reg(BANK3, MAADR1, addr->ma_byte0);
-    write_reg(BANK3, MAADR2, addr->ma_byte1);
-    write_reg(BANK3, MAADR3, addr->ma_byte2);
-    write_reg(BANK3, MAADR4, addr->ma_byte3);
-    write_reg(BANK3, MAADR5, addr->ma_byte4);
-    write_reg(BANK3, MAADR6, addr->ma_byte5);
-}
-
-void enc28j60_get_mac(mac_addr_t *addr)
-{
-    uint8_t tmp;
-    
-    if (!addr)
-        return;
-    
-    read_mii_mac_reg(BANK3, MAADR1, &tmp);
-    addr->ma_byte0 = tmp;
-    read_mii_mac_reg(BANK3, MAADR2, &tmp);
-    addr->ma_byte1 = tmp;
-    read_mii_mac_reg(BANK3, MAADR3, &tmp);
-    addr->ma_byte2 = tmp;
-    read_mii_mac_reg(BANK3, MAADR4, &tmp);
-    addr->ma_byte3 = tmp;
-    read_mii_mac_reg(BANK3, MAADR5, &tmp);
-    addr->ma_byte4 = tmp;
-    read_mii_mac_reg(BANK3, MAADR6, &tmp);
-    addr->ma_byte5 = tmp;
-}
-
-uint8_t enc28j60_get_revision(void)
-{
-    uint8_t tmp;
-    
-    read_reg(BANK3, EREVID, &tmp);
-    return tmp;
-}
-
 void enc28j60_init(int mode, mac_addr_t *addr)
 {
     uint8_t tmp;
     
+    pkg_next = RX_START;
+    
     /* Init SPI interface */
     ENC28J60_CSCONFIG;
-    spi_master_init(SPI_FOSC_2);
+    spi_master_init(SPI_MODE_0, SPI_FOSC_2);
     
     /* Reset controller */
     tmp = SPI_SRC;
@@ -620,19 +591,132 @@ void enc28j60_init(int mode, mac_addr_t *addr)
     write_reg(BANK0, ECON1, (1 << ECON1_RXEN) | (1 << ECON1_CSUMEN));
 }
 
-int enc28j60_link_up(void)
+int enc28j60_send(eth_frame_t *frame)
 {
+    int len;
+    uint8_t *p;
+    uint8_t tmp;
+    
+    len = ethernet_frame_get_len(frame);
+    p = (uint8_t *) malloc(len);
+    
+    if (!p)
+        return -1;
+    
+    ethernet_frm_to_buf(frame, p);
+    write_buffer(TX_START, 0x00, 1);
+    write_buffer((TX_START + 1), p, len);
+    free(p);
+    
+    write_reg(BANK0, ETXNDL, _LOW((TX_START + len)));
+    write_reg(BANK0, ETXNDH, _HIGH((TX_START + len)));
+    
+    /* transmit packet */
+    read_reg(BANK0, ECON1, &tmp);
+    tmp |= (1 << ECON1_TXRTS);
+    write_reg(BANK0, ECON1, tmp);
+    
+    read_reg(BANK0, ECON1, &tmp);
+    
+    while (_ISCLR(tmp, ECON1_TXRTS))
+        read_reg(BANK0, ECON1, &tmp);
+
+    read_reg(BANK0, ESTAT, &tmp);
+    
+    if (_ISSET(tmp, ESTAT_TXABRT))
+        return -1;
+    
+    return 0;
+}
+
+int enc28j60_recv(eth_frame_t *frame)
+{
+    uint16_t pkg_start;
+    uint16_t pkg_len;
+    uint16_t frm_len;
     uint16_t tmp;
+    uint8_t buf[2];
+    uint8_t *p;
+    uint8_t depp;
     
-    read_phy_reg(PHSTAT1, &tmp);
+    if (enc28j60_get_pkg_count() < 1)
+        return -1;
     
-    if (tmp & (1 << PHSTAT1_LLSTAT))
+    pkg_start = pkg_next;
+    read_buffer(pkg_next, buf, 2);
+    pkg_next = buf[0];
+    tmp = buf[1];
+    pkg_next |= (tmp << 8);
+    pkg_len = pkg_next - pkg_start;
+    
+    p = (uint8_t *) malloc(pkg_len);
+    
+    if (!p)
+        return -1;
+    
+    read_buffer(pkg_start, p, pkg_len);
+    frm_len = p[2];
+    tmp = p[3];
+    frm_len |= (tmp << 8);
+    ethernet_buf_to_frm(&p[6], frm_len - 4, frame);
+    free(p);
+    write_reg(BANK0, ERXRDPTL, _LOW(pkg_next));
+    write_reg(BANK0, ERXRDPTH, _HIGH(pkg_next));
+    read_reg(BANK0, ECON2, &depp);
+    depp |= (1 << ECON2_PKTDEC);
+    write_reg(BANK0, ECON2, depp);
+    return (frm_len - 4);
+}
+
+void enc28j60_set_mac(mac_addr_t *addr)
+{
+    if (!addr)
+        return;
+    
+    write_reg(BANK3, MAADR1, addr->ma_byte0);
+    write_reg(BANK3, MAADR2, addr->ma_byte1);
+    write_reg(BANK3, MAADR3, addr->ma_byte2);
+    write_reg(BANK3, MAADR4, addr->ma_byte3);
+    write_reg(BANK3, MAADR5, addr->ma_byte4);
+    write_reg(BANK3, MAADR6, addr->ma_byte5);
+}
+
+void enc28j60_get_mac(mac_addr_t *addr)
+{
+    uint8_t tmp;
+    
+    if (!addr)
+        return;
+    
+    read_mii_mac_reg(BANK3, MAADR1, &tmp);
+    addr->ma_byte0 = tmp;
+    read_mii_mac_reg(BANK3, MAADR2, &tmp);
+    addr->ma_byte1 = tmp;
+    read_mii_mac_reg(BANK3, MAADR3, &tmp);
+    addr->ma_byte2 = tmp;
+    read_mii_mac_reg(BANK3, MAADR4, &tmp);
+    addr->ma_byte3 = tmp;
+    read_mii_mac_reg(BANK3, MAADR5, &tmp);
+    addr->ma_byte4 = tmp;
+    read_mii_mac_reg(BANK3, MAADR6, &tmp);
+    addr->ma_byte5 = tmp;
+}
+
+int enc28j60_is_link_up(void)
+{
+    uint16_t ll;
+    uint16_t l;
+    
+    read_phy_reg(PHSTAT1, &ll);
+    read_phy_reg(PHSTAT2, &l);
+    
+    if (_ISSET(l, PHSTAT2_LSTAT))
         return 1;
     else
         return 0;
 }
 
-int enc28j60_frame_count(void)
+size_t enc28j60_get_pkg_count(void)
 {
     uint8_t tmp;
     
@@ -640,7 +724,7 @@ int enc28j60_frame_count(void)
     return tmp;
 }
 
-uint16_t enc28j60_free_space(void)
+size_t enc28j60_get_free_space(void)
 {
     uint8_t tmp;
     uint16_t p, rdp, wrp;
@@ -664,36 +748,22 @@ uint16_t enc28j60_free_space(void)
         return (rdp - wrp - 1);
 }
 
-int enc28j60_send(eth_frame_t *frame)
+char *enc28j60_get_chip_revision(void)
 {
-    int len;
-    uint8_t *p;
     uint8_t tmp;
-    uint8_t ctrl = (1 << PCRCEN);
+      
+    read_reg(BANK3, EREVID, &tmp);
     
-    ethernet_frame_to_buffer(frame, &p, &len);
-    
-    write_buffer(TX_START, &ctrl, 1);
-    write_buffer((TX_START + 1), p, len);
-    free(p);
-    
-    write_reg(BANK0, ETXNDL, _LOW((TX_START + len)));
-    write_reg(BANK0, ETXNDH, _HIGH((TX_START + len)));
-    
-    /* transmit packet */
-    read_reg(BANK0, ECON1, &tmp);
-    tmp |= (1 << ECON1_TXRTS);
-    write_reg(BANK0, ECON1, tmp);
-    
-    read_reg(BANK0, ECON1, &tmp);
-    
-    while (_ISCLR(tmp, ECON1_TXRTS))
-        read_reg(BANK0, ECON1, &tmp);
-
-    read_reg(BANK0, ESTAT, &tmp);
-    
-    if (_ISSET(tmp, ESTAT_TXABRT))
-        return -1;
-    
-    return 0;
+    switch (tmp) {
+    case 0x02:
+        return "B1";
+    case 0x04:
+        return "B4";
+    case 0x05:
+        return "B5";
+    case 0x06:
+        return "B7";
+    default:
+        return "UNKNOWN";
+    }
 }
