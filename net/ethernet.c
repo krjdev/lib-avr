@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-01-30
+ * Modified : 2019-02-02
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -212,6 +212,8 @@ int ethernet_frame_free(eth_frame_t *frame)
     
     if (frame->ef_payload_len > 0)
         free(frame->ef_payload_buf);
+    
+    return 0;
 }
 
 int ethernet_buf_to_frm(uint8_t *buf, int len, eth_frame_t *frame)
