@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-01-30
+ * Modified : 2019-02-02
  * Revised  : 
- * Version  : 0.2.1.0
+ * Version  : 0.2.2.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -55,26 +55,6 @@ typedef struct ipv4_hdr {
     ipv4_addr_t ih_src;
     ipv4_addr_t ih_dst;
 } ipv4_hdr_t;
-
-ipv4_range_t rfc6890[] = {
-    { { 0, 0, 0, 0 }, 8 }, 
-    { { 10, 0, 0, 0 }, 8 }, 
-    { { 100, 64, 0, 0 }, 10 }, 
-    { { 127, 0, 0, 0 }, 8 }, 
-    { { 169, 254, 0, 0 }, 16 }, 
-    { { 172, 16, 0, 0 }, 12 }, 
-    { { 192, 0, 0, 0 }, 24 }, 
-    { { 192, 0, 0, 0 }, 29 }, 
-    { { 192, 0, 2, 0 }, 24 }, 
-    { { 192, 88, 99, 0 }, 24 }, 
-    { { 192, 168, 0, 0 }, 16 }, 
-    { { 198, 18, 0, 0 }, 15 },
-    { { 198, 51, 100, 0 }, 24 }, 
-    { { 203, 0, 113, 0 }, 24 }, 
-    { { 224, 0, 0, 0 }, 4 }, 
-    { { 240, 0, 0, 0 }, 4 },
-    { { 255, 255, 255, 255 }, 32 }
-};
 
 extern int ipv4_aton(const char *str, ipv4_addr_t *ip);
 extern int ipv4_ntoa(ipv4_addr_t *ip, char *str);
