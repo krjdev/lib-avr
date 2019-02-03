@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-07-14
- * Modified : 2019-02-02
+ * Modified : 2019-02-03
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR ATMEGA2560
  *
@@ -124,7 +124,8 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             UCSR0B = (1 << UCSZ02);
             break;
         default:
-            return NULL; /* should never be reached */
+            free(p);
+            return NULL;
         }
         
         switch (p->u_stopbit) {
@@ -134,10 +135,17 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             UCSR0C |= (1 << USBS0);
             break;
         default:
-            return NULL; /* should never be reached */
+            free(p);
+            return NULL;
         }
         
         rx_buf_uart0 = fifo_init(RX_BUFSZ);
+        
+        if (!rx_buf_uart0) {
+            free(p);
+            return NULL;
+        }
+        
         UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0);
         sei();
         break;
@@ -164,7 +172,8 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             UCSR1B = (1 << UCSZ12);
             break;
         default:
-            return NULL; /* should never be reached */
+            free(p);
+            return NULL;
         }
         
         switch (p->u_stopbit) {
@@ -174,10 +183,17 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             UCSR1C |= (1 << USBS1);
             break;
         default:
-            return NULL; /* should never be reached */
+            free(p);
+            return NULL;
         }
         
         rx_buf_uart1 = fifo_init(RX_BUFSZ);
+        
+        if (!rx_buf_uart1) {
+            free(p);
+            return NULL;
+        }
+        
         UCSR1B |= (1 << RXCIE1) | (1 << RXEN1) | (1 << TXEN1);
         sei();
         break;
@@ -204,7 +220,8 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             UCSR2B = (1 << UCSZ22);
             break;
         default:
-            return NULL; /* should never be reached */
+            free(p);
+            return NULL;
         }
         
         switch (p->u_stopbit) {
@@ -214,10 +231,17 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             UCSR2C |= (1 << USBS2);
             break;
         default:
-            return NULL; /* should never be reached */
+            free(p);
+            return NULL;
         }
         
         rx_buf_uart2 = fifo_init(RX_BUFSZ);
+        
+        if (!rx_buf_uart2) {
+            free(p);
+            return NULL;
+        }
+        
         UCSR2B |= (1 << RXCIE2) | (1 << RXEN2) | (1 << TXEN2);
         sei();
         break;
@@ -244,7 +268,8 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             UCSR3B = (1 << UCSZ32);
             break;
         default:
-            return NULL; /* should never be reached */
+            free(p);
+            return NULL;
         }
         
         switch (p->u_stopbit) {
@@ -254,10 +279,17 @@ uart_t *uart_init(int dev, uint32_t baud, int databit, int stopbit)
             UCSR3C |= (1 << USBS3);
             break;
         default:
-            return NULL; /* should never be reached */
+            free(p);
+            return NULL;
         }
         
         rx_buf_uart3 = fifo_init(RX_BUFSZ);
+        
+        if (!rx_buf_uart3) {
+            free(p);
+            return NULL;
+        }
+        
         UCSR3B |= (1 << RXCIE3) | (1 << RXEN3) | (1 << TXEN3);
         sei();
         break;

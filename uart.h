@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-07-14
- * Modified : 2019-02-02
+ * Modified : 2019-02-03
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR ATMEGA2560
  *
