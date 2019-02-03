@@ -49,8 +49,8 @@ i2c/m24cxx.h
 i2c/m24cxx.c
 
 **Functions:**  
-void m24cxx_init(void)  
-int m24cxx_write(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)  
+void m24cxx\_init(void)  
+int m24cxx\_write(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)  
 int m24cxx_read(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)
 
 ## SPI Interface (Master mode only)
@@ -64,7 +64,7 @@ int spi\_master\_init(int mode, int speed)
 int spi\_master\_send(uint8\_t *data, int len)  
 int spi\_master\_recv(uint8\_t *data, int len)
 
-### Microchip ENC28J60 Ethernet controller driver
+### Microchip ENC28J60 Ethernet controller driver (alpha version)
 
 **Files:**  
 spi/enc28j60.h  
