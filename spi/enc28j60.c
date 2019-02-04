@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2019-02-02
+ * Modified : 2019-02-04
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,16 +23,18 @@
 #include "enc28j60.h"
 #include "spi.h"
 
+#define VERSION         "0.3.0.0"
+
 #define _HIGH(u16)          ((uint8_t) (((u16) & 0xFF00) >> 8))
 #define _LOW(u16)           ((uint8_t) ((u16) & 0x00FF))
 #define _ISCLR(reg, bit)    (((reg) | (1 << (bit))) ^ (reg))
 #define _ISSET(reg, bit)    ((reg) & (1 << (bit)))
 
-#define MAX_FRAMESZ     1500
+#define MAX_FRAMESZ     1518
 
 #define RX_START        0x0000
-#define RX_END          0x1A00
-#define TX_START        0x1A02
+#define RX_END          0x19FF
+#define TX_START        0x1A00
 #define TX_END          0x1FFF
 
 #define ENC28J60_BUFSZ  8192
@@ -323,15 +325,73 @@
     #define PHLCON_LACFG2   10 /* LEDA Configuration bit 2 */
     #define PHLCON_LACFG3   11 /* LEDA Configuration bit 3 */
 
-/* Transmit packet control byte flags */
+/* Transmit control byte flags */
 #define POVERRIDE   0 /* Per packet override bit */
 #define PCRCEN      1 /* Per packet CRC enable bit */
 #define PPADEN      2 /* Per packet padding enable bit */
 #define PHUGEEN     3 /* Per packet huge frame enable bit */
 
 /* Transmit status vector */
+#define TSV_BCNTL   0 /* Transmit Byte Count Low Byte */
+#define TSV_BCNTH   1 /* Transmit Byte Count High Byte */
+#define TSV_BYTE2   2
 
-uint16_t pkg_next;
+    #define TSV_COLCNT_MASK     0x0F /* Transmit Collision Count Mask */
+    #define TSV_CRCERR          4 /* Transmit CRC Error */
+    #define TSV_LENCHK          5 /* Transmit Length Check Error */
+    #define TSV_LENOOR          6 /* Transmit Length Out of Range */
+    #define TSV_DONE            7 /* Transmit Done */
+
+#define TSV_BYTE3   3
+
+    #define TSV_MULTICAST       0 /* Transmit Multicast */
+    #define TSV_BROADCAST       1 /* Transmit Broadcast */
+    #define TSV_PKTDEFER        2 /* Transmit Packet Defer */
+    #define TSV_EXCDEFER        3 /* Transmit Excessive Defer */
+    #define TSV_EXCCOLLI        4 /* Transmit Excessive Collision */
+    #define TSV_LATECOLL        5 /* Transmit Late Collision */
+    #define TSV_GIANT           6 /* Transmit Giant */
+    #define TSV_UNDERRUN        7 /* Transmit Underrun */
+
+#define TSV_TB0     4 /* Total Bytes Transmitted on Wire Byte0 LSB */
+#define TSV_TB1     5 /* Total Bytes Transmitted on Wire Byte1 */
+#define TSV_TB2     6 /* Total Bytes Transmitted on Wire Byte2 */
+#define TSV_TB3     7 /* Total Bytes Transmitted on Wire Byte3 MSB */
+#define TSV_BYTE8   8
+
+    #define TSV_CTRL            0 /* Transmit Control Frame */
+    #define TSV_PAUSE           1 /* Transmit Pause Control Frame */
+    #define TSV_BACKPRE         2 /* Backpressure Applied */
+    #define TSV_VLAN            3 /* Transmit VLAN Tagged Frame */
+
+/* Receive status vector */
+#define RSV_BCNTL   0 /* Received Byte Count Low */
+#define RSV_BCNTH   1 /* Received Byte Count High */
+#define RSV_BYTE2   2
+
+    #define RSV_LONGDROP        0 /* Long Event/Drop Event */
+    #define RSV_CARRIER         2 /* Carrier Event Previously Seen */
+    #define RSV_CRCERR          4 /*  CRC Error */
+    #define RSV_LENCHK          5 /* Length Check Error */
+    #define RSV_LENOOR          6 /*  Receive Multicast Packet */
+    #define RSV_OK              7 /* Received Ok */
+    
+#define RSV_BYTE3   3
+
+    #define RSV_MULTICAST       0 /* Receive Multicast Packet */
+    #define RSV_BROADCAST       1 /* Receive Broadcast Packet */
+    #define RSV_DRIBBLE         2 /* Dribble Nibble */
+    #define RSV_CTRL            3 /* Receive Control Frame */
+    #define RSV_PAUSE           4 /* Receive Pause Control Frame */
+    #define RSV_UNKNOWN         5 /* Receive Unknown Opcode */
+    #define RSV_VLAN            6 /* Receive VLAN Type Detected */
+
+
+volatile int error;
+volatile uint16_t ptr_pkg_next;
+volatile uint32_t cnt_frm_rx;
+volatile uint32_t cnt_frm_tx;
+volatile uint32_t cnt_frm_err;
 
 static int select_bank(uint8_t bank)
 {
@@ -369,6 +429,7 @@ static int select_bank(uint8_t bank)
         tmp |= (1 << ECON1_BSEL1);
         break;
     default:
+        error = ERROR_INTERNAL;
         return -1;
     }
     
@@ -380,15 +441,19 @@ static int select_bank(uint8_t bank)
     return 0;
 }
 
-static void read_reg(uint8_t bank, uint8_t reg, uint8_t *val)
+static int read_reg(uint8_t bank, uint8_t reg, uint8_t *val)
 {
     uint8_t send;
     
-    if (select_bank(bank) == -1)
-        return;
+    if (select_bank(bank) == -1) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
-    if (!val)
-        return;
+    if (!val) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
     send = SPI_RCR | reg;
     ENC28J60_ENABLE;
@@ -396,18 +461,23 @@ static void read_reg(uint8_t bank, uint8_t reg, uint8_t *val)
     spi_master_recv(val, 1);
     _delay_us(1);
     ENC28J60_DISABLE;
+    return 0;
 }
 
-static void read_mii_mac_reg(uint8_t bank, uint8_t reg, uint8_t *val)
+static int read_mii_mac_reg(uint8_t bank, uint8_t reg, uint8_t *val)
 {
     uint8_t send;
     uint8_t recv[2];
     
-    if (select_bank(bank) == -1)
-        return;
+    if (select_bank(bank) == -1) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
-    if (!val)
-        return;
+    if (!val) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
     send = SPI_RCR | reg;
     ENC28J60_ENABLE;
@@ -416,14 +486,17 @@ static void read_mii_mac_reg(uint8_t bank, uint8_t reg, uint8_t *val)
     _delay_us(1);
     ENC28J60_DISABLE;
     (*val) = recv[1];
+    return 0;
 }
 
-static void write_reg(uint8_t bank, uint8_t reg, uint8_t val)
+static int write_reg(uint8_t bank, uint8_t reg, uint8_t val)
 {
     uint8_t send[2];
     
-    if (select_bank(bank) == -1)
-        return;
+    if (select_bank(bank) == -1) {
+        return -1;
+        error = ERROR_INTERNAL;
+    }
     
     send[0] = SPI_WCR | reg;
     send[1] = val;
@@ -431,56 +504,84 @@ static void write_reg(uint8_t bank, uint8_t reg, uint8_t val)
     spi_master_send(&send[0], 2);
     _delay_us(1);
     ENC28J60_DISABLE;
+    return 0;
 }
 
-static void read_phy_reg(uint8_t reg, uint16_t *val)
+static int read_phy_reg(uint8_t reg, uint16_t *val)
 {
     uint8_t tmp;
+    int timeout = 10000; /* 100ms Timeout */
     
-    if (!val)
-        return;
+    if (!val) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
     write_reg(BANK2, MIREGADR, reg);
     write_reg(BANK2, MICMD, (1 << MICMD_MIIRD));
-    _delay_us(20);
     read_mii_mac_reg(BANK3, MISTAT, &tmp);
     
-    while (tmp & (1 << MISTAT_BUSY))
+    while (_ISSET(tmp, MISTAT_BUSY)) {
         read_mii_mac_reg(BANK3, MISTAT, &tmp);
+        _delay_us(10);
+        timeout--;
+        
+        if (timeout == 0) {
+            error = ERROR_INTERNAL;
+            return -1;
+        }
+    }
     
     write_reg(BANK2, MICMD, 0x00);
     read_mii_mac_reg(BANK2, MIRDH, &tmp);
     (*val) |= (tmp << 8);
     read_mii_mac_reg(BANK2, MIRDL, &tmp);
     (*val) |= tmp;
+    return 0;
 }
 
-static void write_phy_reg(uint8_t reg, uint16_t val)
+static int write_phy_reg(uint8_t reg, uint16_t val)
 {
     uint8_t tmp;
+    int timeout = 10000; /* 100ms Timeout */
     
     write_reg(BANK2, MIREGADR, reg);
     write_reg(BANK2, MIWRL, _LOW(val));
     write_reg(BANK2, MIWRH, _HIGH(val));
-    _delay_us(100);
     read_mii_mac_reg(BANK3, MISTAT, &tmp);
     
-    while (tmp & (1 << MISTAT_BUSY))
+    while (_ISSET(tmp, MISTAT_BUSY)) {
         read_mii_mac_reg(BANK3, MISTAT, &tmp);
+        _delay_us(10);
+        timeout--;
+        
+        if (timeout == 0) {
+            error = ERROR_INTERNAL;
+            return -1;
+        }
+    }
+    
+    return 0;
 }
 
-static void read_buffer(uint16_t addr, uint8_t *buf, int len)
+static int read_buffer(uint16_t addr, uint8_t *buf, int len)
 {
     uint8_t send;
     
-    if (addr > (ENC28J60_BUFSZ - 1))
-        return;
+    if (addr > (ENC28J60_BUFSZ - 1)) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
-    if (!buf)
-        return;
+    if (!buf) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
-    if (len > ENC28J60_BUFSZ)
-        return;
+    if (len > ENC28J60_BUFSZ) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
     write_reg(BANK0, ERDPTL, _LOW(addr));
     write_reg(BANK0, ERDPTH, _HIGH(addr));
@@ -490,20 +591,27 @@ static void read_buffer(uint16_t addr, uint8_t *buf, int len)
     spi_master_recv(buf, len);
     _delay_us(1);
     ENC28J60_DISABLE;
+    return 0;
 }
 
-static void write_buffer(uint16_t addr, uint8_t *buf, int len)
+static int write_buffer(uint16_t addr, uint8_t *buf, int len)
 {
     uint8_t send;
     
-    if (addr > (ENC28J60_BUFSZ - 1))
-        return;
+    if (addr > (ENC28J60_BUFSZ - 1)) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
-    if (!buf)
-        return;
+    if (!buf) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
-    if (len > ENC28J60_BUFSZ)
-        return;
+    if (len > ENC28J60_BUFSZ) {
+        error = ERROR_INTERNAL;
+        return -1;
+    }
     
     write_reg(BANK0, EWRPTL, _LOW(addr));
     write_reg(BANK0, EWRPTH, _HIGH(addr));
@@ -513,202 +621,468 @@ static void write_buffer(uint16_t addr, uint8_t *buf, int len)
     spi_master_send(buf, len);
     _delay_us(1);
     ENC28J60_DISABLE;
+    return 0;
 }
 
-void enc28j60_init(int mode, mac_addr_t *addr)
+/* ENC28J60 RX BUG workaround */
+static int check_rx_smash(void)
 {
     uint8_t tmp;
     
-    pkg_next = RX_START;
+    if (enc28j60_get_free_rx_space() == 1529) {
+        tmp = (1 << ECON1_RXRST);
+        
+        if (write_reg(BANK0, ECON1, tmp) == -1)
+            return -1;
+    
+        _delay_us(10);
+        
+        if (write_reg(BANK0, ERXRDPTL, _LOW(RX_END)) == -1)
+            return -1;
+    
+        if (write_reg(BANK0, ERXRDPTH, _HIGH(RX_END)) == -1)
+            return -1;
+    
+        /* Enable receiving packets */
+        tmp = ((1 << ECON1_RXEN) | (1 << ECON1_CSUMEN));
+    
+        if (write_reg(BANK0, ECON1, tmp) == -1)
+            return -1;
+    }
+    
+    cnt_frm_err++;
+    return 0;
+}
+
+int enc28j60_init(int mode, mac_addr_t *addr)
+{
+    uint8_t tmp;
+    int timeout = 10000; /* 100ms Timeout */
+    
+    error = ERROR_NO;
+    
+    if (!addr) {
+        error = ERROR_INVAL;
+        return -1;
+    }
+    
+    ptr_pkg_next = RX_START;
+    cnt_frm_rx = 0;
+    cnt_frm_tx = 0;
+    cnt_frm_err = 0;
     
     /* Init SPI interface */
     ENC28J60_CSCONFIG;
     spi_master_init(SPI_MODE_0, SPI_FOSC_2);
     
-    /* Reset controller */
+    /* Soft reset controller */
     tmp = SPI_SRC;
     spi_master_send(&tmp, 1);
-    _delay_ms(2);
+    _delay_ms(10);
 
     /* Receive Buffer */
-    write_reg(BANK0, ERXSTL, _LOW(RX_START));
-    write_reg(BANK0, ERXSTH, _HIGH(RX_START));
-    write_reg(BANK0, ERXNDL, _LOW(RX_END));
-    write_reg(BANK0, ERXNDH, _HIGH(RX_END));
-    
-    /* Transmit Buffer */
-    write_reg(BANK0, ETXSTL, _LOW(TX_START));
-    write_reg(BANK0, ETXSTH, _HIGH(TX_START));
-    
-    /* Receive Filters */
-    
-    /* Waiting for OST */
-    read_reg(BANK0, ESTAT, &tmp);
-    
-    while (!(tmp & (1 << ESTAT_CLKRDY)))
-        read_reg(BANK0, ESTAT, &tmp);
-    
-    /* MAC Initialization Settings */
-    write_reg(BANK2, MACON1, (1 << MACON1_MARXEN) | 
-                             (1 << MACON1_TXPAUS) | 
-                             (1 << MACON1_RXPAUS));
-    
-    if (mode == MODE_FDPX)
-        write_reg(BANK2, MACON3, (1 << MACON3_FULDPX) | 
-                                 (1 << MACON3_FRMLNEN) | 
-                                 (1 << MACON3_TXCRCEN) | 
-                                 (1 << MACON3_PADCFG0) | 
-                                 (1 << MACON3_PADCFG2));
-    else
-        write_reg(BANK2, MACON3, (1 << MACON3_FRMLNEN) |
-                                 (1 << MACON3_TXCRCEN) | 
-                                 (1 << MACON3_PADCFG0) |
-                                 (1 << MACON3_PADCFG2));
-    
-    write_reg(BANK2, MACON4, (1 << MACON4_DEFER));
-    write_reg(BANK2, MAMXFLL, _LOW(MAX_FRAMESZ));
-    write_reg(BANK2, MAMXFLH, _HIGH(MAX_FRAMESZ));
-    
-    if (mode == MODE_FDPX)
-        write_reg(BANK2, MABBIPG, 0x15);
-    else
-        write_reg(BANK2, MABBIPG, 0x12);
-    
-    write_reg(BANK2, MAIPGL, 0x12);
-    
-    if (mode == MODE_HDPX)
-        write_reg(BANK2, MAIPGH, 0x0C);
-    
-    enc28j60_set_mac(addr);
-    
-    /* PHY Initialization Settings */
-    if (mode == MODE_FDPX)
-        write_phy_reg(PHCON1, (1 << PHCON1_PDPXMD));
-    else
-        write_phy_reg(PHCON1, 0x0000);
-    
-    /* Enable receiving packets */
-    write_reg(BANK0, ECON1, (1 << ECON1_RXEN) | (1 << ECON1_CSUMEN));
-}
-
-int enc28j60_send(eth_frame_t *frame)
-{
-    int len;
-    uint8_t *p;
-    uint8_t tmp;
-    
-    len = ethernet_frame_get_len(frame);
-    p = (uint8_t *) malloc(len);
-    
-    if (!p)
+    if (write_reg(BANK0, ERXSTL, _LOW(RX_START)) == -1)
         return -1;
     
-    ethernet_frm_to_buf(frame, p);
-    write_buffer(TX_START, 0x00, 1);
-    write_buffer((TX_START + 1), p, len);
-    free(p);
+    if (write_reg(BANK0, ERXSTH, _HIGH(RX_START)) == -1)
+        return -1;
     
-    write_reg(BANK0, ETXNDL, _LOW((TX_START + len)));
-    write_reg(BANK0, ETXNDH, _HIGH((TX_START + len)));
+    if (write_reg(BANK0, ERXRDPTL, _LOW(RX_END)) == -1)
+        return -1;
     
-    /* transmit packet */
-    read_reg(BANK0, ECON1, &tmp);
-    tmp |= (1 << ECON1_TXRTS);
-    write_reg(BANK0, ECON1, tmp);
+    if (write_reg(BANK0, ERXRDPTH, _HIGH(RX_END)) == -1)
+        return -1;
     
-    read_reg(BANK0, ECON1, &tmp);
+    if (write_reg(BANK0, ERXNDL, _LOW(RX_END)) == -1)
+        return -1;
     
-    while (_ISCLR(tmp, ECON1_TXRTS))
-        read_reg(BANK0, ECON1, &tmp);
-
-    read_reg(BANK0, ESTAT, &tmp);
+    if (write_reg(BANK0, ERXNDH, _HIGH(RX_END)) == -1)
+        return -1;
     
-    if (_ISSET(tmp, ESTAT_TXABRT))
+    /* Transmit Buffer */
+    if (write_reg(BANK0, ETXSTL, _LOW(TX_START)) == -1)
+        return -1;
+    
+    if (write_reg(BANK0, ETXSTH, _HIGH(TX_START)) == -1)
+        return -1;
+    
+    /* Waiting for OST */
+    if (read_reg(BANK0, ESTAT, &tmp) == -1)
+        return -1;
+    
+    while (_ISCLR(tmp, ESTAT_CLKRDY)) {
+        if (read_reg(BANK0, ESTAT, &tmp) == -1)
+            return -1;
+        
+        _delay_us(10);
+        timeout--;
+        
+        if (timeout == 0) {
+            error = ERROR_TIMEOUT;
+            return -1;
+        }
+    }
+    
+    /* MAC Initialization Settings */
+    tmp = ((1 << MACON1_MARXEN) | 
+           (1 << MACON1_TXPAUS) | 
+           (1 << MACON1_RXPAUS));
+    
+    if (write_reg(BANK2, MACON1, tmp) == -1)
+        return -1;
+    
+    if (mode == MODE_FDPX) {
+        tmp = ((1 << MACON3_FULDPX) | 
+               (1 << MACON3_FRMLNEN) | 
+               (1 << MACON3_TXCRCEN) | 
+               (1 << MACON3_PADCFG0) | 
+               (1 << MACON3_PADCFG2));
+        
+        if (write_reg(BANK2, MACON3, tmp) == -1)
+            return -1;
+    } else {
+        tmp = ((1 << MACON3_FRMLNEN) | 
+               (1 << MACON3_TXCRCEN) | 
+               (1 << MACON3_PADCFG0) | 
+               (1 << MACON3_PADCFG2));
+        
+        if (write_reg(BANK2, MACON3, tmp) == -1)
+            return -1;
+    }
+    
+    if (write_reg(BANK2, MACON4, (1 << MACON4_DEFER)) == -1)
+        return -1;
+    
+    if (write_reg(BANK2, MAMXFLL, _LOW(MAX_FRAMESZ)) == -1)
+        return -1;
+    
+    if (write_reg(BANK2, MAMXFLH, _HIGH(MAX_FRAMESZ)) == -1)
+        return -1;
+    
+    if (mode == MODE_FDPX) {
+        if (write_reg(BANK2, MABBIPG, 0x15) == -1)
+            return -1;
+    } else {
+        if (write_reg(BANK2, MABBIPG, 0x12) == -1)
+            return -1;
+    }
+    
+    if (write_reg(BANK2, MAIPGL, 0x12) == -1)
+        return -1;
+    
+    if (mode == MODE_HDPX) {
+        if (write_reg(BANK2, MAIPGH, 0x0C) == -1)
+            return -1;
+    }
+    
+    if (enc28j60_set_mac(addr) == -1)
+        return -1;
+    
+    /* PHY Initialization Settings */
+    if (mode == MODE_FDPX) {
+        if (write_phy_reg(PHCON1, (1 << PHCON1_PDPXMD)) == -1)
+            return -1;
+    } else {
+        if (write_phy_reg(PHCON1, 0x0000) == -1)
+            return -1;
+    }
+    
+    /* Enable receiving packets */
+    tmp = ((1 << ECON1_RXEN) | (1 << ECON1_CSUMEN));
+    
+    if (write_reg(BANK0, ECON1, tmp) == -1)
         return -1;
     
     return 0;
 }
 
-int enc28j60_recv(eth_frame_t *frame)
+int enc28j60_send(eth_frame_t *frame)
 {
-    uint16_t pkg_start;
-    uint16_t pkg_len;
-    uint16_t frm_len;
-    uint16_t tmp;
-    uint8_t buf[2];
+    int ret;
+    int frm_len;
+    int timeout = 10000; /* 1s timeout */
     uint8_t *p;
-    uint8_t depp;
+    uint8_t tmp;
+    uint8_t tsv[7];
     
-    if (enc28j60_get_pkg_count() < 1)
+    
+    if (!frame) {
+        error = ERROR_INVAL;
+        return -1;
+    }
+    
+    frm_len = ethernet_frame_get_len(frame);
+    
+    if (frm_len == -1) {
+        error = ERROR_ETHLIB;
+        return -1;
+    }
+    
+    if (frm_len > MAX_FRAMESZ) {
+        error = ERROR_TX_FRMTOBIG;
+        return -1;
+    }
+    
+    p = (uint8_t *) malloc(frm_len);
+    
+    if (!p) {
+        error = ERROR_NOMEM;
+        return -1;
+    }
+    
+    if (ethernet_frm_to_buf(frame, p) == -1) {
+        error = ERROR_ETHLIB;
+        free(p);
+        return -1;
+    }
+    
+    /* write control byte to buffer */
+    tmp = 0x00;
+    
+    if (write_buffer(TX_START, &tmp, 1) == -1) {
+        return -1;
+    }
+    
+    /* write frame to buffer */
+    if (write_buffer((TX_START + 1), p, frm_len) == -1) {
+        free(p);
+        return -1;
+    }
+    
+    free(p);
+    
+    if (write_reg(BANK0, ETXNDL, _LOW((TX_START + frm_len))) == -1)
         return -1;
     
-    pkg_start = pkg_next;
-    read_buffer(pkg_next, buf, 2);
-    pkg_next = buf[0];
-    tmp = buf[1];
-    pkg_next |= (tmp << 8);
-    pkg_len = pkg_next - pkg_start;
+    if (write_reg(BANK0, ETXNDH, _HIGH((TX_START + frm_len))) == -1)
+        return -1;
+    
+    /* transmit packet */
+    if (read_reg(BANK0, ECON1, &tmp) == -1)
+        return -1;
+    
+    tmp |= (1 << ECON1_TXRTS);
+    
+    if (write_reg(BANK0, ECON1, tmp) == -1)
+        return -1;
+    
+    if (read_reg(BANK0, ECON1, &tmp) == -1)
+        return -1;
+    
+    while (_ISSET(tmp, ECON1_TXRTS)) {
+        read_reg(BANK0, ECON1, &tmp);
+        _delay_us(100);
+        timeout--;
+        
+        if (timeout == 0) {
+            error = ERROR_TIMEOUT;
+            return -1;
+        }
+    }
+
+    if (read_reg(BANK0, ESTAT, &tmp))
+        return -1;
+    
+    if (_ISSET(tmp, ESTAT_TXABRT)) {
+        error = ERROR_TX_ABORT;
+        return -1;
+    }
+    
+    /* read tramsmit status vector */
+    if (read_buffer((TX_START + frm_len + 1), tsv, 7) == -1)
+        return -1;
+    
+    ret = tsv[TSV_BCNTL];
+    ret |= (tsv[TSV_BCNTH] << 8);
+    cnt_frm_tx++;
+    return ret;
+}
+
+int enc28j60_recv(eth_frame_t *frame)
+{
+    uint16_t ptr_pkg_start;
+    uint16_t pkg_len;
+    uint16_t frm_len;
+    uint8_t buf[2];
+    uint8_t *p;
+    uint8_t tmp;
+    
+    if (read_reg(BANK1, EPKTCNT, &tmp) == -1)
+        return -1;
+    
+    if (tmp < 1) {
+        error = ERROR_RX_NOFRM;
+        return -1;
+    }
+    
+    ptr_pkg_start = ptr_pkg_next;
+    
+    if (read_buffer(ptr_pkg_start, buf, 2) == -1)
+        return -1;
+    
+    ptr_pkg_next = (uint16_t) buf[0];
+    ptr_pkg_next |= ((uint16_t) buf[1] << 8);
+    
+    if (ptr_pkg_next < ptr_pkg_start) {
+        pkg_len = RX_END - ptr_pkg_start;
+        pkg_len += ptr_pkg_next;
+    } else
+        pkg_len = ptr_pkg_next - ptr_pkg_start - 1; 
+    
+    if (pkg_len > (MAX_FRAMESZ + 6)) {
+        error = ERROR_RX_FRMTOBIG;
+        return -1;
+    }
     
     p = (uint8_t *) malloc(pkg_len);
     
-    if (!p)
+    if (!p) {
+        error = ERROR_NOMEM;
+        return -1;
+    }
+    
+    if (ptr_pkg_next < ptr_pkg_start) {
+        if (read_buffer(ptr_pkg_start, p, RX_END - ptr_pkg_start) == -1) {
+            free(p);
+            return -1;
+        }
+            
+        if (read_buffer(RX_START, &p[RX_END - ptr_pkg_start], ptr_pkg_next - 1) == -1) {
+            free(p);
+            return -1;
+        }
+    } else  {
+        if (read_buffer(ptr_pkg_start, p, pkg_len) == -1) {
+            free(p);
+            return -1;
+        }
+    }
+    
+    frm_len = (uint16_t) p[RSV_BCNTL + 2];
+    frm_len |= ((uint16_t) p[RSV_BCNTH + 2] << 8);
+    
+    if (frm_len > MAX_FRAMESZ) {
+        free(p);
+        error = ERROR_RX_FRMTOBIG;
+        return -1;
+    }
+    
+    if (_ISCLR(p[RSV_BYTE2 + 2], RSV_OK)) {
+        cnt_frm_err++;
+        error = ERROR_RX_FRMERR;
+        free(p);
+        return -1;
+    }
+    
+    if (ethernet_buf_to_frm(&p[6], frm_len - 4, frame) == -1) {
+        error = ERROR_ETHLIB;
+        free(p);
+        return -1;
+    }
+    
+    free(p);
+    
+    if (read_reg(BANK0, ECON2, &tmp) == -1)
         return -1;
     
-    read_buffer(pkg_start, p, pkg_len);
-    frm_len = p[2];
-    tmp = p[3];
-    frm_len |= (tmp << 8);
-    ethernet_buf_to_frm(&p[6], frm_len - 4, frame);
-    free(p);
-    write_reg(BANK0, ERXRDPTL, _LOW(pkg_next));
-    write_reg(BANK0, ERXRDPTH, _HIGH(pkg_next));
-    read_reg(BANK0, ECON2, &depp);
-    depp |= (1 << ECON2_PKTDEC);
-    write_reg(BANK0, ECON2, depp);
+    tmp |= (1 << ECON2_PKTDEC);
+    
+    if (ptr_pkg_next == RX_START) {
+        if (write_reg(BANK0, ERXRDPTL, _LOW(RX_END)) == -1)
+            return -1;
+        
+        if (write_reg(BANK0, ERXRDPTH, _HIGH(RX_END)) == -1)
+            return -1;
+    } else {
+        if (write_reg(BANK0, ERXRDPTL, _LOW(ptr_pkg_next - 1)) == -1)
+            return -1;
+        
+        if (write_reg(BANK0, ERXRDPTH, _HIGH(ptr_pkg_next - 1)) == -1)
+            return -1;
+    }
+    
+    if (write_reg(BANK0, ECON2, tmp) == -1)
+        return -1;
+    
+    cnt_frm_rx++;
+    check_rx_smash();
     return (frm_len - 4);
 }
 
-void enc28j60_set_mac(mac_addr_t *addr)
+int enc28j60_set_mac(mac_addr_t *addr)
 {
-    if (!addr)
-        return;
+    if (!addr) {
+        error = ERROR_INVAL;
+        return -1;
+    }
     
-    write_reg(BANK3, MAADR1, addr->ma_byte0);
-    write_reg(BANK3, MAADR2, addr->ma_byte1);
-    write_reg(BANK3, MAADR3, addr->ma_byte2);
-    write_reg(BANK3, MAADR4, addr->ma_byte3);
-    write_reg(BANK3, MAADR5, addr->ma_byte4);
-    write_reg(BANK3, MAADR6, addr->ma_byte5);
+    if (write_reg(BANK3, MAADR1, addr->ma_byte0) == -1)
+        return -1;
+    
+    if (write_reg(BANK3, MAADR2, addr->ma_byte1) == -1)
+        return -1;
+    
+    if (write_reg(BANK3, MAADR3, addr->ma_byte2) == -1)
+        return -1;
+    
+    if (write_reg(BANK3, MAADR4, addr->ma_byte3) == -1)
+        return -1;
+    
+    if (write_reg(BANK3, MAADR5, addr->ma_byte4) == -1)
+        return -1;
+    
+    if (write_reg(BANK3, MAADR6, addr->ma_byte5) == -1)
+        return -1;
+    
+    return 0;
 }
 
-void enc28j60_get_mac(mac_addr_t *addr)
+int enc28j60_get_mac(mac_addr_t *addr)
 {
     uint8_t tmp;
     
-    if (!addr)
-        return;
+    if (!addr) {
+        error = ERROR_INVAL;
+        return -1;
+    }
     
-    read_mii_mac_reg(BANK3, MAADR1, &tmp);
+    if (read_mii_mac_reg(BANK3, MAADR1, &tmp) == -1)
+        return -1;
+    
     addr->ma_byte0 = tmp;
-    read_mii_mac_reg(BANK3, MAADR2, &tmp);
+    
+    if (read_mii_mac_reg(BANK3, MAADR2, &tmp) == -1)
+        return -1;
+    
     addr->ma_byte1 = tmp;
-    read_mii_mac_reg(BANK3, MAADR3, &tmp);
+    
+    if (read_mii_mac_reg(BANK3, MAADR3, &tmp) == -1)
+        return -1;
+    
     addr->ma_byte2 = tmp;
-    read_mii_mac_reg(BANK3, MAADR4, &tmp);
+    
+    if (read_mii_mac_reg(BANK3, MAADR4, &tmp) == -1)
+        return -1;
+    
     addr->ma_byte3 = tmp;
-    read_mii_mac_reg(BANK3, MAADR5, &tmp);
+    if (read_mii_mac_reg(BANK3, MAADR5, &tmp) == -1)
+        return -1;
+    
     addr->ma_byte4 = tmp;
-    read_mii_mac_reg(BANK3, MAADR6, &tmp);
+    
+    if (read_mii_mac_reg(BANK3, MAADR6, &tmp) == -1)
+        return -1;
+    
     addr->ma_byte5 = tmp;
+    return 0;
 }
 
 int enc28j60_is_link_up(void)
 {
-    uint16_t ll;
-    uint16_t l;
+    uint16_t l = 0;
     
-    read_phy_reg(PHSTAT1, &ll);
-    read_phy_reg(PHSTAT2, &l);
+    if (read_phy_reg(PHSTAT2, &l) == -1)
+        return -1;
     
     if (_ISSET(l, PHSTAT2_LSTAT))
         return 1;
@@ -716,27 +1090,45 @@ int enc28j60_is_link_up(void)
         return 0;
 }
 
-size_t enc28j60_get_pkg_count(void)
+uint32_t enc28j60_get_frame_count_rx(void)
 {
-    uint8_t tmp;
-    
-    read_reg(BANK1, EPKTCNT, &tmp);
-    return tmp;
+    return cnt_frm_rx;
 }
 
-size_t enc28j60_get_free_space(void)
+uint32_t enc28j60_get_frame_count_tx(void)
+{
+    return cnt_frm_tx;
+}
+
+uint32_t enc28j60_get_frame_count_err(void)
+{
+    return cnt_frm_err;
+}
+
+int enc28j60_get_free_rx_space(void)
 {
     uint8_t tmp;
     uint16_t p, rdp, wrp;
     
-    read_reg(BANK0, ERXWRPTL, &tmp);
+    if (read_reg(BANK0, ERXWRPTL, &tmp) == -1)
+        return -1;
+    
     wrp = tmp;
-    read_reg(BANK0, ERXWRPTH, &tmp);
+    
+    if (read_reg(BANK0, ERXWRPTH, &tmp) == -1)
+        return -1;
+    
     p = tmp;
     wrp |= (p << 8);
-    read_reg(BANK0, ERXRDPTL, &tmp);
+    
+    if (read_reg(BANK0, ERXRDPTL, &tmp) == -1)
+        return -1;
+    
     rdp = tmp;
-    read_reg(BANK0, ERXRDPTH, &tmp);
+    
+    if (read_reg(BANK0, ERXRDPTH, &tmp) == -1)
+        return -1;
+    
     p = tmp;
     rdp |= (p << 8);
     
@@ -748,11 +1140,17 @@ size_t enc28j60_get_free_space(void)
         return (rdp - wrp - 1);
 }
 
+char *enc28j60_get_version(void)
+{
+    return VERSION;
+}
+
 char *enc28j60_get_chip_revision(void)
 {
     uint8_t tmp;
       
-    read_reg(BANK3, EREVID, &tmp);
+    if (read_reg(BANK3, EREVID, &tmp))
+        return "ERR";
     
     switch (tmp) {
     case 0x02:
@@ -766,4 +1164,9 @@ char *enc28j60_get_chip_revision(void)
     default:
         return "UNKNOWN";
     }
+}
+
+int enc28j60_get_last_error(void)
+{
+    return error;
 }
