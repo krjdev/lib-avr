@@ -1,6 +1,10 @@
 # lib-avr
 
-Device driver and libraries for Microchip (Atmel) AVR Series
+Device driver and libraries for Microchip (Atmel) AVR series
+
+**Requires:**
+avr-gcc  
+avr-libc
 
 ## I2C Interface (Master mode only)
 
