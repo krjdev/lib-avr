@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-02
+ * Modified : 2019-02-04
  * Revised  : 
- * Version  : 0.2.1.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -26,7 +26,7 @@
 
 #include "ethernet.h"
 
-int ethernet_atom(const char *str, mac_addr_t *mac)
+int ethernet_addr_aton(const char *str, mac_addr_t *mac)
 {
     int i = 0;
     char tmp[3];
@@ -66,7 +66,7 @@ int ethernet_atom(const char *str, mac_addr_t *mac)
     return 0;
 }
 
-int ethernet_mtoa(mac_addr_t *mac, char *str)
+int ethernet_addr_ntoa(mac_addr_t *mac, char *str)
 {
     if (!mac)
         return -1;
@@ -79,7 +79,7 @@ int ethernet_mtoa(mac_addr_t *mac, char *str)
     return 0;
 }
 
-int ethernet_mcpy(mac_addr_t *dst, mac_addr_t *src)
+int ethernet_addr_cpy(mac_addr_t *dst, mac_addr_t *src)
 {
     if (!dst)
         return -1;
@@ -96,6 +96,25 @@ int ethernet_mcpy(mac_addr_t *dst, mac_addr_t *src)
     return 0;
 }
 
+int ethernet_addr_equal(mac_addr_t *mac1, mac_addr_t *mac2)
+{
+    if (!mac1)
+        return -1;
+    
+    if (!mac2)
+        return -1;
+    
+    if ((mac1->ma_byte0 == mac2->ma_byte0) && 
+        (mac1->ma_byte1 == mac2->ma_byte1) && 
+        (mac1->ma_byte2 == mac2->ma_byte2) && 
+        (mac1->ma_byte3 == mac2->ma_byte3) && 
+        (mac1->ma_byte4 == mac2->ma_byte4) && 
+        (mac1->ma_byte5 == mac2->ma_byte5))
+        return 1;
+    
+    return 0;
+}
+
 int ethernet_frame_set_dst(eth_frame_t *frame, mac_addr_t *mac)
 {
     if (!frame)
@@ -104,7 +123,7 @@ int ethernet_frame_set_dst(eth_frame_t *frame, mac_addr_t *mac)
     if (!mac)
         return -1;
     
-    ethernet_mcpy(&frame->ef_dst, mac);
+    ethernet_addr_cpy(&frame->ef_dst, mac);
     return 0;
 }
 
@@ -116,7 +135,7 @@ int ethernet_frame_set_src(eth_frame_t *frame, mac_addr_t *mac)
     if (!mac)
         return -1;
     
-    ethernet_mcpy(&frame->ef_src, mac);
+    ethernet_addr_cpy(&frame->ef_src, mac);
     return 0;
 }
 
@@ -153,7 +172,7 @@ int ethernet_frame_get_dst(eth_frame_t *frame, mac_addr_t *mac)
     if (!mac)
         return -1;
     
-    ethernet_mcpy(mac, &frame->ef_dst);
+    ethernet_addr_cpy(mac, &frame->ef_dst);
     return 0;
 }
 
@@ -165,7 +184,7 @@ int ethernet_frame_get_src(eth_frame_t *frame, mac_addr_t *mac)
     if (!mac)
         return -1;
 
-    ethernet_mcpy(mac, &frame->ef_src);
+    ethernet_addr_cpy(mac, &frame->ef_src);
     return 0;
 }
 
@@ -209,13 +228,19 @@ int ethernet_frame_get_len(eth_frame_t *frame)
     return (14 + frame->ef_payload_len);
 }
 
-int ethernet_frame_free(eth_frame_t *frame)
+int ethernet_frame_payload_free(eth_frame_t *frame)
 {
     if (!frame)
         return -1;
     
-    if (frame->ef_payload_len > 0)
-        free(frame->ef_payload_buf);
+    if (frame->ef_payload_len > 0) {
+        if (frame->ef_payload_buf)
+            free(frame->ef_payload_buf);
+        else
+            return -1;
+        
+        frame->ef_payload_len = 0;
+    }
     
     return 0;
 }
@@ -304,6 +329,9 @@ int ethernet_frm_to_buf(eth_frame_t *frame, uint8_t *buf)
     
     /* Payload/Data */
     if (frame->ef_payload_len > 0) {
+        if (!frame->ef_payload_buf)
+            return -1;
+        
         for (j = i, k = 0; j < (frame->ef_payload_len + i); j++, k++)
             buf[j] = frame->ef_payload_buf[k];
     }

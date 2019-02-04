@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-02
+ * Modified : 2019-02-04
  * Revised  : 
- * Version  : 0.2.1.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -42,9 +42,10 @@ typedef struct eth_frame {
     int ef_payload_len;
 } eth_frame_t;
 
-extern int ethernet_atom(const char *str, mac_addr_t *mac);
-extern int ethernet_mtoa(mac_addr_t *mac, char *str);
-extern int ethernet_mcpy(mac_addr_t *dst, mac_addr_t *src);
+extern int ethernet_addr_aton(const char *str, mac_addr_t *mac);
+extern int ethernet_addr_ntoa(mac_addr_t *mac, char *str);
+extern int ethernet_addr_cpy(mac_addr_t *dst, mac_addr_t *src);
+extern int ethernet_addr_equal(mac_addr_t *mac1, mac_addr_t *mac2);
 extern int ethernet_frame_set_dst(eth_frame_t *frame, mac_addr_t *mac);
 extern int ethernet_frame_set_src(eth_frame_t *frame, mac_addr_t *mac);
 extern int ethernet_frame_set_type(eth_frame_t *frame, uint16_t type);
@@ -55,7 +56,7 @@ extern int ethernet_frame_get_type(eth_frame_t *frame, uint16_t *type);
 extern int ethernet_frame_get_payload_len(eth_frame_t *frame);
 extern int ethernet_frame_get_payload(eth_frame_t *frame, uint8_t **buf);
 extern int ethernet_frame_get_len(eth_frame_t *frame);
-extern int ethernet_frame_free(eth_frame_t *frame);
+extern int ethernet_frame_payload_free(eth_frame_t *frame);
 extern int ethernet_buf_to_frm(uint8_t *buf, int len, eth_frame_t *frame);
 extern int ethernet_frm_to_buf(eth_frame_t *frame, uint8_t *buf);
 
