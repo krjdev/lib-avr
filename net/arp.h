@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-02-02
+ * Modified : 2019-02-03
  * Revised  : 
- * Version  : 0.1.0.1
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -45,6 +45,7 @@ typedef struct arp_packet {
     
 } arp_packet_t;
 
+extern int arp_init(mac_addr_t *src_mac, ipv4_addr_t *src_ip);
 extern int arp_pkt_set_oper(arp_packet_t *arp, uint16_t oper);
 extern int arp_pkt_set_sha(arp_packet_t *arp, mac_addr_t *mac);
 extern int arp_pkt_set_spa(arp_packet_t *arp, ipv4_addr_t *ip);
@@ -58,7 +59,10 @@ extern int arp_pkt_get_tpa(arp_packet_t *arp, ipv4_addr_t *ip);
 extern int arp_pkt_get_len(arp_packet_t *arp);
 extern int arp_buf_to_pkt(uint8_t *buf, int len, arp_packet_t *arp);
 extern int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf);
-extern int arp_pkt_create(arp_packet_t *arp);
 extern int arp_pkt_valid(arp_packet_t *arp);
+extern int arp_pkt_create(arp_packet_t *arp);
+extern int arp_pkt_create_probe(arp_packet_t *arp);
+extern int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp);
+extern int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out);
 
 #endif

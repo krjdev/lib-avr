@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-02-02
+ * Modified : 2019-02-03
  * Revised  : 
- * Version  : 0.1.0.1
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -21,6 +21,22 @@
 #define _LOW16(val)    ((uint8_t) ((val) & 0x00FF))
 
 #include "arp.h"
+
+mac_addr_t me_mac;
+ipv4_addr_t me_ip;
+
+int arp_init(mac_addr_t *src_mac, ipv4_addr_t *src_ip)
+{
+    if (!src_mac)
+        return -1;
+    
+    if (!src_ip)
+        return -1;
+    
+    ethernet_addr_cpy(&me_mac, src_mac);
+    ipv4_addr_cpy(&me_ip, src_ip);
+    return 0;
+}
 
 int arp_pkt_set_oper(arp_packet_t *arp, uint16_t oper)
 {
@@ -39,7 +55,7 @@ int arp_pkt_set_sha(arp_packet_t *arp, mac_addr_t *mac)
     if (!mac)
         return -1;
     
-    ethernet_mcpy(&arp->ap_sha, mac);
+    ethernet_addr_cpy(&arp->ap_sha, mac);
     return 0;
 }
 
@@ -51,7 +67,7 @@ int arp_pkt_set_spa(arp_packet_t *arp, ipv4_addr_t *ip)
     if (!ip)
         return -1;
     
-    ipv4_acpy(&arp->ap_spa, ip);
+    ipv4_addr_cpy(&arp->ap_spa, ip);
     return 0;
 }
 
@@ -63,7 +79,7 @@ int arp_pkt_set_tha(arp_packet_t *arp, mac_addr_t *mac)
     if (!mac)
         return -1;
     
-    ethernet_mcpy(&arp->ap_tha, mac);
+    ethernet_addr_cpy(&arp->ap_tha, mac);
     return 0;
 }
 
@@ -75,7 +91,7 @@ int arp_pkt_set_tpa(arp_packet_t *arp, ipv4_addr_t *ip)
     if (!ip)
         return -1;
     
-    ipv4_acpy(&arp->ap_tpa, ip);
+    ipv4_addr_cpy(&arp->ap_tpa, ip);
     return 0;
 }
 
@@ -96,7 +112,7 @@ int arp_pkt_get_sha(arp_packet_t *arp, mac_addr_t *mac)
     if (!mac)
         return -1;
     
-    ethernet_mcpy(mac, &arp->ap_sha);
+    ethernet_addr_cpy(mac, &arp->ap_sha);
     return 0;
 }
 
@@ -108,7 +124,7 @@ int arp_pkt_get_spa(arp_packet_t *arp, ipv4_addr_t *ip)
     if (!ip)
         return -1;
     
-    ipv4_acpy(ip, &arp->ap_spa);
+    ipv4_addr_cpy(ip, &arp->ap_spa);
     return 0;
 }
 
@@ -120,7 +136,7 @@ int arp_pkt_get_tha(arp_packet_t *arp, mac_addr_t *mac)
     if (!mac)
         return -1;
     
-    ethernet_mcpy(mac, &arp->ap_tha);
+    ethernet_addr_cpy(mac, &arp->ap_tha);
     return 0;
 }
 
@@ -132,7 +148,7 @@ int arp_pkt_get_tpa(arp_packet_t *arp, ipv4_addr_t *ip)
     if (!ip)
         return -1;
     
-    ipv4_acpy(ip, &arp->ap_tpa);
+    ipv4_addr_cpy(ip, &arp->ap_tpa);
     return 0;
 }
 
@@ -251,6 +267,21 @@ int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf)
     return 0;
 }
 
+int arp_pkt_valid(arp_packet_t *arp)
+{
+    if (!arp)
+        return -1;
+    
+    if ((arp->ap_htype == ARP_HTYPE_ETHERNET) && 
+        (arp->ap_ptype == ARP_PTYPE_IPV4) && 
+        (arp->ap_hlen == ARP_HLEN_ETHERNET) && 
+        (arp->ap_plen == ARP_PLEN_IPV4))
+        return 1;
+    
+    return 0;
+}
+
+
 int arp_pkt_create(arp_packet_t *arp)
 {
     if (!arp)
@@ -263,16 +294,78 @@ int arp_pkt_create(arp_packet_t *arp)
     return 0;
 }
 
-int arp_pkt_valid(arp_packet_t *arp)
+int arp_pkt_create_probe(arp_packet_t *arp)
 {
+    mac_addr_t mac_b;
+    ipv4_addr_t ip_n;
+    
     if (!arp)
         return -1;
     
-    if ((arp->ap_htype == ARP_HTYPE_ETHERNET) && 
-        (arp->ap_ptype == ARP_PTYPE_IPV4) && 
-        (arp->ap_hlen == ARP_HLEN_ETHERNET) && 
-        (arp->ap_plen == ARP_PLEN_IPV4))
-        return 1;
+    arp_pkt_create(arp);
+    arp_pkt_set_oper(arp, ARP_OPER_QUERY);
+    arp_pkt_set_sha(arp, &me_mac);
+    ipv4_addr_aton("0.0.0.0", &ip_n);
+    arp_pkt_set_spa(arp, &ip_n);
+    ethernet_addr_aton("00:00:00:00:00:00", &mac_b);
+    arp_pkt_set_tha(arp, &mac_b);
+    arp_pkt_set_tpa(arp, &me_ip);
+    return 0;
+    
+}
+
+int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp)
+{
+    mac_addr_t mac_b;
+    
+    if (!dst_ip)
+        return -1;
+    
+    if (!arp)
+        return -1;
+    
+    arp_pkt_create(arp);
+    arp_pkt_set_oper(arp, ARP_OPER_QUERY);
+    arp_pkt_set_sha(arp, &me_mac);
+    arp_pkt_set_spa(arp, &me_ip);
+    ethernet_addr_aton("00:00:00:00:00:00", &mac_b);
+    arp_pkt_set_tha(arp, &mac_b);
+    arp_pkt_set_tpa(arp, dst_ip);
+    return 0;
+}
+
+int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out)
+{
+    uint16_t oper;
+    ipv4_addr_t ip;
+    mac_addr_t mac;
+    
+    if (!arp_in)
+        return -1;
+    
+    if (!arp_out)
+        return -1;
+    
+    if (arp_pkt_valid(arp_in)) {
+        arp_pkt_get_tpa(arp_in, &ip);
+        arp_pkt_get_oper(arp_in, &oper);
+        
+        if (oper != ARP_OPER_QUERY)
+            return -1;
+        
+        if ((ipv4_addr_equal(&me_ip, &ip) != 1))
+            return -1;
+        
+        arp_pkt_create(arp_out);
+        arp_pkt_set_oper(arp_out, ARP_OPER_ANSWE);
+        arp_pkt_set_sha(arp_out, &me_mac);
+        arp_pkt_set_spa(arp_out, &me_ip);
+        arp_pkt_get_sha(arp_in, &mac);
+        arp_pkt_get_spa(arp_in, &ip);
+        arp_pkt_set_tha(arp_out, &mac);
+        arp_pkt_set_tpa(arp_out, &ip);
+    } else
+        return -1;
     
     return 0;
 }
