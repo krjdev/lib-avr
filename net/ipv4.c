@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-02
+ * Modified : 2019-02-04
  * Revised  : 
- * Version  : 0.2.2.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -43,7 +43,7 @@ ipv4_range_t rfc6890[] = {
     { { 255, 255, 255, 255 }, 32 }
 };
 
-int ipv4_aton(const char *str, ipv4_addr_t *ip)
+int ipv4_addr_aton(const char *str, ipv4_addr_t *ip)
 {
     char tmp[4];
     int i = 0;
@@ -95,7 +95,7 @@ int ipv4_aton(const char *str, ipv4_addr_t *ip)
     return 0;
 }
 
-int ipv4_ntoa(ipv4_addr_t *ip, char *str)
+int ipv4_addr_ntoa(ipv4_addr_t *ip, char *str)
 {
     if (!ip)
         return -1;
@@ -108,7 +108,7 @@ int ipv4_ntoa(ipv4_addr_t *ip, char *str)
     return 0;
 }
 
-int ipv4_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2)
+int ipv4_addr_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2)
 {
     if (!ip1)
         return -1;
@@ -125,7 +125,7 @@ int ipv4_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2)
     return 0;
 }
 
-int ipv4_acpy(ipv4_addr_t *dst, ipv4_addr_t *src)
+int ipv4_addr_cpy(ipv4_addr_t *dst, ipv4_addr_t *src)
 {
     if (!dst)
         return -1;
@@ -140,7 +140,7 @@ int ipv4_acpy(ipv4_addr_t *dst, ipv4_addr_t *src)
     return 0;
 }
 
-int ipv4_is_broadcast(ipv4_addr_t *ip)
+int ipv4_addr_is_broadcast(ipv4_addr_t *ip)
 {
     if (!ip)
         return -1;
@@ -151,5 +151,31 @@ int ipv4_is_broadcast(ipv4_addr_t *ip)
         (ip->ia_byte3 == 0xFF))
         return 1;
     
+    return 0;
+}
+
+int ipv4_calc_checksum(uint8_t *buf, int len, uint16_t *chksum)
+{
+    int i, j;
+    uint16_t tmp;
+    uint32_t sum = 0;
+    uint8_t carry;
+    
+    if (!buf)
+        return -1;
+    
+    if ((len % 2) != 0)
+        return -1;
+    
+    for (i = 0, j = 0; i < (len / 2); i++) {
+        tmp = ((uint16_t) buf[j++] << 8);
+        tmp |= (uint16_t) buf[j++];
+        sum += tmp;
+    }
+    
+    carry = (sum >> 16);
+    sum += carry;
+    sum = ~sum;
+    (*chksum) = (uint16_t) sum;
     return 0;
 }

@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-02
+ * Modified : 2019-02-04
  * Revised  : 
- * Version  : 0.2.2.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -25,6 +25,7 @@
 #define IPV4_FLAG_DF    1
 #define IPV4_FLAG_MF    2
 
+#define IPV4_PROT_ICMP  1
 #define IPV4_PROT_TCP   6
 #define IPV4_PROT_UDP   17
 
@@ -56,10 +57,23 @@ typedef struct ipv4_hdr {
     ipv4_addr_t ih_dst;
 } ipv4_hdr_t;
 
-extern int ipv4_aton(const char *str, ipv4_addr_t *ip);
-extern int ipv4_ntoa(ipv4_addr_t *ip, char *str);
-extern int ipv4_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2);
-extern int ipv4_acpy(ipv4_addr_t *dst, ipv4_addr_t *src);
-extern int ipv4_is_broadcast(ipv4_addr_t *ip);
+typedef struct ipv4_packet {
+    ipv4_hdr_t ip_hdr;
+    uint8_t *ip_options_buf;
+    int ip_options_len;
+    uint8_t *ip_payload_buf;
+    int ip_payload_len;
+} ipv4_packet_t;
+
+extern int ipv4_addr_aton(const char *str, ipv4_addr_t *ip);
+extern int ipv4_addr_ntoa(ipv4_addr_t *ip, char *str);
+extern int ipv4_addr_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2);
+extern int ipv4_addr_cpy(ipv4_addr_t *dst, ipv4_addr_t *src);
+extern int ipv4_addr_is_broadcast(ipv4_addr_t *ip);
+extern int ipv4_calc_checksum(uint8_t *buf, int len, uint16_t *chksum);
+// extern int ipv4_hdr_create(ipv4_hdr_t *ih);
+// extern int ipv4_pkg_get_len(ipv4_packet_t *ip);
+// extern int ipv4_pkt_to_buf(ipv4_packet_t *ip, uint8_t *buf);
+// extern int ipv4_buf_to_pkt(uint8_t *buf, int len, ipv4_packet_t *ip);
 
 #endif
