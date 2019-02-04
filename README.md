@@ -2,7 +2,7 @@
 
 Device driver and libraries for Microchip (Atmel) AVR series
 
-**Requires:**
+**Requires:**  
 avr-gcc  
 avr-libc
 
