@@ -3,8 +3,31 @@
 This repository contains generic libraries and device driver for Microchip (former Atmel) AVR microcontrollers.
 
 **Requirements:**  
-[avr-gcc](https://www.google.com "avr-gcc Homepage")  
-[avr-libc](https://www.google.com "AVR Libc Homepage")
+[avr-gcc](https://gcc.gnu.org/wiki/avr-gcc "avr-gcc Homepage")  
+[avr-libc](https://www.nongnu.org/avr-libc/ "AVR Libc Homepage")
+
+
+### UART (RS232) Interface (beta version)
+
+**Files:**  
+[uart.h](https://github.com/krjdev/lib-avr/blob/master/uart.h)  
+[uart.c](https://github.com/krjdev/lib-avr/blob/master/uart.c)
+
+**Functions:**  
+```c
+uart_t *uart_init(int dev, uint32_t baud, int datab, int stopb);
+void uart_close(uart_t *uart);
+int uart_send(uart_t *uart, uint8_t *data, int len);
+int uart_recv(uart_t *uart, uint8_t *data, int len);
+int uart_putc(uart_t *uart, char c);
+int uart_puts(uart_t *uart, const char *str);
+int uart_getc(uart_t *uart, char *c);
+```
+
+**Dependencies**  
+* avr-libc  
+* lib/fifo.h  
+* lib/fifo.c
 
 ## I2C
 
@@ -79,9 +102,9 @@ int pcf8574_get_pin(gpio_t *gpio, int pin, int *value);
 
 **Functions:**  
 ```c
-void pcf8591\_init(void)  
-int pcf8591\_get\_adc(uint8\_t subaddr, int config, int channel, uint8\_t *value)  
-int pcf8591\_set\_dac(uint8\_t subaddr, uint8\_t *value)
+void pcf8591_init(void)  
+int pcf8591_get_adc(uint8_t subaddr, int config, int channel, uint8_t *value)  
+int pcf8591_set_dac(uint8_t subaddr, uint8_t *value)
 ```
 
 **Dependencies**  
@@ -357,6 +380,9 @@ int ds2430a_read_status(ow_rom_t *rom, uint8_t *status);
 * onewire/sw-onewire.c
 
 ## SPI
+
+**Directory:**  
+[spi](https://github.com/krjdev/lib-avr/tree/master/spi)
 
 ### SPI Interface (beta version)
 
