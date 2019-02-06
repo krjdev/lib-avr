@@ -23,27 +23,28 @@ int i2c_get_error(void);
 ### NXP PCF8574(A) 8-Bit Remote I/O expander driver
 
 **Files:**  
-i2c/pcf8574.h  
-i2c/pcf8574.c
+[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[pcf8574.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.h)  
+[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[pcf8574.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.c)
+
 
 **Functions:**  
 ```c
-gpio\_t *pcf8574\_init(int type, uint8\_t subaddr)  
-void pcf8574\_free(gpio\_t *gpio)  
-int pcf8574\_write(gpio\_t *gpio, uint8\_t data)  
-int pcf8574\_read(gpio\_t *gpio, uint8\_t *data)  
-int pcf8574\_set\_config(gpio\_t *gpio, int pin, int config)  
-int pcf8574\_get\_config(gpio\_t *gpio, int pin, int *config)  
-int pcf8574\_get\_npins(gpio\_t *gpio)  
-int pcf8574\_set\_pin(gpio\_t *gpio, int pin, int value)  
-int pcf8574\_get\_pin(gpio\_t *gpio, int pin, int *value)
+gpio_t *pcf8574_init(int type, uint8_t subaddr);
+void pcf8574_free(gpio_t *gpio);
+int pcf8574_write(gpio_t *gpio, uint8_t data);
+int pcf8574_read(gpio_t *gpio, uint8_t *data);
+int pcf8574_set_config(gpio_t *gpio, int pin, int config);
+int pcf8574_get_config(gpio_t *gpio, int pin, int *config);
+int pcf8574_get_npins(gpio_t *gpio);
+int pcf8574_set_pin(gpio_t *gpio, int pin, int value);
+int pcf8574_get_pin(gpio_t *gpio, int pin, int *value);
 ```
 
 ### NXP PCF8591 8-Bit A/D and D/A converter driver (alpha version)
 
 **Files:**  
-i2c/pcf8591.h  
-i2c/pcf8591.c
+[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[pcf8591.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8591.h)  
+[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[pcf8591.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8591.c)
 
 **Functions:**  
 ```c
@@ -55,51 +56,52 @@ int pcf8591\_set\_dac(uint8\_t subaddr, uint8\_t *value)
 ### STmicroelectronics M24C01 - M24C64 I2C EEPROM driver (alpha version)
 
 **Files:**  
-i2c/m24cxx.h  
-i2c/m24cxx.c
+[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[m24cxx.h](https://github.com/krjdev/lib-avr/blob/master/i2c/m24cxx.h)  
+[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[m24cxx.c](https://github.com/krjdev/lib-avr/blob/master/i2c/m24cxx.c)
 
 **Functions:**  
 ```c
-void m24cxx\_init(void)  
-int m24cxx\_write(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)  
-int m24cxx_read(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)
+void m24cxx_init(void);
+int m24cxx_write(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len);
+int m24cxx_read(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len);
 ```
 
 ## SPI Interface (Master mode only)
 
 **Files:**  
-spi/spi.h  
-spi/spi.c
+[spi/](https://github.com/krjdev/lib-avr/tree/master/spi)[spi.h](https://github.com/krjdev/lib-avr/blob/master/spi/spi.h)  
+[spi/](https://github.com/krjdev/lib-avr/tree/master/spi)[spi.c](https://github.com/krjdev/lib-avr/blob/master/spi/spi.c)
 
 **Functions:**  
 ```c
-int spi\_master\_init(int mode, int speed)  
-int spi\_master\_send(uint8\_t *data, int len)  
-int spi\_master\_recv(uint8\_t *data, int len)
+void spi_master_init(int mode, int speed);
+void spi_master_send(uint8_t *data, int len);
+void spi_master_recv(uint8_t *data, int len);
 ```
 
 ### Microchip ENC28J60 Ethernet controller driver
 
 **Files:**  
-spi/enc28j60.h  
-spi/enc28j60.c
+[spi/](https://github.com/krjdev/lib-avr/tree/master/spi)[enc28j60.h](https://github.com/krjdev/lib-avr/blob/master/spi/enc28j60.h)  
+[spi/](https://github.com/krjdev/lib-avr/tree/master/spi)[enc28j60.c](https://github.com/krjdev/lib-avr/blob/master/spi/enc28j60.c)
 
 **Functions:**  
 ```c
-int enc28j60\_init(int mode, mac\_addr\_t *addr)  
-int enc28j60\_send(eth\_frame\_t *frame)  
-int enc28j60\_recv(eth\_frame\_t *frame)  
-int enc28j60\_set\_mac(mac\_addr\_t *addr)  
-int enc28j60\_get\_mac(mac\_addr\_t *addr)  
-int enc28j60\_is\_link\_up(void)  
-uint32\_t enc28j60\_get\_count\_rx\_frame(void)  
-uint32\_t enc28j60\_get\_count\_tx\_frame(void)  
-uint16\_t enc28j60\_get\_count\_rx\_err(void)  
-uint16\_t enc28j60\_get\_count\_tx\_err(void)  
-int enc28j60\_get\_free\_rx\_space(void)  
-char *enc28j60\_get\_version(void)  
-char *enc28j60\_get\_chip\_revision(void)  
-int enc28j60\_get\_last\_error(void)
+int enc28j60_init(int mode, mac_addr_t *addr);
+int enc28j60_send(eth_frame_t *frame);
+int enc28j60_recv(eth_frame_t *frame);
+int enc28j60_set_mac(mac_addr_t *addr);
+int enc28j60_get_mac(mac_addr_t *addr);
+int enc28j60_is_link_up(void);
+uint32_t enc28j60_get_count_rx_frame(void);
+uint32_t enc28j60_get_count_tx_frame(void);
+uint16_t enc28j60_get_count_rx_err(void);
+uint16_t enc28j60_get_count_tx_err(void);
+int enc28j60_get_free_rx_space(void);
+char *enc28j60_get_version(void);
+char *enc28j60_get_chip_revision(void);
+int enc28j60_get_last_error(void);
+struct enc28j60_regs enc28j60_get_regs(void);
 ```
 
 ## Dallas/Maxim 1-Wire Interface (Software-based)
@@ -246,7 +248,7 @@ int ipv4\_calc\_checksum(uint8\_t *buf, int len, uint16\_t *chksum)
 ```
 
 # LICENSE
-> Copyright (c) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>  
+> Copyright (c) 2018-2019 [Johannes Krottmayer](mailto:krjdev@gmail.com)  
 >  
 > Permission to use, copy, modify, and/or distribute this software for any  
 > purpose with or without fee is hereby granted, provided that the above  
