@@ -1,16 +1,21 @@
 # lib-avr
 
-Device driver and libraries for Microchip (Atmel) AVR series
+This repository contains generic libraries and device driver for Microchip (former Atmel) AVR microcontrollers.
 
-**Requires:**  
+**Requirements:**  
 [avr-gcc](https://www.google.com "avr-gcc Homepage")  
 [avr-libc](https://www.google.com "AVR Libc Homepage")
 
-## I2C Interface (Master mode only)
+## I2C
+
+**Directory:**  
+[i2c](https://github.com/krjdev/lib-avr/tree/master/i2c)
+
+### I2C Interface (beta version)
 
 **Files:**  
-[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[i2c.h](https://github.com/krjdev/lib-avr/blob/master/i2c/i2c.h)  
-[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[i2c.c](https://github.com/krjdev/lib-avr/blob/master/i2c/i2c.c)
+[i2c/i2c.h](https://github.com/krjdev/lib-avr/blob/master/i2c/i2c.h)  
+[i2c/i2c.c](https://github.com/krjdev/lib-avr/blob/master/i2c/i2c.c)
 
 **Functions:**  
 ```c
@@ -20,11 +25,32 @@ int i2c_master_recv(int opt, uint8_t addr, uint8_t *cmd, int cmd_len, uint8_t *d
 int i2c_get_error(void);
 ```
 
-### NXP PCF8574(A) 8-Bit Remote I/O expander driver
+**Dependencies**  
+* avr-libc
+
+### I2C device: STmicroelectronics M24C01 - M24C64 I2C EEPROM driver (alpha version)
 
 **Files:**  
-[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[pcf8574.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.h)  
-[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[pcf8574.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.c)
+[i2c/m24cxx.h](https://github.com/krjdev/lib-avr/blob/master/i2c/m24cxx.h)  
+[i2c/m24cxx.c](https://github.com/krjdev/lib-avr/blob/master/i2c/m24cxx.c)
+
+**Functions:**  
+```c
+void m24cxx_init(void);
+int m24cxx_write(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len);
+int m24cxx_read(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len);
+```
+
+**Dependencies**  
+* avr-libc  
+* i2c/i2c.h  
+* i2c/i2c.c
+
+### I2C device: NXP PCF8574(A) 8-Bit Remote I/O expander driver (beta version)
+
+**Files:**  
+[i2c/pcf8574.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.h)  
+[i2c/pcf8574.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.c)
 
 
 **Functions:**  
@@ -40,11 +66,16 @@ int pcf8574_set_pin(gpio_t *gpio, int pin, int value);
 int pcf8574_get_pin(gpio_t *gpio, int pin, int *value);
 ```
 
-### NXP PCF8591 8-Bit A/D and D/A converter driver (alpha version)
+**Dependencies**  
+* avr-libc  
+* i2c/i2c.h  
+* i2c/i2c.c
+
+### I2C device: NXP PCF8591 8-Bit A/D and D/A converter driver (alpha version)
 
 **Files:**  
-[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[pcf8591.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8591.h)  
-[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[pcf8591.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8591.c)
+[i2c/pcf8591.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8591.h)  
+[i2c/pcf8591.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8591.c)
 
 **Functions:**  
 ```c
@@ -53,24 +84,285 @@ int pcf8591\_get\_adc(uint8\_t subaddr, int config, int channel, uint8\_t *value
 int pcf8591\_set\_dac(uint8\_t subaddr, uint8\_t *value)
 ```
 
-### STmicroelectronics M24C01 - M24C64 I2C EEPROM driver (alpha version)
+**Dependencies**  
+* avr-libc  
+* i2c/i2c.h  
+* i2c/i2c.c
+
+## Generic Libraries
+
+**Directory:**  
+[lib](https://github.com/krjdev/lib-avr/tree/master/lib)
+
+### BCD Library
 
 **Files:**  
-[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[m24cxx.h](https://github.com/krjdev/lib-avr/blob/master/i2c/m24cxx.h)  
-[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[m24cxx.c](https://github.com/krjdev/lib-avr/blob/master/i2c/m24cxx.c)
+[lib/bcd.h](https://github.com/krjdev/lib-avr/blob/master/lib/bcd.h)  
+[lib/bcd.c](https://github.com/krjdev/lib-avr/blob/master/lib/bcd.c)
 
 **Functions:**  
 ```c
-void m24cxx_init(void);
-int m24cxx_write(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len);
-int m24cxx_read(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len);
+uint8_t bcd_to_int(uint8_t bcd);
+uint8_t int_to_bcd(uint8_t i);
 ```
 
-## SPI Interface (Master mode only)
+**Dependencies**  
+* avr-libc
+
+### CRC8 Maxim (former Dallas) Library
 
 **Files:**  
-[spi/](https://github.com/krjdev/lib-avr/tree/master/spi)[spi.h](https://github.com/krjdev/lib-avr/blob/master/spi/spi.h)  
-[spi/](https://github.com/krjdev/lib-avr/tree/master/spi)[spi.c](https://github.com/krjdev/lib-avr/blob/master/spi/spi.c)
+[lib/crc8_dallas.h](https://github.com/krjdev/lib-avr/blob/master/lib/crc8_dallas.h)  
+[lib/crc8_dallas.c](https://github.com/krjdev/lib-avr/blob/master/lib/crc8_dallas.c)
+
+**Functions:**  
+```c
+int crc8_dallas_calc(uint8_t *data, int len);
+int crc8_dallas_check(uint8_t *data, int len, uint8_t crc);
+```
+
+**Dependencies**  
+* avr-libc
+
+### FIFO buffer Library
+
+**Files:**  
+[lib/fifo.h](https://github.com/krjdev/lib-avr/blob/master/lib/fifo.h)  
+[lib/fifo.c](https://github.com/krjdev/lib-avr/blob/master/lib/fifo.c)
+
+**Functions:**  
+```c
+fifo_t *fifo_init(int len);
+void fifo_free(fifo_t *fifo);
+int fifo_enqueue(fifo_t *fifo, uint8_t data);
+int fifo_dequeue(fifo_t *fifo, uint8_t *data);
+int fifo_get_len(fifo_t *fifo);
+int fifo_get_num(fifo_t *fifo);
+```
+
+**Dependencies**  
+* avr-libc
+
+### LIFO (Stack) buffer Library
+
+**Files:**  
+[lib/lifo.h](https://github.com/krjdev/lib-avr/blob/master/lib/lifo.h)  
+[lib/lifo.c](https://github.com/krjdev/lib-avr/blob/master/lib/lifo.c)
+
+**Functions:**  
+```c
+lifo_t *lifo_init(int len);
+void lifo_free(lifo_t *lifo);
+int lifo_enqueue(lifo_t *lifo, uint8_t data);
+int lifo_dequeue(lifo_t *lifo, uint8_t *data);
+int lifo_get_len(lifo_t *lifo);
+int lifo_get_num(lifo_t *lifo);
+```
+
+**Dependencies**  
+* avr-libc
+
+## Network Libraries
+
+**Directory:**  
+[net](https://github.com/krjdev/lib-avr/tree/master/net)
+
+### ARP Library (beta version)
+
+**Files:**  
+[net/arp.h](https://github.com/krjdev/lib-avr/blob/master/net/arp.h)  
+[net/arp.c](https://github.com/krjdev/lib-avr/blob/master/net/arp.c)
+
+**Functions:**  
+```c
+int arp_init(mac_addr_t *src_mac, ipv4_addr_t *src_ip);
+int arp_pkt_set_oper(arp_packet_t *arp, uint16_t oper);
+int arp_pkt_set_sha(arp_packet_t *arp, mac_addr_t *mac);
+int arp_pkt_set_spa(arp_packet_t *arp, ipv4_addr_t *ip);
+int arp_pkt_set_tha(arp_packet_t *arp, mac_addr_t *mac);
+int arp_pkt_set_tpa(arp_packet_t *arp, ipv4_addr_t *ip);
+int arp_pkt_get_oper(arp_packet_t *arp, uint16_t *oper);
+int arp_pkt_get_sha(arp_packet_t *arp, mac_addr_t *mac);
+int arp_pkt_get_spa(arp_packet_t *arp, ipv4_addr_t *ip);
+int arp_pkt_get_tha(arp_packet_t *arp, mac_addr_t *mac);
+int arp_pkt_get_tpa(arp_packet_t *arp, ipv4_addr_t *ip);
+int arp_pkt_get_len(arp_packet_t *arp);
+int arp_buf_to_pkt(uint8_t *buf, int len, arp_packet_t *arp);
+int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf);
+int arp_pkt_valid(arp_packet_t *arp);
+int arp_pkt_create(arp_packet_t *arp);
+int arp_pkt_create_probe(arp_packet_t *arp);
+int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp);
+int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out);
+```
+
+**Dependencies**  
+* avr-libc  
+* net/ethernet.h  
+* net/ethernet.c
+
+### Ethernet Library (beta version)
+
+**Files:**  
+[net/ethernet.h](https://github.com/krjdev/lib-avr/blob/master/net/ethernet.h)  
+[net/ethernet.c](https://github.com/krjdev/lib-avr/blob/master/net/ethernet.c)
+
+**Functions:**  
+```c
+int ethernet_addr_aton(const char *str, mac_addr_t *mac);
+int ethernet_addr_ntoa(mac_addr_t *mac, char *str);
+int ethernet_addr_cpy(mac_addr_t *dst, mac_addr_t *src);
+int ethernet_addr_equal(mac_addr_t *mac1, mac_addr_t *mac2);
+int ethernet_frame_set_dst(eth_frame_t *frame, mac_addr_t *mac);
+int ethernet_frame_set_src(eth_frame_t *frame, mac_addr_t *mac);
+int ethernet_frame_set_type(eth_frame_t *frame, uint16_t type);
+int ethernet_frame_set_payload(eth_frame_t *frame, uint8_t *buf, int len);
+int ethernet_frame_get_dst(eth_frame_t *frame, mac_addr_t *mac);
+int ethernet_frame_get_src(eth_frame_t *frame, mac_addr_t *mac);
+int ethernet_frame_get_type(eth_frame_t *frame, uint16_t *type);
+int ethernet_frame_get_payload_len(eth_frame_t *frame);
+int ethernet_frame_get_payload(eth_frame_t *frame, uint8_t **buf);
+int ethernet_frame_get_len(eth_frame_t *frame);
+int ethernet_frame_payload_free(eth_frame_t *frame);
+int ethernet_buf_to_frm(uint8_t *buf, int len, eth_frame_t *frame);
+int ethernet_frm_to_buf(eth_frame_t *frame, uint8_t *buf);
+```
+
+**Dependencies**  
+* avr-libc
+
+### IPv4 Library (alpha version)
+
+**Files:**  
+[net/ipv4.h](https://github.com/krjdev/lib-avr/blob/master/net/ipv4.h)  
+[net/ipv4.c](https://github.com/krjdev/lib-avr/blob/master/net/ipv4.c)
+
+
+**Functions:**  
+```c
+int ipv4_addr_aton(const char *str, ipv4_addr_t *ip);
+int ipv4_addr_ntoa(ipv4_addr_t *ip, char *str);
+int ipv4_addr_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2);
+int ipv4_addr_cpy(ipv4_addr_t *dst, ipv4_addr_t *src);
+int ipv4_addr_is_broadcast(ipv4_addr_t *ip);
+int ipv4_calc_checksum(uint8_t *buf, int len, uint16_t *chksum);
+```
+
+**Dependencies**  
+* avr-libc
+
+### UDP Library (alpha version)
+
+**Files:**  
+[net/udp.h](https://github.com/krjdev/lib-avr/blob/master/net/udp.h)  
+[net/udp.c](https://github.com/krjdev/lib-avr/blob/master/net/udp.c)
+
+**Functions:**  
+```c
+int udp_set_port_src(udp_hdr_t *udp, uint16_t src);
+int udp_set_port_dst(udp_hdr_t *udp, uint16_t dst);
+int udp_set_len(udp_hdr_t *udp, uint16_t len);
+int udp_set_chk(udp_hdr_t *udp, uint16_t chk);
+int udp_get_port_src(udp_hdr_t *udp, uint16_t *src);
+int udp_get_port_dst(udp_hdr_t *udp, uint16_t *dst);
+int udp_get_len(udp_hdr_t *udp, uint16_t *len);
+int udp_get_chk(udp_hdr_t *udp, uint16_t *chk);
+```
+
+**Dependencies**  
+* avr-libc
+
+## Maxim (former Dallas) 1-Wire
+
+**Directory:**  
+[onewire](https://github.com/krjdev/lib-avr/tree/master/onewire)
+
+
+### 1-Wire Interface (Software-based)
+
+**Files:**  
+[onewire/sw-onewire.h](https://github.com/krjdev/lib-avr/blob/master/onewire/sw-onewire.h)  
+[onewire/sw-onewire.c](https://github.com/krjdev/lib-avr/blob/master/onewire/sw-onewire.c)
+
+**Functions:**  
+```c
+void onewire_init(void);
+int onewire_reset(void);
+int onewire_send(uint8_t *data, int len);
+int onewire_recv(uint8_t *data, int len);
+int onewire_read_rom(ow_rom_t *rom);
+int onewire_search_rom(int type, ow_rom_t *roms, int num);
+int onewire_search_family(int type, uint8_t family, ow_rom_t *roms, int num);
+int onewire_match_rom(ow_rom_t *rom);
+int onewire_skip_rom(void);
+int onewire_get_family(ow_rom_t *rom, uint8_t *family);
+int onewire_get_serial(ow_rom_t *rom, uint8_t *buf);
+int onewire_get_crc(ow_rom_t *rom, uint8_t *crc);
+```
+
+**Dependencies**  
+* avr-libc  
+* lib/crc8_dallas.h  
+* lib/crc8_dallas.c
+
+### 1-Wire device: Maxim (former Dallas) DS18S20 and DS18B20 Digital Thermometer driver
+
+**Files:**  
+[onewire/ds18x20.h](https://github.com/krjdev/lib-avr/blob/master/onewire/ds18x20.h)  
+[onewire/ds18x20.c](https://github.com/krjdev/lib-avr/blob/master/onewire/ds18x20.c)
+
+**Functions:**  
+```c
+void ds18x20_init(void);
+int ds18x20_read_rom(int type, ow_rom_t *rom);
+int ds18x20_search_rom(int type, ow_rom_t *roms, int num);
+int ds18x20_search_alarm(int type, ow_rom_t *roms, int num);
+int ds18x20_convert(ow_rom_t *rom);
+int ds18x20_get_temp(ow_rom_t *rom, int type, int res, float *temp);
+int ds18x20_set_resolution(ow_rom_t *rom, int res); /* DS18B20 only */
+int ds18x20_set_alarm(ow_rom_t *rom, int type, int8_t temp_high, int8_t temp_low);
+```
+
+**Dependencies**  
+* avr-libc  
+* lib/crc8_dallas.h  
+* lib/crc8_dallas.c  
+* onewire/sw-onewire.h  
+* onewire/sw-onewire.c
+
+### 1-Wire device: Dallas/Maxim DS2430A 256-Bit EEPROM driver
+
+**Files:**  
+[onewire/ds2430a.h](https://github.com/krjdev/lib-avr/blob/master/onewire/ds2430a.h)  
+[onewire/ds2430a.c](https://github.com/krjdev/lib-avr/blob/master/onewire/ds2430a.c)
+
+**Functions:**  
+```c
+void ds2430a_init(void);
+int ds2430a_read_rom(ow_rom_t *rom);
+int ds2430a_search_rom(ow_rom_t *roms, int num);
+int ds2430a_write_memory(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len);
+int ds2430a_read_memory(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len);
+int ds2430a_write_app_reg(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len);
+int ds2430a_read_app_reg(ow_rom_t *rom, uint8_t addr, uint8_t *buf, int len);
+int ds2430a_lock_app_reg(ow_rom_t *rom);
+int ds2430a_read_status(ow_rom_t *rom, uint8_t *status);
+```
+
+**Dependencies**  
+* avr-libc  
+* lib/crc8_dallas.h  
+* lib/crc8_dallas.c  
+* onewire/sw-onewire.h  
+* onewire/sw-onewire.c
+
+## SPI
+
+### SPI Interface (beta version)
+
+**Files:**  
+[spi/spi.h](https://github.com/krjdev/lib-avr/blob/master/spi/spi.h)  
+[spi/spi.c](https://github.com/krjdev/lib-avr/blob/master/spi/spi.c)
 
 **Functions:**  
 ```c
@@ -79,11 +371,14 @@ void spi_master_send(uint8_t *data, int len);
 void spi_master_recv(uint8_t *data, int len);
 ```
 
-### Microchip ENC28J60 Ethernet controller driver
+**Dependencies**  
+* avr-libc
+
+### SPI device: Microchip ENC28J60 Ethernet controller driver
 
 **Files:**  
-[spi/](https://github.com/krjdev/lib-avr/tree/master/spi)[enc28j60.h](https://github.com/krjdev/lib-avr/blob/master/spi/enc28j60.h)  
-[spi/](https://github.com/krjdev/lib-avr/tree/master/spi)[enc28j60.c](https://github.com/krjdev/lib-avr/blob/master/spi/enc28j60.c)
+[spi/enc28j60.h](https://github.com/krjdev/lib-avr/blob/master/spi/enc28j60.h)  
+[spi/enc28j60.c](https://github.com/krjdev/lib-avr/blob/master/spi/enc28j60.c)
 
 **Functions:**  
 ```c
@@ -104,148 +399,12 @@ int enc28j60_get_last_error(void);
 struct enc28j60_regs enc28j60_get_regs(void);
 ```
 
-## Dallas/Maxim 1-Wire Interface (Software-based)
-
-**Files:**  
-onewire/sw-onewire.h  
-onewire/sw-onewire.c
-
-**Functions:**  
-```c
-void onewire\_init(void)  
-int onewire\_reset(void)  
-int onewire\_send(uint8\_t *data, int len)  
-int onewire\_recv(uint8\_t *data, int len)  
-int onewire\_read\_rom(ow\_rom\_t *rom)  
-int onewire\_search\_rom(int type, ow\_rom\_t *roms, int len)  
-int onewire\_search\_family(int type, uint8\_t family, ow\_rom\_t *roms, int num)
-int onewire\_match\_rom(ow\_rom\_t *rom)  
-int onewire\_skip\_rom(void)  
-int onewire\_get\_family(ow\_rom\_t *rom, uint8\_t *family)  
-int onewire\_get\_serial(ow\_rom\_t *rom, uint8\_t *buf)  
-int onewire\_get\_crc(ow\_rom\_t *rom, uint8\_t *crc)
-```
-
-### CRC check function for the 1-Wire interface
-
-**Files:**  
-lib/crc8\_dallas.h  
-lib/crc8\_dallas.c
-
-**Functions:**  
-int crc8\_dallas\_calc(uint8\_t *data, int len)  
-int crc8\_dallas\_check(uint8\_t *data, int len, uint8\_t crc)
-
-### Dallas/Maxim DS18S20 and DS18B20 Digital Thermometer driver
-
-**Files:**  
-onewire/ds18x20.h  
-onewire/ds18x20.c
-
-**Functions:**  
-```c
-void ds18x20\_init(void)  
-int ds18x20\_read\_rom(int type, ow\_rom\_t *rom)  
-int ds18x20\_search\_rom(int type, ow\_rom\_t *roms, int num)  
-int ds18x20\_search\_alarm(int type, ow\_rom\_t *roms, int num)  
-int ds18x20\_convert(ow\_rom\_t *rom)  
-int ds18x20\_get\_temp(ow\_rom\_t *rom, int type, int res, float *temp)  
-int ds18x20\_set\_resolution(ow\_rom\_t *rom, int res)  
-int ds18x20\_set\_alarm(ow\_rom\_t *rom, int type, int8\_t temp\_high, int8\_t temp\_low)
-```
-
-### Dallas/Maxim DS2430A 256-Bit EEPROM driver
-
-**Files:**  
-onewire/ds2430a.h  
-onewire/ds2430a.c
-
-**Functions:**  
-```c
-void ds2430a\_init(void)  
-int ds2430a\_read\_rom(ow\_rom\_t *rom)  
-int ds2430a\_search\_rom(ow\_rom\_t *roms, int num)  
-int ds2430a\_write\_memory(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a\_read\_memory(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a\_write\_app\_reg(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a\_read\_app\_reg(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
-int ds2430a\_lock\_app\_reg(ow\_rom\_t *rom)  
-int ds2430a\_read\_status(ow\_rom\_t *rom, uint8\_t *status)
-```
-
-## Network libraries
-
-### ARP definitins and helper functions
-
-**Files:**  
-net/arp.h  
-net/arp.c
-
-**Functions:**  
-```c
-int arp_init(mac\_addr\_t *src\_mac, ipv4\_addr\_t *src_ip)  
-int arp\_pkt\_set\_oper(arp\_packet\_t *arp, uint16\_t oper)  
-int arp\_pkt\_set\_sha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
-int arp\_pkt\_set\_spa(arp\_packet\_t *arp, ipv4\_addr\_t *ip)  
-int arp\_pkt\_set\_tha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
-int arp\_pkt\_set\_tpa(arp\_packet\_t *arp, ipv4\_addr\_t *ip)  
-int arp\_pkt\_get\_oper(arp\_packet\_t *arp, uint16\_t *oper)  
-int arp\_pkt\_get\_sha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
-int arp\_pkt\_get\_spa(arp\_packet\_t *arp, ipv4\_addr\_t *ip)  
-int arp\_pkt\_get\_tha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
-int arp\_pkt\_get\_tpa(arp\_packet\_t *arp, ipv4\_addr\_t *ip)  
-int arp\_pkt\_get\_len(arp\_packet\_t *arp)  
-int arp\_buf\_to\_pkt(uint8\_t *buf, int len, arp\_packet\_t *arp)  
-int arp\_pkt\_to\_buf(arp\_packet\_t *arp, uint8\_t *buf)  
-int arp\_pkt\_valid(arp\_packet\_t *arp)  
-int arp\_pkt\_create(arp\_packet\_t *arp)  
-int arp\_pkt\_create_probe(arp\_packet\_t *arp)  
-int arp\_pkt\_create\_query(ipv4\_addr\_t *dst\_ip, arp\_packet\_t *arp)  
-int arp\_pkt\_create\_answer(arp\_packet\_t *arp\_in, arp\_packet\_t *arp\_out)
-```
-
-### Ethernet definitions and helper functions
-
-**Files:**  
-net/ethernet.h  
-net/ethernet.c
-
-**Functions:**  
-```c
-int ethernet\_addr\_aton(const char *str, mac\_addr\_t *mac)  
-int ethernet\_addr\_ntoa(mac\_addr\_t *mac, char *str)  
-int ethernet\_addr\_cpy(mac\_addr\_t *dst, mac\_addr\_t *src)  
-int ethernet\_addr\_equal(mac\_addr\_t *mac1, mac\_addr\_t *mac2)  
-int ethernet\_frame\_set\_dst(eth\_frame\_t *frame, mac\_addr\_t *mac)  
-int ethernet\_frame\_set\_src(eth\_frame\_t *frame, mac\_addr\_t *mac)  
-int ethernet\_frame\_set\_type(eth\_frame\_t *frame, uint16\_t type)  
-int ethernet\_frame\_set\_payload(eth\_frame\_t *frame, uint8\_t *buf, int len)  
-int ethernet\_frame\_get\_dst(eth\_frame\_t *frame, mac\_addr\_t *mac)  
-int ethernet\_frame\_get\_src(eth\_frame\_t *frame, mac\_addr\_t *mac)  
-int ethernet\_frame\_get\_type(eth\_frame\_t *frame, uint16\_t *type)  
-int ethernet\_frame\_get\_payload\_len(eth\_frame\_t *frame)  
-int ethernet\_frame\_get\_payload(eth\_frame\_t *frame, uint8\_t **buf)  
-int ethernet\_frame\_get\_len(eth\_frame\_t *frame)  
-int ethernet\_frame\_payload\_free(eth\_frame\_t *frame)  
-int ethernet\_buf\_to\_frm(uint8\_t *buf, int len, eth\_frame\_t *frame)  
-int ethernet\_frm\_to\_buf(eth\_frame\_t *frame, uint8\_t *buf);
-```
-
-### IPv4 definitions and helper functions
-
-**Files:**  
-net/ipv4.h  
-net/ipv4.c
-
-**Functions:**  
-```c
-int ipv4\_addr\_aton(const char *str, ipv4\_addr\_t *ip)  
-int ipv4\_addr\_ntoa(ipv4\_addr\_t *ip, char *str)  
-int ipv4\_addr\_equal(ipv4\_addr\_t *ip1, ipv4\_addr\_t *ip2)  
-int ipv4\_addr\_cpy(ipv4\_addr\_t *dst, ipv4\_addr\_t *src)  
-int ipv4\_addr\_is\_broadcast(ipv4\_addr\_t *ip)  
-int ipv4\_calc\_checksum(uint8\_t *buf, int len, uint16\_t *chksum)
-```
+**Dependencies**  
+* avr-libc  
+* net/ethernet.h  
+* net/ethernet.c  
+* spi/spi.h  
+* spi/spi.c
 
 # LICENSE
 > Copyright (c) 2018-2019 [Johannes Krottmayer](mailto:krjdev@gmail.com)  
