@@ -7,7 +7,7 @@
  * Created  : 2018-09-22
  * Modified : 2019-02-06
  * Revised  : 
- * Version  : 0.4.0.0
+ * Version  : 0.4.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,7 +23,7 @@
 #include "enc28j60.h"
 #include "spi.h"
 
-#define VERSION             "version 0.4.0.0"
+#define VERSION             "version 0.4.1.0"
 
 #define _HIGH(u16)          ((uint8_t) (((u16) & 0xFF00) >> 8))
 #define _LOW(u16)           ((uint8_t) ((u16) & 0x00FF))
@@ -398,41 +398,36 @@ uint32_t cnt_rx_frm;
 uint32_t cnt_tx_frm;
 uint16_t cnt_rx_err;
 uint16_t cnt_tx_err;
+struct enc28j60_regs regs;
 
 static int select_bank(uint8_t bank)
 {
     uint8_t send[2];
-    uint8_t recv;
     uint8_t tmp;
     
     /* read ECON1 register */
     send[0] = SPI_RCR | ECON1;
     ENC28J60_ENABLE;
     spi_master_send(&send[0], 1);
-    spi_master_recv(&recv, 1);
+    spi_master_recv(&tmp, 1);
     _delay_us(1);
     ENC28J60_DISABLE;
     
     /* select bank in ECON1 register */
     send[0] = SPI_WCR | ECON1;
-    tmp = recv;
+    tmp &= 0xFC;
     
     switch (bank) {
     case BANK0:
-        tmp &= ~(1 << ECON1_BSEL0);
-        tmp &= ~(1 << ECON1_BSEL1);
         break;
     case BANK1:
         tmp |= (1 << ECON1_BSEL0);
-        tmp &= ~(1 << ECON1_BSEL1);
         break;
     case BANK2:
-        tmp &= ~(1 << ECON1_BSEL0);
         tmp |= (1 << ECON1_BSEL1);
         break;
     case BANK3:
-        tmp |= (1 << ECON1_BSEL0);
-        tmp |= (1 << ECON1_BSEL1);
+        tmp |= (1 << ECON1_BSEL0) | (1 << ECON1_BSEL1);
         break;
     default:
         error = ERROR_INTERNAL;
@@ -750,16 +745,14 @@ int enc28j60_init(int mode, mac_addr_t *addr)
         tmp = ((1 << MACON3_FULDPX) | 
                (1 << MACON3_FRMLNEN) | 
                (1 << MACON3_TXCRCEN) | 
-               (1 << MACON3_PADCFG0) | 
-               (1 << MACON3_PADCFG2));
+               (1 << MACON3_PADCFG0));
         
         if (write_reg(BANK2, MACON3, tmp) == -1)
             return -1;
     } else {
         tmp = ((1 << MACON3_FRMLNEN) | 
                (1 << MACON3_TXCRCEN) | 
-               (1 << MACON3_PADCFG0) | 
-               (1 << MACON3_PADCFG2));
+               (1 << MACON3_PADCFG0));
         
         if (write_reg(BANK2, MACON3, tmp) == -1)
             return -1;
@@ -898,11 +891,18 @@ int enc28j60_send(eth_frame_t *frame)
     
     if (_ISSET(tmp, ESTAT_TXABRT)) {
         cnt_tx_err++;
-        return 0;
+        return -1;
     }
     
     if (read_buffer((BUF_TX_START + frm_len + 1), tsv, 7) == -1)
         return -1;
+    
+    tmp = tsv[TSV_BYTE2];
+    
+    if (_ISCLR(tmp, TSV_DONE)) {
+        cnt_tx_err++;
+        return -1;
+    }
     
     ret = tsv[TSV_BCNTL];
     ret |= (tsv[TSV_BCNTH] << 8);
@@ -1230,4 +1230,31 @@ char *enc28j60_get_chip_revision(void)
 int enc28j60_get_last_error(void)
 {
     return error;
+}
+
+struct enc28j60_regs enc28j60_get_regs(void)
+{
+    uint8_t tmp;
+    
+    read_reg(BANK0, EIE, &tmp);
+    regs.eie = tmp;
+    read_reg(BANK0, EIR, &tmp);
+    regs.eir = tmp;
+    read_reg(BANK0, ESTAT, &tmp);
+    regs.estat = tmp;
+    read_reg(BANK0, ECON1, &tmp);
+    regs.econ1 = tmp;
+    read_reg(BANK0, ECON2, &tmp);
+    regs.econ2 = tmp;
+    read_reg(BANK1, ERXFCON, &tmp);
+    regs.erxfcon = tmp;
+    read_reg(BANK1, EPKTCNT, &tmp);
+    regs.epktcnt = tmp;
+    read_mii_mac_reg(BANK2, MACON1, &tmp);
+    regs.macon1 = tmp;
+    read_mii_mac_reg(BANK2, MACON3, &tmp);
+    regs.macon3 = tmp;
+    read_mii_mac_reg(BANK2, MACON4, &tmp);
+    regs.macon4 = tmp;
+    return regs;
 }

@@ -7,7 +7,7 @@
  * Created  : 2018-09-22
  * Modified : 2019-02-06
  * Revised  : 
- * Version  : 0.4.0.0
+ * Version  : 0.4.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -43,6 +43,19 @@
 #define ERROR_ETHLIB        5
 #define ERROR_ENC28J60      6
 
+struct enc28j60_regs {
+    uint8_t eie;
+    uint8_t eir;
+    uint8_t estat;
+    uint8_t econ1;
+    uint8_t econ2;
+    uint8_t erxfcon;
+    uint8_t epktcnt;
+    uint8_t macon1;
+    uint8_t macon3;
+    uint8_t macon4;
+};
+
 extern int enc28j60_init(int mode, mac_addr_t *addr);
 extern int enc28j60_send(eth_frame_t *frame);
 extern int enc28j60_recv(eth_frame_t *frame);
@@ -57,5 +70,6 @@ extern int enc28j60_get_free_rx_space(void);
 extern char *enc28j60_get_version(void);
 extern char *enc28j60_get_chip_revision(void);
 extern int enc28j60_get_last_error(void);
+extern struct enc28j60_regs enc28j60_get_regs(void);
 
 #endif
