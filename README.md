@@ -9,15 +9,15 @@ Device driver and libraries for Microchip (Atmel) AVR series
 ## I2C Interface (Master mode only)
 
 **Files:**  
-i2c/i2c.h  
-i2c/i2c.c
+[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[i2c.h](https://github.com/krjdev/lib-avr/blob/master/i2c/i2c.h)  
+[i2c/](https://github.com/krjdev/lib-avr/tree/master/i2c)[i2c.c](https://github.com/krjdev/lib-avr/blob/master/i2c/i2c.c)
 
 **Functions:**  
 ```c
-int i2c\_master\_init(uint32\_t speed);
-int i2c\_master\_send(int opt, uint8\_t addr, uint8\_t cmd, int cmd\_len, uint8\_t *data, int data\_len);
-int i2c\_master\_recv(int opt, uint8\_t addr, uint8\_t cmd, int cmd\_len, uint8\_t *data, int data\_len);
-int i2c\_get\_error(void);
+int i2c_master_init(uint32_t speed);
+int i2c_master_send(int opt, uint8_t addr, uint8_t *cmd, int cmd_len, uint8_t *data, int data_len);
+int i2c_master_recv(int opt, uint8_t addr, uint8_t *cmd, int cmd_len, uint8_t *data, int data_len);
+int i2c_get_error(void);
 ```
 
 ### NXP PCF8574(A) 8-Bit Remote I/O expander driver
