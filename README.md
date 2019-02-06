@@ -190,18 +190,23 @@ net/ethernet.h
 net/ethernet.c
 
 **Functions:**  
-mac\_addr\_t *ethernet\_str\_to\_mac(const char *str)  
-char *ethernet\_mac\_to\_str(mac\_addr\_t *mac)  
-int ethernet\_frame\_set\_dst(eth\_frame\_t *frame, const char *addr)  
-int ethernet\_frame\_get\_dst(eth\_frame\_t *frame, char **str)  
-int ethernet\_frame\_set\_src(eth\_frame\_t *frame, const char *addr)  
-int ethernet\_frame\_get\_src(eth\_frame_t *frame, char **str)  
+int ethernet\_addr\_aton(const char *str, mac\_addr\_t *mac)  
+int ethernet\_addr\_ntoa(mac\_addr\_t *mac, char *str)  
+int ethernet\_addr\_cpy(mac\_addr\_t *dst, mac\_addr\_t *src)  
+int ethernet\_addr\_equal(mac\_addr\_t *mac1, mac\_addr\_t *mac2)  
+int ethernet\_frame\_set\_dst(eth\_frame\_t *frame, mac\_addr\_t *mac)  
+int ethernet\_frame\_set\_src(eth\_frame\_t *frame, mac\_addr\_t *mac)  
 int ethernet\_frame\_set\_type(eth\_frame\_t *frame, uint16\_t type)  
+int ethernet\_frame\_set\_payload(eth\_frame\_t *frame, uint8\_t *buf, int len)  
+int ethernet\_frame\_get\_dst(eth\_frame\_t *frame, mac\_addr\_t *mac)  
+int ethernet\_frame\_get\_src(eth\_frame\_t *frame, mac\_addr\_t *mac)  
 int ethernet\_frame\_get\_type(eth\_frame\_t *frame, uint16\_t *type)  
-int ethernet\_frame\_set\_payload(eth\_frame\_t *frame, uint8\_t *buffer, int length)  
-int ethernet\_frame\_get\_payload(eth\_frame\_t *frame, uint8\_t **buffer, int *length)  
-int ethernet\_buffer\_to\_frame(uint8\_t *buffer, int length, eth\_frame\_t **frame)  
-int ethernet\_frame\_to\_buffer(eth\_frame\_t *frame, uint8\_t **buffer, int *length)
+int ethernet\_frame\_get\_payload\_len(eth\_frame\_t *frame)  
+int ethernet\_frame\_get\_payload(eth\_frame\_t *frame, uint8\_t **buf)  
+int ethernet\_frame\_get\_len(eth\_frame\_t *frame)  
+int ethernet\_frame\_payload\_free(eth\_frame\_t *frame)  
+int ethernet\_buf\_to\_frm(uint8\_t *buf, int len, eth\_frame\_t *frame)  
+int ethernet\_frm\_to\_buf(eth\_frame\_t *frame, uint8\_t *buf);
 
 ### IPv4 definitions and helper functions
 
