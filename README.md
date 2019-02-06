@@ -3,8 +3,8 @@
 Device driver and libraries for Microchip (Atmel) AVR series
 
 **Requires:**  
-avr-gcc  
-avr-libc
+[avr-gcc](https://www.google.com "avr-gcc Homepage")  
+[avr-libc](https://www.google.com "AVR Libc Homepage")
 
 ## I2C Interface (Master mode only)
 
@@ -13,10 +13,12 @@ i2c/i2c.h
 i2c/i2c.c
 
 **Functions:**  
-int i2c\_master\_init(uint32\_t speed)  
-int i2c\_master\_send(int opt, uint8\_t addr, uint8\_t cmd, int cmd\_len, uint8\_t *data, int data\_len)  
-int i2c\_master\_recv(int opt, uint8\_t addr, uint8\_t cmd, int cmd\_len, uint8\_t *data, int data\_len)  
-int i2c\_get\_error(void)
+```c
+int i2c\_master\_init(uint32\_t speed);
+int i2c\_master\_send(int opt, uint8\_t addr, uint8\_t cmd, int cmd\_len, uint8\_t *data, int data\_len);
+int i2c\_master\_recv(int opt, uint8\_t addr, uint8\_t cmd, int cmd\_len, uint8\_t *data, int data\_len);
+int i2c\_get\_error(void);
+```
 
 ### NXP PCF8574(A) 8-Bit Remote I/O expander driver
 
@@ -25,6 +27,7 @@ i2c/pcf8574.h
 i2c/pcf8574.c
 
 **Functions:**  
+```c
 gpio\_t *pcf8574\_init(int type, uint8\_t subaddr)  
 void pcf8574\_free(gpio\_t *gpio)  
 int pcf8574\_write(gpio\_t *gpio, uint8\_t data)  
@@ -34,6 +37,7 @@ int pcf8574\_get\_config(gpio\_t *gpio, int pin, int *config)
 int pcf8574\_get\_npins(gpio\_t *gpio)  
 int pcf8574\_set\_pin(gpio\_t *gpio, int pin, int value)  
 int pcf8574\_get\_pin(gpio\_t *gpio, int pin, int *value)
+```
 
 ### NXP PCF8591 8-Bit A/D and D/A converter driver (alpha version)
 
@@ -42,9 +46,11 @@ i2c/pcf8591.h
 i2c/pcf8591.c
 
 **Functions:**  
+```c
 void pcf8591\_init(void)  
 int pcf8591\_get\_adc(uint8\_t subaddr, int config, int channel, uint8\_t *value)  
 int pcf8591\_set\_dac(uint8\_t subaddr, uint8\_t *value)
+```
 
 ### STmicroelectronics M24C01 - M24C64 I2C EEPROM driver (alpha version)
 
@@ -53,9 +59,11 @@ i2c/m24cxx.h
 i2c/m24cxx.c
 
 **Functions:**  
+```c
 void m24cxx\_init(void)  
 int m24cxx\_write(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)  
 int m24cxx_read(int type, uint8\_t subaddr, uint16\_t addr, uint8\_t *buf, int len)
+```
 
 ## SPI Interface (Master mode only)
 
@@ -64,9 +72,11 @@ spi/spi.h
 spi/spi.c
 
 **Functions:**  
+```c
 int spi\_master\_init(int mode, int speed)  
 int spi\_master\_send(uint8\_t *data, int len)  
 int spi\_master\_recv(uint8\_t *data, int len)
+```
 
 ### Microchip ENC28J60 Ethernet controller driver
 
@@ -75,6 +85,7 @@ spi/enc28j60.h
 spi/enc28j60.c
 
 **Functions:**  
+```c
 int enc28j60\_init(int mode, mac\_addr\_t *addr)  
 int enc28j60\_send(eth\_frame\_t *frame)  
 int enc28j60\_recv(eth\_frame\_t *frame)  
@@ -89,6 +100,7 @@ int enc28j60\_get\_free\_rx\_space(void)
 char *enc28j60\_get\_version(void)  
 char *enc28j60\_get\_chip\_revision(void)  
 int enc28j60\_get\_last\_error(void)
+```
 
 ## Dallas/Maxim 1-Wire Interface (Software-based)
 
@@ -97,6 +109,7 @@ onewire/sw-onewire.h
 onewire/sw-onewire.c
 
 **Functions:**  
+```c
 void onewire\_init(void)  
 int onewire\_reset(void)  
 int onewire\_send(uint8\_t *data, int len)  
@@ -109,6 +122,7 @@ int onewire\_skip\_rom(void)
 int onewire\_get\_family(ow\_rom\_t *rom, uint8\_t *family)  
 int onewire\_get\_serial(ow\_rom\_t *rom, uint8\_t *buf)  
 int onewire\_get\_crc(ow\_rom\_t *rom, uint8\_t *crc)
+```
 
 ### CRC check function for the 1-Wire interface
 
@@ -127,6 +141,7 @@ onewire/ds18x20.h
 onewire/ds18x20.c
 
 **Functions:**  
+```c
 void ds18x20\_init(void)  
 int ds18x20\_read\_rom(int type, ow\_rom\_t *rom)  
 int ds18x20\_search\_rom(int type, ow\_rom\_t *roms, int num)  
@@ -135,6 +150,7 @@ int ds18x20\_convert(ow\_rom\_t *rom)
 int ds18x20\_get\_temp(ow\_rom\_t *rom, int type, int res, float *temp)  
 int ds18x20\_set\_resolution(ow\_rom\_t *rom, int res)  
 int ds18x20\_set\_alarm(ow\_rom\_t *rom, int type, int8\_t temp\_high, int8\_t temp\_low)
+```
 
 ### Dallas/Maxim DS2430A 256-Bit EEPROM driver
 
@@ -143,6 +159,7 @@ onewire/ds2430a.h
 onewire/ds2430a.c
 
 **Functions:**  
+```c
 void ds2430a\_init(void)  
 int ds2430a\_read\_rom(ow\_rom\_t *rom)  
 int ds2430a\_search\_rom(ow\_rom\_t *roms, int num)  
@@ -152,6 +169,7 @@ int ds2430a\_write\_app\_reg(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int 
 int ds2430a\_read\_app\_reg(ow\_rom\_t *rom, uint8\_t addr, uint8\_t *buf, int len)  
 int ds2430a\_lock\_app\_reg(ow\_rom\_t *rom)  
 int ds2430a\_read\_status(ow\_rom\_t *rom, uint8\_t *status)
+```
 
 ## Network libraries
 
@@ -162,6 +180,7 @@ net/arp.h
 net/arp.c
 
 **Functions:**  
+```c
 int arp_init(mac\_addr\_t *src\_mac, ipv4\_addr\_t *src_ip)  
 int arp\_pkt\_set\_oper(arp\_packet\_t *arp, uint16\_t oper)  
 int arp\_pkt\_set\_sha(arp\_packet\_t *arp, mac\_addr\_t *mac)  
@@ -181,7 +200,7 @@ int arp\_pkt\_create(arp\_packet\_t *arp)
 int arp\_pkt\_create_probe(arp\_packet\_t *arp)  
 int arp\_pkt\_create\_query(ipv4\_addr\_t *dst\_ip, arp\_packet\_t *arp)  
 int arp\_pkt\_create\_answer(arp\_packet\_t *arp\_in, arp\_packet\_t *arp\_out)
-
+```
 
 ### Ethernet definitions and helper functions
 
@@ -190,6 +209,7 @@ net/ethernet.h
 net/ethernet.c
 
 **Functions:**  
+```c
 int ethernet\_addr\_aton(const char *str, mac\_addr\_t *mac)  
 int ethernet\_addr\_ntoa(mac\_addr\_t *mac, char *str)  
 int ethernet\_addr\_cpy(mac\_addr\_t *dst, mac\_addr\_t *src)  
@@ -207,6 +227,7 @@ int ethernet\_frame\_get\_len(eth\_frame\_t *frame)
 int ethernet\_frame\_payload\_free(eth\_frame\_t *frame)  
 int ethernet\_buf\_to\_frm(uint8\_t *buf, int len, eth\_frame\_t *frame)  
 int ethernet\_frm\_to\_buf(eth\_frame\_t *frame, uint8\_t *buf);
+```
 
 ### IPv4 definitions and helper functions
 
@@ -215,9 +236,26 @@ net/ipv4.h
 net/ipv4.c
 
 **Functions:**  
+```c
 int ipv4\_addr\_aton(const char *str, ipv4\_addr\_t *ip)  
 int ipv4\_addr\_ntoa(ipv4\_addr\_t *ip, char *str)  
 int ipv4\_addr\_equal(ipv4\_addr\_t *ip1, ipv4\_addr\_t *ip2)  
 int ipv4\_addr\_cpy(ipv4\_addr\_t *dst, ipv4\_addr\_t *src)  
 int ipv4\_addr\_is\_broadcast(ipv4\_addr\_t *ip)  
 int ipv4\_calc\_checksum(uint8\_t *buf, int len, uint16\_t *chksum)
+```
+
+# LICENSE
+> Copyright (c) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>  
+>  
+> Permission to use, copy, modify, and/or distribute this software for any  
+> purpose with or without fee is hereby granted, provided that the above  
+> copyright notice and this permission notice appear in all copies.  
+>  
+> THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES  
+> WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF  
+> MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR  
+> ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES  
+> WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN  
+> ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF  
+> OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
