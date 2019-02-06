@@ -68,7 +68,7 @@ int spi\_master\_init(int mode, int speed)
 int spi\_master\_send(uint8\_t *data, int len)  
 int spi\_master\_recv(uint8\_t *data, int len)
 
-### Microchip ENC28J60 Ethernet controller driver (beta version)
+### Microchip ENC28J60 Ethernet controller driver
 
 **Files:**  
 spi/enc28j60.h  
@@ -81,9 +81,10 @@ int enc28j60\_recv(eth\_frame\_t *frame)
 int enc28j60\_set\_mac(mac\_addr\_t *addr)  
 int enc28j60\_get\_mac(mac\_addr\_t *addr)  
 int enc28j60\_is\_link\_up(void)  
-uint32\_t enc28j60\_get\_frame\_count\_rx(void)  
-uint32\_t enc28j60\_get\_frame\_count\_tx(void)  
-uint32\_t enc28j60\_get\_frame\_count\_err(void)  
+uint32\_t enc28j60\_get\_count\_rx\_frame(void)  
+uint32\_t enc28j60\_get\_count\_tx\_frame(void)  
+uint16\_t enc28j60\_get\_count\_rx\_err(void)  
+uint16\_t enc28j60\_get\_count\_tx\_err(void)  
 int enc28j60\_get\_free\_rx\_space(void)  
 char *enc28j60\_get\_version(void)  
 char *enc28j60\_get\_chip\_revision(void)  
