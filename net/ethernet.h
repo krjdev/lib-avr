@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-04
+ * Modified : 2019-02-06
  * Revised  : 
- * Version  : 0.3.0.0
+ * Version  : 0.3.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #define ETHERNET_TYPE_IPV4  0x0800
+#define ETHERNET_TYPE_IPV6  0x86DD
 #define ETHERNET_TYPE_ARP   0x0806
 
 typedef struct mac_addr {
