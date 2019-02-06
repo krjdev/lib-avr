@@ -215,5 +215,9 @@ net/ipv4.h
 net/ipv4.c
 
 **Functions:**  
-ipv4\_addr\_t *ipv4\_str\_to\_ip(const char *str)  
-char *ipv4\_ip\_to\_str(ipv4\_addr\_t *ip)
+int ipv4\_addr\_aton(const char *str, ipv4\_addr\_t *ip)  
+int ipv4\_addr\_ntoa(ipv4\_addr\_t *ip, char *str)  
+int ipv4\_addr\_equal(ipv4\_addr\_t *ip1, ipv4\_addr\_t *ip2)  
+int ipv4\_addr\_cpy(ipv4\_addr\_t *dst, ipv4\_addr\_t *src)  
+int ipv4\_addr\_is\_broadcast(ipv4\_addr\_t *ip)  
+int ipv4\_calc\_checksum(uint8\_t *buf, int len, uint16\_t *chksum)
