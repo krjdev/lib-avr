@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2019-02-06
+ * Modified : 2019-02-08
  * Revised  : 
- * Version  : 0.4.1.0
+ * Version  : 0.4.1.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,7 +23,7 @@
 #include "enc28j60.h"
 #include "spi.h"
 
-#define VERSION             "version 0.4.1.0"
+#define VERSION             "ENC28J60 driver: 0.4.1.1"
 
 #define _HIGH(u16)          ((uint8_t) (((u16) & 0xFF00) >> 8))
 #define _LOW(u16)           ((uint8_t) ((u16) & 0x00FF))
@@ -392,13 +392,14 @@
     #define RSV_UNKNOWN         5 /* Receive Unknown Opcode */
     #define RSV_VLAN            6 /* Receive VLAN Type Detected */
 
-int error;
+int init_done = 0;
+int error = ERR_NOERR;
+
+struct enc28j60_regs regs_cfg;
+mac_addr_t mac;
+nic_stats_t stats;
+
 uint16_t ptr_pkg_next;
-uint32_t cnt_rx_frm;
-uint32_t cnt_tx_frm;
-uint16_t cnt_rx_err;
-uint16_t cnt_tx_err;
-struct enc28j60_regs regs;
 
 static int select_bank(uint8_t bank)
 {
@@ -430,7 +431,7 @@ static int select_bank(uint8_t bank)
         tmp |= (1 << ECON1_BSEL0) | (1 << ECON1_BSEL1);
         break;
     default:
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
@@ -447,12 +448,12 @@ static int read_reg(uint8_t bank, uint8_t reg, uint8_t *val)
     uint8_t send;
     
     if (select_bank(bank) == -1) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
     if (!val) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
@@ -471,12 +472,12 @@ static int read_mii_mac_reg(uint8_t bank, uint8_t reg, uint8_t *val)
     uint8_t recv[2];
     
     if (select_bank(bank) == -1) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
     if (!val) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
@@ -495,8 +496,8 @@ static int write_reg(uint8_t bank, uint8_t reg, uint8_t val)
     uint8_t send[2];
     
     if (select_bank(bank) == -1) {
+        error = ERR_INTER;
         return -1;
-        error = ERROR_INTERNAL;
     }
     
     send[0] = SPI_WCR | reg;
@@ -514,7 +515,7 @@ static int read_phy_reg(uint8_t reg, uint16_t *val)
     int timeout = TIMEOUT_CNT;
     
     if (!val) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
@@ -528,14 +529,14 @@ static int read_phy_reg(uint8_t reg, uint16_t *val)
         timeout--;
         
         if (timeout == 0) {
-            error = ERROR_INTERNAL;
+            error = ERR_INTER;
             return -1;
         }
     }
     
     write_reg(BANK2, MICMD, 0x00);
     read_mii_mac_reg(BANK2, MIRDH, &tmp);
-    (*val) |= (tmp << 8);
+    (*val) |= ((uint16_t) tmp << 8);
     read_mii_mac_reg(BANK2, MIRDL, &tmp);
     (*val) |= tmp;
     return 0;
@@ -557,7 +558,7 @@ static int write_phy_reg(uint8_t reg, uint16_t val)
         timeout--;
         
         if (timeout == 0) {
-            error = ERROR_INTERNAL;
+            error = ERR_INTER;
             return -1;
         }
     }
@@ -569,18 +570,18 @@ static int read_buffer(uint16_t addr, uint8_t *buf, int len)
 {
     uint8_t send;
     
-    if (addr > (BUF_SIZE - 1)) {
-        error = ERROR_INTERNAL;
+    if (addr > (BUF_SIZE - len)) {
+        error = ERR_INTER;
         return -1;
     }
     
     if (!buf) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
     if (len > BUF_SIZE) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
@@ -599,18 +600,18 @@ static int write_buffer(uint16_t addr, uint8_t *buf, int len)
 {
     uint8_t send;
     
-    if (addr > (BUF_SIZE - 1)) {
-        error = ERROR_INTERNAL;
+    if (addr > (BUF_SIZE - len)) {
+        error = ERR_INTER;
         return -1;
     }
     
     if (!buf) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
     if (len > BUF_SIZE) {
-        error = ERROR_INTERNAL;
+        error = ERR_INTER;
         return -1;
     }
     
@@ -659,18 +660,70 @@ int enc28j60_init(int mode, mac_addr_t *addr)
     uint8_t tmp;
     int timeout = TIMEOUT_CNT;
     
-    error = ERROR_NO;
+    error = ERR_NOERR;
     
     if (!addr) {
-        error = ERROR_INVAL;
+        error = ERR_INVAL;
         return -1;
     }
     
+    if (!init_done) {
+        regs_cfg.mode = mode;
+        regs_cfg.erxstl = _LOW(BUF_RX_START);
+        regs_cfg.erxsth = _HIGH(BUF_RX_START);
+        regs_cfg.erxrdptl = _LOW(BUF_RX_END);
+        regs_cfg.erxrdpth = _HIGH(BUF_RX_END);
+        regs_cfg.erxndl = _LOW(BUF_RX_END);
+        regs_cfg.erxndh = _HIGH(BUF_RX_END);
+        regs_cfg.etxstl = _LOW(BUF_TX_START);
+        regs_cfg.etxsth = _HIGH(BUF_TX_START);
+        regs_cfg.erxfcon = ((1 << ERXFCON_CRCEN) | 
+                            (1 << ERXFCON_MCEN) | 
+                            (1 << ERXFCON_UCEN) | 
+                            (1 << ERXFCON_BCEN));
+        regs_cfg.macon1 = ((1 << MACON1_MARXEN) | 
+                           (1 << MACON1_TXPAUS) | 
+                           (1 << MACON1_RXPAUS));
+        
+        if (regs_cfg.mode == MODE_FDPX) {
+            regs_cfg.macon3 = ((1 << MACON3_FULDPX) | 
+                               (1 << MACON3_FRMLNEN) | 
+                               (1 << MACON3_TXCRCEN) | 
+                               (1 << MACON3_PADCFG0));
+            regs_cfg.mabbipg = 0x15;
+            regs_cfg.maipgh = 0x00;
+            regs_cfg.phcon1 = (1 << PHCON1_PDPXMD);
+            
+        } else {
+            regs_cfg.macon3 = ((1 << MACON3_FRMLNEN) | 
+                               (1 << MACON3_TXCRCEN) | 
+                               (1 << MACON3_PADCFG0));
+            regs_cfg.mabbipg = 0x12;
+            regs_cfg.maipgh = 0x0C;
+            regs_cfg.phcon1 = 0x0000;
+        }
+        
+        regs_cfg.maipgl = 0x12;
+        regs_cfg.macon4 = (1 << MACON4_DEFER);
+        regs_cfg.econ1 = (1 << ECON1_RXEN);
+        regs_cfg.econ2 = (1 << ECON2_AUTOINC);
+        regs_cfg.mamxfll = _LOW(MAX_FRAME_SIZE);
+        regs_cfg.mamxflh = _HIGH(MAX_FRAME_SIZE);
+        
+        stats.tx_frm = 0;
+        stats.rx_frm = 0;
+        stats.tx_byt = 0;
+        stats.rx_byt = 0;
+        stats.tx_err = 0;
+        stats.rx_err = 0;
+    }
+    
+    ethernet_addr_cpy(&mac, addr); 
     ptr_pkg_next = BUF_RX_START;
-    cnt_rx_frm = 0;
-    cnt_tx_frm = 0;
-    cnt_rx_err = 0;
-    cnt_tx_err = 0;
+    
+    /* Reset */
+//     ENC28J60_RS_CONFIG;
+//     ENC28J60_RS_ENABLE;
     
     /* Init SPI interface */
     ENC28J60_CSCONFIG;
@@ -682,38 +735,33 @@ int enc28j60_init(int mode, mac_addr_t *addr)
     _delay_ms(2);
 
     /* Receive Buffer */
-    if (write_reg(BANK0, ERXSTL, _LOW(BUF_RX_START)) == -1)
+    if (write_reg(BANK0, ERXSTL, regs_cfg.erxstl) == -1)
         return -1;
     
-    if (write_reg(BANK0, ERXSTH, _HIGH(BUF_RX_START)) == -1)
+    if (write_reg(BANK0, ERXSTH, regs_cfg.erxsth) == -1)
         return -1;
     
-    if (write_reg(BANK0, ERXRDPTL, _LOW(BUF_RX_END)) == -1)
+    if (write_reg(BANK0, ERXRDPTL, regs_cfg.erxrdptl) == -1)
         return -1;
     
-    if (write_reg(BANK0, ERXRDPTH, _HIGH(BUF_RX_END)) == -1)
+    if (write_reg(BANK0, ERXRDPTH, regs_cfg.erxrdpth) == -1)
         return -1;
     
-    if (write_reg(BANK0, ERXNDL, _LOW(BUF_RX_END)) == -1)
+    if (write_reg(BANK0, ERXNDL, regs_cfg.erxndl) == -1)
         return -1;
     
-    if (write_reg(BANK0, ERXNDH, _HIGH(BUF_RX_END)) == -1)
+    if (write_reg(BANK0, ERXNDH, regs_cfg.erxndh) == -1)
         return -1;
     
     /* Transmit Buffer */
-    if (write_reg(BANK0, ETXSTL, _LOW(BUF_TX_START)) == -1)
+    if (write_reg(BANK0, ETXSTL, regs_cfg.etxstl) == -1)
         return -1;
     
-    if (write_reg(BANK0, ETXSTH, _HIGH(BUF_TX_START)) == -1)
+    if (write_reg(BANK0, ETXSTH, regs_cfg.etxsth) == -1)
         return -1;
     
     /* Receive Filter */
-    tmp = ((1 << ERXFCON_CRCEN) | 
-           (1 << ERXFCON_MCEN) | 
-           (1 << ERXFCON_UCEN) | 
-           (1 << ERXFCON_BCEN));
-    
-    if (write_reg(BANK1, ERXFCON, tmp) == -1)
+    if (write_reg(BANK1, ERXFCON, regs_cfg.erxfcon) == -1)
         return -1;
     
     /* Waiting for OST */
@@ -728,79 +776,56 @@ int enc28j60_init(int mode, mac_addr_t *addr)
         timeout--;
         
         if (timeout == 0) {
-            error = ERROR_TIMEOUT;
+            error = ERR_TIMEO;
             return -1;
         }
     }
     
     /* MAC Initialization Settings */
-    tmp = ((1 << MACON1_MARXEN) | 
-           (1 << MACON1_TXPAUS) | 
-           (1 << MACON1_RXPAUS));
-    
-    if (write_reg(BANK2, MACON1, tmp) == -1)
+    if (write_reg(BANK2, MACON1, regs_cfg.macon1) == -1)
         return -1;
     
-    if (mode == MODE_FDPX) {
-        tmp = ((1 << MACON3_FULDPX) | 
-               (1 << MACON3_FRMLNEN) | 
-               (1 << MACON3_TXCRCEN) | 
-               (1 << MACON3_PADCFG0));
-        
-        if (write_reg(BANK2, MACON3, tmp) == -1)
+    if (write_reg(BANK2, MACON3, regs_cfg.macon3) == -1)
             return -1;
-    } else {
-        tmp = ((1 << MACON3_FRMLNEN) | 
-               (1 << MACON3_TXCRCEN) | 
-               (1 << MACON3_PADCFG0));
-        
-        if (write_reg(BANK2, MACON3, tmp) == -1)
+    
+    if (write_reg(BANK2, MACON4, regs_cfg.macon4) == -1)
             return -1;
-    }
     
-    if (write_reg(BANK2, MACON4, (1 << MACON4_DEFER)) == -1)
+    if (write_reg(BANK2, MAMXFLL, regs_cfg.mamxfll) == -1)
         return -1;
     
-    if (write_reg(BANK2, MAMXFLL, _LOW(MAX_FRAME_SIZE)) == -1)
+    if (write_reg(BANK2, MAMXFLH, regs_cfg.mamxflh) == -1)
         return -1;
     
-    if (write_reg(BANK2, MAMXFLH, _HIGH(MAX_FRAME_SIZE)) == -1)
+
+    if (write_reg(BANK2, MABBIPG, regs_cfg.mabbipg) == -1)
+        return -1;
+ 
+    
+    if (write_reg(BANK2, MAIPGL, regs_cfg.maipgl) == -1)
         return -1;
     
-    if (mode == MODE_FDPX) {
-        if (write_reg(BANK2, MABBIPG, 0x15) == -1)
-            return -1;
-    } else {
-        if (write_reg(BANK2, MABBIPG, 0x12) == -1)
+    if (regs_cfg.mode == MODE_HDPX) {
+        if (write_reg(BANK2, MAIPGH, regs_cfg.maipgh) == -1)
             return -1;
     }
     
-    if (write_reg(BANK2, MAIPGL, 0x12) == -1)
-        return -1;
-    
-    if (mode == MODE_HDPX) {
-        if (write_reg(BANK2, MAIPGH, 0x0C) == -1)
-            return -1;
-    }
-    
-    if (enc28j60_set_mac(addr) == -1)
+    if (enc28j60_set_mac(&mac) == -1)
         return -1;
     
     /* PHY Initialization Settings */
-    if (mode == MODE_FDPX) {
-        if (write_phy_reg(PHCON1, (1 << PHCON1_PDPXMD)) == -1)
-            return -1;
-    } else {
-        if (write_phy_reg(PHCON1, 0x0000) == -1)
-            return -1;
-    }
-    
-    /* Enable receiving packets */
-    tmp = (1 << ECON1_RXEN);
-    
-    if (write_reg(BANK0, ECON1, tmp) == -1)
+    if (write_phy_reg(PHCON1, regs_cfg.phcon1) == -1)
         return -1;
     
+    /* Enable increment */
+    if (write_reg(BANK0, ECON2, regs_cfg.econ2) == -1)
+        return -1;
+    
+    /* Enable receiving packets */
+    if (write_reg(BANK0, ECON1, regs_cfg.econ1) == -1)
+        return -1;
+    
+    init_done = 1;
     return 0;
 }
 
@@ -814,31 +839,32 @@ int enc28j60_send(eth_frame_t *frame)
     uint8_t tsv[7];
     
     if (!frame) {
-        error = ERROR_INVAL;
+        error = ERR_INVAL;
         return -1;
     }
     
     frm_len = ethernet_frame_get_len(frame);
     
     if (frm_len == -1) {
-        error = ERROR_ETHLIB;
+        error = ERR_ETLIB;
         return -1;
     }
     
     if (frm_len > MAX_FRAME_SIZE) {
-        cnt_tx_err++;
-        return 0;
+        stats.tx_err++;
+        error = ERR_FRMTB;
+        return -1;
     }
     
     p = (uint8_t *) malloc(frm_len);
     
     if (!p) {
-        error = ERROR_NOMEM;
+        error = ERR_NOMEM;
         return -1;
     }
     
     if (ethernet_frm_to_buf(frame, p) == -1) {
-        error = ERROR_ETHLIB;
+        error = ERR_ETLIB;
         free(p);
         return -1;
     }
@@ -881,7 +907,7 @@ int enc28j60_send(eth_frame_t *frame)
         timeout--;
         
         if (timeout == 0) {
-            error = ERROR_TIMEOUT;
+            error = ERR_TIMEO;
             return -1;
         }
     }
@@ -890,23 +916,24 @@ int enc28j60_send(eth_frame_t *frame)
         return -1;
     
     if (_ISSET(tmp, ESTAT_TXABRT)) {
-        cnt_tx_err++;
+        stats.tx_err++;
+        error = ERR_TXABT;
         return -1;
     }
     
     if (read_buffer((BUF_TX_START + frm_len + 1), tsv, 7) == -1)
         return -1;
     
-    tmp = tsv[TSV_BYTE2];
-    
-    if (_ISCLR(tmp, TSV_DONE)) {
-        cnt_tx_err++;
+    if (_ISCLR(tsv[TSV_BYTE2], TSV_DONE)) {
+        stats.tx_err++;
+        error = ERR_TXERR;
         return -1;
     }
     
-    ret = tsv[TSV_BCNTL];
-    ret |= (tsv[TSV_BCNTH] << 8);
-    cnt_tx_frm++;
+    ret = (uint16_t) tsv[TSV_BCNTL];
+    ret |= ((uint16_t) tsv[TSV_BCNTH] << 8);
+    stats.tx_frm++;
+    stats.tx_byt += ret;
     return ret;
 }
 
@@ -924,7 +951,7 @@ int enc28j60_recv(eth_frame_t *frame)
     uint8_t tmp;
     
     if (!frame) {
-        error = ERROR_INVAL;
+        error = ERR_INVAL;
         return -1;
     }
     
@@ -943,15 +970,19 @@ int enc28j60_recv(eth_frame_t *frame)
     ptr_pkg_next = (uint16_t) rsv[BUF_PTR_LO];
     ptr_pkg_next |= ((uint16_t)rsv[BUF_PTR_HI] << 8);
     
+#ifdef DEBUG
     if (ptr_pkg_next >= BUF_RX_END) {
-        error = ERROR_ENC28J60;
+        error = 10;
+        stats.rx_err++;
         return -1;
     }
     
     if (ptr_pkg_next == ptr_pkg_start) {
-        error = ERROR_ENC28J60;
+        error = 11;
+        stats.rx_err++;
         return -1;
     }
+#endif
     
     if (ptr_pkg_start < ptr_pkg_next) {
         ptr_rsv_start = ptr_pkg_start + 2;
@@ -962,15 +993,7 @@ int enc28j60_recv(eth_frame_t *frame)
         
         frm_len_ptr = ptr_pkg_next - ptr_frm_start;
     } else {
-        if ((ptr_pkg_start + 2) > BUF_RX_END) {
-            ptr_rsv_start = BUF_RX_START;
-            ptr_frm_start = ptr_rsv_start + 4;
-            
-            if (read_buffer(ptr_rsv_start, rsv, 4) == -1)
-                return -1;
-            
-            frm_len_ptr = ptr_pkg_next - ptr_frm_start;
-        } else if ((ptr_pkg_start + 6) > BUF_RX_END) {
+        if ((ptr_pkg_start + 6) > BUF_RX_END) {
             ptr_rsv_start = ptr_pkg_start + 2;
             rsv_len_warp = BUF_RX_END - ptr_rsv_start + 1;
             ptr_frm_start = (4 - rsv_len_warp) - BUF_RX_START;
@@ -982,6 +1005,14 @@ int enc28j60_recv(eth_frame_t *frame)
             if (read_buffer(BUF_RX_START, &rsv[rsv_len_warp], 
                 (4 - rsv_len_warp)) == -1)
                 return -1;
+        } else if ((ptr_pkg_start + 2) > BUF_RX_END) {
+            ptr_rsv_start = BUF_RX_START;
+            ptr_frm_start = ptr_rsv_start + 4;
+            
+            if (read_buffer(ptr_rsv_start, rsv, 4) == -1)
+                return -1;
+            
+            frm_len_ptr = ptr_pkg_next - ptr_frm_start;
         } else {
             ptr_rsv_start = ptr_pkg_start + 2;
             ptr_frm_start = ptr_rsv_start + 4;
@@ -996,40 +1027,47 @@ int enc28j60_recv(eth_frame_t *frame)
     frm_len_rsv = (uint16_t) rsv[RSV_BCNTL];
     frm_len_rsv |= ((uint16_t) rsv[RSV_BCNTH] << 8);
     
+#ifdef DEBUG
     if (frm_len_rsv > MAX_FRAME_SIZE) {
-        cnt_rx_err++;
-        
         if (free_rx_memory() == -1)
             return -1;
-        
-        return 0;
+        stats.rx_err++;
+        error = 12
+        return -1;
     }
+#endif
     
     if (_ISCLR(rsv[RSV_BYTE2], RSV_OK)) {
-        cnt_rx_err++;
+        stats.rx_err++;
         
         if (free_rx_memory() == -1)
             return -1;
         
-        return 0;
+        error = ERR_FRMIN;
+        return -1;
     }
     
+#ifdef DEBUG
     if (frm_len_rsv & 1) {
         if ((frm_len_ptr - 1) != frm_len_rsv) {
-            error = ERROR_ENC28J60;
+            stats.rx_err++;
+            error = 13;
             return -1;
         }
     } else {
         if (frm_len_ptr != frm_len_rsv) {
-            error = ERROR_ENC28J60;
+            stats.rx_err++;
+            error = 13;
             return -1;
         }
     }
+#endif
     
     p = (uint8_t *) malloc(frm_len_rsv);
     
     if (!p) {
-        error = ERROR_NOMEM;
+        error = ERR_NOMEM;
+        stats.rx_err++;
         return -1;
     }
     
@@ -1051,7 +1089,8 @@ int enc28j60_recv(eth_frame_t *frame)
     }
     
     if (ethernet_buf_to_frm(p, frm_len_rsv - 4, frame) == -1) {
-        error = ERROR_ETHLIB;
+        error = ERR_ETLIB;
+        stats.rx_err++;
         free(p);
         return -1;
     }
@@ -1061,14 +1100,15 @@ int enc28j60_recv(eth_frame_t *frame)
     if (free_rx_memory() == -1)
         return -1;
     
-    cnt_rx_frm++;
+    stats.rx_frm++;
+    stats.rx_byt += (frm_len_rsv - 4);
     return (frm_len_rsv - 4);
 }
 
 int enc28j60_set_mac(mac_addr_t *addr)
 {
     if (!addr) {
-        error = ERROR_INVAL;
+        error = ERR_INVAL;
         return -1;
     }
     
@@ -1098,7 +1138,7 @@ int enc28j60_get_mac(mac_addr_t *addr)
     uint8_t tmp;
     
     if (!addr) {
-        error = ERROR_INVAL;
+        error = ERR_INVAL;
         return -1;
     }
     
@@ -1146,26 +1186,6 @@ int enc28j60_is_link_up(void)
         return 0;
 }
 
-uint32_t enc28j60_get_count_rx_frame(void)
-{
-    return cnt_rx_frm;
-}
-
-uint32_t enc28j60_get_count_tx_frame(void)
-{
-    return cnt_tx_frm;
-}
-
-uint16_t enc28j60_get_count_rx_err(void)
-{
-    return cnt_rx_err;
-}
-
-uint16_t enc28j60_get_count_tx_err(void)
-{
-    return cnt_tx_err;
-}
-
 int enc28j60_get_free_rx_space(void)
 {
     uint8_t tmp;
@@ -1201,12 +1221,12 @@ int enc28j60_get_free_rx_space(void)
     return (rdp - wrp - 1);
 }
 
-char *enc28j60_get_version(void)
+char *enc28j60_get_ver(void)
 {
     return VERSION;
 }
 
-char *enc28j60_get_chip_revision(void)
+char *enc28j60_get_rev(void)
 {
     uint8_t tmp;
       
@@ -1223,38 +1243,51 @@ char *enc28j60_get_chip_revision(void)
     case 0x06:
         return "B7";
     default:
-        return "UNKNOWN";
+        return "UK";
     }
 }
 
 int enc28j60_get_last_error(void)
 {
-    return error;
+    int err;
+    
+    err = error;
+    error = ERR_NOERR;
+    return err;
 }
 
-struct enc28j60_regs enc28j60_get_regs(void)
+nic_stats_t enc28j60_get_stats(void)
 {
-    uint8_t tmp;
+    return stats;
+}
+
+struct enc28j60_regs enc28j60_dump_regs(void)
+{
+    struct enc28j60_regs regs;
     
-    read_reg(BANK0, EIE, &tmp);
-    regs.eie = tmp;
-    read_reg(BANK0, EIR, &tmp);
-    regs.eir = tmp;
-    read_reg(BANK0, ESTAT, &tmp);
-    regs.estat = tmp;
-    read_reg(BANK0, ECON1, &tmp);
-    regs.econ1 = tmp;
-    read_reg(BANK0, ECON2, &tmp);
-    regs.econ2 = tmp;
-    read_reg(BANK1, ERXFCON, &tmp);
-    regs.erxfcon = tmp;
-    read_reg(BANK1, EPKTCNT, &tmp);
-    regs.epktcnt = tmp;
-    read_mii_mac_reg(BANK2, MACON1, &tmp);
-    regs.macon1 = tmp;
-    read_mii_mac_reg(BANK2, MACON3, &tmp);
-    regs.macon3 = tmp;
-    read_mii_mac_reg(BANK2, MACON4, &tmp);
-    regs.macon4 = tmp;
+    read_reg(BANK0, EIE, &regs.eie);
+    read_reg(BANK0, EIR, &regs.eir);
+    read_reg(BANK0, ESTAT, &regs.estat);
+    read_reg(BANK0, ECON1, &regs.econ1);
+    read_reg(BANK0, ECON2, &regs.econ2);
+    read_reg(BANK0, ERXSTL, &regs.erxstl);
+    read_reg(BANK0, ERXSTH, &regs.erxsth);
+    read_reg(BANK0, ERXRDPTL, &regs.erxrdptl);
+    read_reg(BANK0, ERXRDPTH, &regs.erxrdpth);
+    read_reg(BANK0, ERXNDL, &regs.erxndl);
+    read_reg(BANK0, ERXNDH, &regs.erxndh);
+    read_reg(BANK0, ETXSTL, &regs.etxstl);
+    read_reg(BANK0, ETXSTH, &regs.etxsth);
+    read_reg(BANK1, ERXFCON, &regs.erxfcon);
+    read_reg(BANK1, EPKTCNT, &regs.epktcnt);
+    read_mii_mac_reg(BANK2, MACON1, &regs.macon1);
+    read_mii_mac_reg(BANK2, MACON3, &regs.macon3);
+    read_mii_mac_reg(BANK2, MACON4, &regs.macon4);
+    read_mii_mac_reg(BANK2, MAMXFLL, &regs.mamxfll);
+    read_mii_mac_reg(BANK2, MAMXFLH, &regs.mamxflh);
+    read_mii_mac_reg(BANK2, MABBIPG, &regs.mabbipg);
+    read_mii_mac_reg(BANK2, MAIPGL, &regs.maipgl);
+    read_mii_mac_reg(BANK2, MAIPGH, &regs.maipgh);
+    read_phy_reg(PHCON1, &regs.phcon1);
     return regs;
 }

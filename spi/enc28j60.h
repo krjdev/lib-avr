@@ -7,7 +7,7 @@
  * Created  : 2018-09-22
  * Modified : 2019-02-06
  * Revised  : 
- * Version  : 0.4.1.0
+ * Version  : 0.4.1.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -24,6 +24,7 @@
 #include <avr/io.h>
 
 #include "../net/ethernet.h"
+#include "../net/nic.h"
 
 /* ENC28J60 Chip select */
 #define ENC28J60_CSCONFIG   (DDRJ |= (1 << PJ0))
@@ -35,41 +36,56 @@
 #define MODE_HDPX           1
 
 /* Error codes */
-#define ERROR_NO            0
-#define ERROR_NOMEM         1
-#define ERROR_INVAL         2
-#define ERROR_TIMEOUT       3
-#define ERROR_INTERNAL      4
-#define ERROR_ETHLIB        5
-#define ERROR_ENC28J60      6
+#define ERR_NOERR           0
+#define ERR_NOMEM           1
+#define ERR_INVAL           2
+#define ERR_TIMEO           3
+#define ERR_INTER           4
+#define ERR_ETLIB           5
+#define ERR_FRMIN           6
+#define ERR_TXABT           7
+#define ERR_FRMTB           8
+#define ERR_TXERR           9
 
 struct enc28j60_regs {
+    int mode;
     uint8_t eie;
     uint8_t eir;
     uint8_t estat;
     uint8_t econ1;
     uint8_t econ2;
+    uint8_t erxstl;
+    uint8_t erxsth;
+    uint8_t erxrdptl;
+    uint8_t erxrdpth;
+    uint8_t erxndl;
+    uint8_t erxndh;
+    uint8_t etxstl;
+    uint8_t etxsth;
     uint8_t erxfcon;
     uint8_t epktcnt;
     uint8_t macon1;
     uint8_t macon3;
     uint8_t macon4;
+    uint8_t mamxfll;
+    uint8_t mamxflh;
+    uint8_t mabbipg;
+    uint8_t maipgl;
+    uint8_t maipgh;
+    uint16_t phcon1;
 };
 
 extern int enc28j60_init(int mode, mac_addr_t *addr);
-extern int enc28j60_send(eth_frame_t *frame);
-extern int enc28j60_recv(eth_frame_t *frame);
 extern int enc28j60_set_mac(mac_addr_t *addr);
 extern int enc28j60_get_mac(mac_addr_t *addr);
+extern int enc28j60_send(eth_frame_t *frame);
+extern int enc28j60_recv(eth_frame_t *frame);
 extern int enc28j60_is_link_up(void);
-extern uint32_t enc28j60_get_count_rx_frame(void);
-extern uint32_t enc28j60_get_count_tx_frame(void);
-extern uint16_t enc28j60_get_count_rx_err(void);
-extern uint16_t enc28j60_get_count_tx_err(void);
 extern int enc28j60_get_free_rx_space(void);
-extern char *enc28j60_get_version(void);
-extern char *enc28j60_get_chip_revision(void);
 extern int enc28j60_get_last_error(void);
-extern struct enc28j60_regs enc28j60_get_regs(void);
+extern char *enc28j60_get_ver(void);
+extern char *enc28j60_get_rev(void);
+extern nic_stats_t enc28j60_get_stats(void);
+extern struct enc28j60_regs enc28j60_dump_regs(void);
 
 #endif
