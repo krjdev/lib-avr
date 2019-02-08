@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2019-02-06
+ * Modified : 2019-02-08
  * Revised  : 
- * Version  : 0.4.1.1
+ * Version  : 0.4.1.2
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -27,9 +27,9 @@
 #include "../net/nic.h"
 
 /* ENC28J60 Chip select */
-#define ENC28J60_CSCONFIG   (DDRJ |= (1 << PJ0))
-#define ENC28J60_ENABLE     (PORTJ &= ~(1 << PJ0))
-#define ENC28J60_DISABLE    (PORTJ |= (1 << PJ0))
+#define ENC28J60_CS_CONFIG  (DDRJ |= (1 << PJ0))
+#define ENC28J60_CS_ENABLE  (PORTJ &= ~(1 << PJ0))
+#define ENC28J60_CS_DISABL  (PORTJ |= (1 << PJ0))
 
 /* Duplex Mode */
 #define MODE_FDPX           0

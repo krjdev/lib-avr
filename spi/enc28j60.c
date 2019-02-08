@@ -7,7 +7,7 @@
  * Created  : 2018-09-22
  * Modified : 2019-02-08
  * Revised  : 
- * Version  : 0.4.1.1
+ * Version  : 0.4.1.2
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -408,11 +408,11 @@ static int select_bank(uint8_t bank)
     
     /* read ECON1 register */
     send[0] = SPI_RCR | ECON1;
-    ENC28J60_ENABLE;
+    ENC28J60_CS_ENABLE;
     spi_master_send(&send[0], 1);
     spi_master_recv(&tmp, 1);
     _delay_us(1);
-    ENC28J60_DISABLE;
+    ENC28J60_CS_DISABL;
     
     /* select bank in ECON1 register */
     send[0] = SPI_WCR | ECON1;
@@ -436,10 +436,10 @@ static int select_bank(uint8_t bank)
     }
     
     send[1] = tmp;
-    ENC28J60_ENABLE;
-    spi_master_send(&send[0], 2);
+    ENC28J60_CS_ENABLE;
+    spi_master_send(send, 2);
     _delay_us(1);
-    ENC28J60_DISABLE;
+    ENC28J60_CS_DISABL;
     return 0;
 }
 
@@ -458,11 +458,11 @@ static int read_reg(uint8_t bank, uint8_t reg, uint8_t *val)
     }
     
     send = SPI_RCR | reg;
-    ENC28J60_ENABLE;
+    ENC28J60_CS_ENABLE;
     spi_master_send(&send, 1);
     spi_master_recv(val, 1);
     _delay_us(1);
-    ENC28J60_DISABLE;
+    ENC28J60_CS_DISABL;
     return 0;
 }
 
@@ -482,11 +482,11 @@ static int read_mii_mac_reg(uint8_t bank, uint8_t reg, uint8_t *val)
     }
     
     send = SPI_RCR | reg;
-    ENC28J60_ENABLE;
+    ENC28J60_CS_ENABLE;
     spi_master_send(&send, 1);
-    spi_master_recv(&recv[0], 2);
+    spi_master_recv(recv, 2);
     _delay_us(1);
-    ENC28J60_DISABLE;
+    ENC28J60_CS_DISABL;
     (*val) = recv[1];
     return 0;
 }
@@ -502,10 +502,10 @@ static int write_reg(uint8_t bank, uint8_t reg, uint8_t val)
     
     send[0] = SPI_WCR | reg;
     send[1] = val;
-    ENC28J60_ENABLE;
-    spi_master_send(&send[0], 2);
+    ENC28J60_CS_ENABLE;
+    spi_master_send(send, 2);
     _delay_us(1);
-    ENC28J60_DISABLE;
+    ENC28J60_CS_DISABL;
     return 0;
 }
 
@@ -519,12 +519,19 @@ static int read_phy_reg(uint8_t reg, uint16_t *val)
         return -1;
     }
     
-    write_reg(BANK2, MIREGADR, reg);
-    write_reg(BANK2, MICMD, (1 << MICMD_MIIRD));
-    read_mii_mac_reg(BANK3, MISTAT, &tmp);
+    if (write_reg(BANK2, MIREGADR, reg) == -1)
+        return -1;
+    
+    if (write_reg(BANK2, MICMD, (1 << MICMD_MIIRD)) == -1)
+        return -1;
+    
+    if (read_mii_mac_reg(BANK3, MISTAT, &tmp) == -1)
+        return -1;
     
     while (_ISSET(tmp, MISTAT_BUSY)) {
-        read_mii_mac_reg(BANK3, MISTAT, &tmp);
+        if (read_mii_mac_reg(BANK3, MISTAT, &tmp))
+            return -1;
+        
         _delay_us(10);
         timeout--;
         
@@ -534,11 +541,15 @@ static int read_phy_reg(uint8_t reg, uint16_t *val)
         }
     }
     
-    write_reg(BANK2, MICMD, 0x00);
-    read_mii_mac_reg(BANK2, MIRDH, &tmp);
+    if (write_reg(BANK2, MICMD, 0x00) == -1)
+        return -1;
+    
+    if (read_mii_mac_reg(BANK2, MIRDH, &tmp) == -1)
+        return -1;
+    
     (*val) |= ((uint16_t) tmp << 8);
     read_mii_mac_reg(BANK2, MIRDL, &tmp);
-    (*val) |= tmp;
+    (*val) |= (uint16_t) tmp;
     return 0;
 }
 
@@ -547,13 +558,22 @@ static int write_phy_reg(uint8_t reg, uint16_t val)
     uint8_t tmp;
     int timeout = TIMEOUT_CNT;
     
-    write_reg(BANK2, MIREGADR, reg);
-    write_reg(BANK2, MIWRL, _LOW(val));
-    write_reg(BANK2, MIWRH, _HIGH(val));
-    read_mii_mac_reg(BANK3, MISTAT, &tmp);
+    if (write_reg(BANK2, MIREGADR, reg) == -1)
+        return -1;
+    
+    if (write_reg(BANK2, MIWRL, _LOW(val)) == -1)
+        return -1;
+    
+    if (write_reg(BANK2, MIWRH, _HIGH(val)) == -1)
+        return -1;
+    
+    if (read_mii_mac_reg(BANK3, MISTAT, &tmp) == -1)
+        return -1;
     
     while (_ISSET(tmp, MISTAT_BUSY)) {
-        read_mii_mac_reg(BANK3, MISTAT, &tmp);
+        if (read_mii_mac_reg(BANK3, MISTAT, &tmp) == -1)
+            return -1;
+        
         _delay_us(10);
         timeout--;
         
@@ -585,14 +605,18 @@ static int read_buffer(uint16_t addr, uint8_t *buf, int len)
         return -1;
     }
     
-    write_reg(BANK0, ERDPTL, _LOW(addr));
-    write_reg(BANK0, ERDPTH, _HIGH(addr));
+    if (write_reg(BANK0, ERDPTL, _LOW(addr)) == -1)
+        return -1;
+    
+    if (write_reg(BANK0, ERDPTH, _HIGH(addr)) == -1)
+        return -1;
+    
     send = SPI_RBM;
-    ENC28J60_ENABLE;
+    ENC28J60_CS_ENABLE;
     spi_master_send(&send, 1);
     spi_master_recv(buf, len);
     _delay_us(1);
-    ENC28J60_DISABLE;
+    ENC28J60_CS_DISABL;
     return 0;
 }
 
@@ -615,14 +639,18 @@ static int write_buffer(uint16_t addr, uint8_t *buf, int len)
         return -1;
     }
     
-    write_reg(BANK0, EWRPTL, _LOW(addr));
-    write_reg(BANK0, EWRPTH, _HIGH(addr));
+    if (write_reg(BANK0, EWRPTL, _LOW(addr)) == -1)
+        return -1;
+    
+    if (write_reg(BANK0, EWRPTH, _HIGH(addr)) == -1)
+        return -1;
+    
     send = SPI_WBM;
-    ENC28J60_ENABLE;
+    ENC28J60_CS_ENABLE;
     spi_master_send(&send, 1);
     spi_master_send(buf, len);
     _delay_us(1);
-    ENC28J60_DISABLE;
+    ENC28J60_CS_DISABL;
     return 0;
 }
 
@@ -726,7 +754,7 @@ int enc28j60_init(int mode, mac_addr_t *addr)
 //     ENC28J60_RS_ENABLE;
     
     /* Init SPI interface */
-    ENC28J60_CSCONFIG;
+    ENC28J60_CS_CONFIG;
     spi_master_init(SPI_MODE_0, SPI_FOSC_2);
     
     /* Soft reset controller */
