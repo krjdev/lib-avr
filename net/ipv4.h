@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-04
+ * Modified : 2019-02-09
  * Revised  : 
- * Version  : 0.3.0.0
+ * Version  : 0.4.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -21,9 +21,6 @@
 #define LIBAVR_NET_IPV4_H
 
 #include <stdint.h>
-
-#define IPV4_FLAG_DF    1
-#define IPV4_FLAG_MF    2
 
 #define IPV4_PROT_ICMP  1
 #define IPV4_PROT_TCP   6
@@ -70,10 +67,26 @@ extern int ipv4_addr_ntoa(ipv4_addr_t *ip, char *str);
 extern int ipv4_addr_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2);
 extern int ipv4_addr_cpy(ipv4_addr_t *dst, ipv4_addr_t *src);
 extern int ipv4_addr_is_broadcast(ipv4_addr_t *ip);
-extern int ipv4_calc_checksum(uint8_t *buf, int len, uint16_t *chksum);
-// extern int ipv4_hdr_create(ipv4_hdr_t *ih);
-// extern int ipv4_pkg_get_len(ipv4_packet_t *ip);
-// extern int ipv4_pkt_to_buf(ipv4_packet_t *ip, uint8_t *buf);
-// extern int ipv4_buf_to_pkt(uint8_t *buf, int len, ipv4_packet_t *ip);
+extern int ipv4_pkt_create_empty(ipv4_packet_t *ip);
+extern int ipv4_pkt_free(ipv4_packet_t *ip);
+extern int ipv4_pkt_set_id(ipv4_packet_t *ip, uint16_t id);
+extern int ipv4_pkt_set_ttl(ipv4_packet_t *ip, uint8_t ttl);
+extern int ipv4_pkt_set_prot(ipv4_packet_t *ip, uint8_t prot);
+extern int ipv4_pkt_set_src(ipv4_packet_t *ip, ipv4_addr_t *src);
+extern int ipv4_pkt_set_dst(ipv4_packet_t *ip, ipv4_addr_t *dst);
+extern int ipv4_pkt_set_options(ipv4_packet_t *ip, uint8_t *buf, int len);
+extern int ipv4_pkt_set_payload(ipv4_packet_t *ip, uint8_t *buf, int len);
+extern int ipv4_pkt_get_id(ipv4_packet_t *ip, uint16_t *id);
+extern int ipv4_pkt_get_ttl(ipv4_packet_t *ip, uint8_t *ttl);
+extern int ipv4_pkt_get_prot(ipv4_packet_t *ip, uint8_t *prot);
+extern int ipv4_pkt_get_src(ipv4_packet_t *ip, ipv4_addr_t *src);
+extern int ipv4_pkt_get_dst(ipv4_packet_t *ip, ipv4_addr_t *dst);
+extern int ipv4_pkt_get_options_len(ipv4_packet_t *ip);
+extern int ipv4_pkt_get_options(ipv4_packet_t *ip, uint8_t **buf);
+extern int ipv4_pkt_get_payload_len(ipv4_packet_t *ip);
+extern int ipv4_pkt_get_payload(ipv4_packet_t *ip, uint8_t **buf);
+extern int ipv4_pkt_get_len(ipv4_packet_t *ip);
+extern int ipv4_buf_to_pkt(uint8_t *buf, int len, ipv4_packet_t *ip);
+extern int ipv4_pkt_to_buf(ipv4_packet_t *ip, uint8_t *buf);
 
 #endif
