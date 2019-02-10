@@ -1,13 +1,13 @@
 /**
  *
  * File Name: icmp.h
- * Title    : ICMP definitions and helper functions header
+ * Title    : ICMP library
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-02-09
- * Modified : 
+ * Modified : 2019-02-11
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *

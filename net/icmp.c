@@ -1,13 +1,13 @@
 /**
  *
  * File Name: icmp.c
- * Title    : ICMP definitions and helper functions source
+ * Title    : ICMP library
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-02-09
- * Modified : 
+ * Modified : 2019-02-11
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -26,13 +26,12 @@
 #define _HIGH(val)      ((uint8_t) (((val) & 0xFF00) >> 8))
 #define _LOW(val)       ((uint8_t) ((val) & 0x00FF))
 
-static int pkt_append_checksum(icmp_packet_t *icmp)
+static uint32_t pkt_sum(icmp_packet_t *icmp)
 {
     int i = 0;
     int j;
     uint32_t sum = 0;
     uint16_t tmp;
-    uint16_t carry;
     
     sum += ((uint16_t) icmp->ip_hdr.ih_type << 8) | icmp->ip_hdr.ih_code;
     sum += ((uint16_t) icmp->ip_hdr.ih_rest[0] << 8) | icmp->ip_hdr.ih_rest[1];
@@ -40,7 +39,7 @@ static int pkt_append_checksum(icmp_packet_t *icmp)
     
     if (icmp->ip_payload_len > 0) {
         if (!icmp->ip_payload_buf)
-            return -1;
+            return 0;
         
         for (j = 0; j < icmp->ip_payload_len / 2; j++ ) {
             tmp = ((uint16_t) icmp->ip_payload_buf[i++] << 8);
@@ -49,6 +48,15 @@ static int pkt_append_checksum(icmp_packet_t *icmp)
         }
     }
     
+    return sum;
+}
+
+static int pkt_append_checksum(icmp_packet_t *icmp)
+{
+    uint32_t sum;
+    uint16_t carry;
+    
+    sum = pkt_sum(icmp);
     carry = (uint16_t) (sum >> 16);
     sum += carry;
     sum = ~sum;
@@ -58,28 +66,12 @@ static int pkt_append_checksum(icmp_packet_t *icmp)
 
 static int pkt_verify_checksum(icmp_packet_t *icmp)
 {
-    int i = 0;
-    int j;
-    uint32_t sum = 0;
+    uint32_t sum;
     uint16_t tmp;
     uint16_t carry;
     uint16_t chksum;
     
-    sum += ((uint16_t) icmp->ip_hdr.ih_type << 8) | icmp->ip_hdr.ih_code;
-    sum += ((uint16_t) icmp->ip_hdr.ih_rest[0] << 8) | icmp->ip_hdr.ih_rest[1];
-    sum += ((uint16_t) icmp->ip_hdr.ih_rest[2] << 8) | icmp->ip_hdr.ih_rest[3];
-    
-    if (icmp->ip_payload_len > 0) {
-        if (!icmp->ip_payload_buf)
-            return -1;
-        
-        for (j = 0; j < icmp->ip_payload_len / 2; j++ ) {
-            tmp = ((uint16_t) icmp->ip_payload_buf[i++] << 8);
-            tmp |= icmp->ip_payload_buf[i++];
-            sum += tmp;
-        }
-    }
-    
+    sum = pkt_sum(icmp);
     carry = (uint16_t) (sum >> 16);
     sum += carry;
     sum = ~sum;
