@@ -1,13 +1,13 @@
 /**
  *
  * File Name: ipv4.c
- * Title    : IPv4 definitions and helper functions source
+ * Title    : IPv4 library
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-09
+ * Modified : 2019-02-11
  * Revised  : 
- * Version  : 0.4.0.0
+ * Version  : 0.4.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -50,120 +50,85 @@ ipv4_range_t rfc6890[] = {
     { { 255, 255, 255, 255 }, 32 }
 };
 
-static int calc_checksum(uint8_t *buf, int len, uint16_t *chksum)
-{
-    int i, j;
-    uint16_t tmp;
-    uint32_t sum = 0;
-    uint16_t carry;
-    
-    if (!buf)
-        return -1;
-    
-    if ((len % 2) != 0)
-        return -1;
-    
-    for (i = 0, j = 0; i < (len / 2); i++) {
-        tmp = ((uint16_t) buf[j++] << 8);
-        tmp |= (uint16_t) buf[j++];
-        sum += tmp;
-    }
-    
-    carry = (uint16_t) (sum >> 16);
-    sum += carry;
-    sum = ~sum;
-    (*chksum) = (uint16_t) sum;
-    return 0;
-}
-
-static int pkt_hdr_get_len(ipv4_packet_t *ip)
-{
-    return ((ip->ip_hdr.ih_ihl * 4) + ip->ip_options_len);
-}
-
-static int pkt_hdr_to_buf(ipv4_packet_t *ip, uint8_t *buf)
+static uint32_t pkt_hdr_sum(ipv4_packet_t *ip)
 {
     int i = 0;
+    int j;
+    uint32_t sum = 0;
     uint16_t tmp;
     
     if (!ip)
-        return -1;
+        return 0;
     
-    if (!buf)
-        return -1;
-    
-    buf[i++] = (ip->ip_hdr.ih_ver << 4) | ip->ip_hdr.ih_ihl;
-    buf[i++] = (ip->ip_hdr.ih_dscp << 2) | ip->ip_hdr.ih_ecn;
-    buf[i++] = _HIGH16(ip->ip_hdr.ih_tlen);
-    buf[i++] = _LOW16(ip->ip_hdr.ih_tlen);
-    buf[i++] = _HIGH16(ip->ip_hdr.ih_id);
-    buf[i++] = _LOW16(ip->ip_hdr.ih_id);
+    tmp = ((uint16_t) ((ip->ip_hdr.ih_ver << 4) | ip->ip_hdr.ih_ihl) << 8);
+    tmp |= (uint16_t) ((ip->ip_hdr.ih_dscp << 2) | ip->ip_hdr.ih_ecn);
+    sum += tmp;
+    sum += ip->ip_hdr.ih_tlen;
+    sum += ip->ip_hdr.ih_id;
     tmp = ((((uint16_t) ip->ip_hdr.ih_flag << 13)) | (uint16_t) ip->ip_hdr.ih_foff);
-    buf[i++] = _HIGH16(tmp);
-    buf[i++] = _LOW16(tmp);
-    buf[i++] = ip->ip_hdr.ih_ttl;
-    buf[i++] = ip->ip_hdr.ih_prot;
-    buf[i++] = ip->ip_hdr.ih_src.ia_byte0;
-    buf[i++] = ip->ip_hdr.ih_src.ia_byte1;
-    buf[i++] = ip->ip_hdr.ih_src.ia_byte2;
-    buf[i++] = ip->ip_hdr.ih_src.ia_byte3;
-    buf[i++] = ip->ip_hdr.ih_dst.ia_byte0;
-    buf[i++] = ip->ip_hdr.ih_dst.ia_byte1;
-    buf[i++] = ip->ip_hdr.ih_dst.ia_byte2;
-    buf[i++] = ip->ip_hdr.ih_dst.ia_byte3;
+    sum += tmp;
+    tmp = ((uint16_t) ip->ip_hdr.ih_ttl << 8);
+    tmp |= (uint16_t) ip->ip_hdr.ih_prot;
+    sum += tmp;
+    tmp = ((uint16_t) ip->ip_hdr.ih_src.ia_byte0 << 8);
+    tmp = (uint16_t) ip->ip_hdr.ih_src.ia_byte1;
+    sum += tmp;
+    tmp = ((uint16_t) ip->ip_hdr.ih_src.ia_byte2 << 8);
+    tmp = (uint16_t) ip->ip_hdr.ih_src.ia_byte3;
+    sum += tmp;
+    tmp = ((uint16_t) ip->ip_hdr.ih_dst.ia_byte0 << 8);
+    tmp = (uint16_t) ip->ip_hdr.ih_dst.ia_byte1;
+    sum += tmp;
+    tmp = ((uint16_t) ip->ip_hdr.ih_dst.ia_byte2 << 8);
+    tmp = (uint16_t) ip->ip_hdr.ih_dst.ia_byte3;
+    sum += tmp;
     
-    if (ip->ip_options_len > 0)
-        memcpy(&buf[i], ip->ip_options_buf, ip->ip_options_len);
+    if (ip->ip_options_len > 0) {
+        if (!ip->ip_options_buf)
+            return 0;
+        
+        for (j = 0; j < ip->ip_options_len / 2; j++ ) {
+            tmp = ((uint16_t) ip->ip_options_buf[i++] << 8);
+            tmp |= ip->ip_options_buf[i++];
+            sum += tmp;
+        }
+    }
     
-    return 0;
+    return sum;
 }
 
 static int pkt_hdr_append_checksum(ipv4_packet_t *ip)
 {
-    int len;
-    uint8_t *p;
-    uint16_t chk;
+    uint32_t sum;
+    uint16_t tmp;
+    uint16_t carry;
     
     if (!ip)
         return -1;
     
-    len = pkt_hdr_get_len(ip);
-    p = (uint8_t *) malloc(len);
-    
-    if (!p)
-        return -1;
-    
-    pkt_hdr_to_buf(ip, p);
-    
-    if (calc_checksum(p, len, &chk) == -1)
-        return -1;
-    
-    free(p);
-    ip->ip_hdr.ih_chk = chk;
+    sum = pkt_hdr_sum(ip);
+    carry = (uint16_t) (sum >> 16);
+    sum += carry;
+    sum = ~sum;
+    ip->ip_hdr.ih_chk = (uint16_t) sum;
     return 0;
 }
 
 static int pkt_hdr_verify_checksum(ipv4_packet_t *ip)
 {
-    int len;
-    uint8_t *p;
+    uint32_t sum;
+    uint16_t tmp;
+    uint16_t carry;
     uint16_t chk;
     
     if (!ip)
         return -1;
     
-    len = pkt_hdr_get_len(ip);
-    p = (uint8_t *) malloc(len);
+    sum = pkt_hdr_sum(ip);
+    carry = (uint16_t) (sum >> 16);
+    sum += carry;
+    chk = (uint16_t) ~sum;
     
-    if (!p)
-        return -1;
-    
-    pkt_hdr_to_buf(ip, p);
-    
-    if (calc_checksum(p, len, &chk) == -1)
-        return -1;
-    
-    free(p);
     if (ip->ip_hdr.ih_chk == chk)
         return 1;
     

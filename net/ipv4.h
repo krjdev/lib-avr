@@ -1,13 +1,13 @@
 /**
  *
  * File Name: ipv4.h
- * Title    : IPv4 definitions and helper functions header
+ * Title    : IPv4 library
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-09
+ * Modified : 2019-02-11
  * Revised  : 
- * Version  : 0.4.0.0
+ * Version  : 0.4.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
