@@ -254,7 +254,7 @@ int ethernet_frm_to_buf(eth_frame_t *frame, uint8_t *buf);
 **Dependencies**  
 * avr-libc
 
-### IPv4 Library (alpha version)
+### IPv4 Library (beta version)
 
 **Files:**  
 [net/ipv4.h](https://github.com/krjdev/lib-avr/blob/master/net/ipv4.h)  
@@ -268,7 +268,27 @@ int ipv4_addr_ntoa(ipv4_addr_t *ip, char *str);
 int ipv4_addr_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2);
 int ipv4_addr_cpy(ipv4_addr_t *dst, ipv4_addr_t *src);
 int ipv4_addr_is_broadcast(ipv4_addr_t *ip);
-int ipv4_calc_checksum(uint8_t *buf, int len, uint16_t *chksum);
+int ipv4_pkt_create_empty(ipv4_packet_t *ip);
+int ipv4_pkt_free(ipv4_packet_t *ip);
+int ipv4_pkt_set_id(ipv4_packet_t *ip, uint16_t id);
+int ipv4_pkt_set_ttl(ipv4_packet_t *ip, uint8_t ttl);
+int ipv4_pkt_set_prot(ipv4_packet_t *ip, uint8_t prot);
+int ipv4_pkt_set_src(ipv4_packet_t *ip, ipv4_addr_t *src);
+int ipv4_pkt_set_dst(ipv4_packet_t *ip, ipv4_addr_t *dst);
+int ipv4_pkt_set_options(ipv4_packet_t *ip, uint8_t *buf, int len);
+int ipv4_pkt_set_payload(ipv4_packet_t *ip, uint8_t *buf, int len);
+int ipv4_pkt_get_id(ipv4_packet_t *ip, uint16_t *id);
+int ipv4_pkt_get_ttl(ipv4_packet_t *ip, uint8_t *ttl);
+int ipv4_pkt_get_prot(ipv4_packet_t *ip, uint8_t *prot);
+int ipv4_pkt_get_src(ipv4_packet_t *ip, ipv4_addr_t *src);
+int ipv4_pkt_get_dst(ipv4_packet_t *ip, ipv4_addr_t *dst);
+int ipv4_pkt_get_options_len(ipv4_packet_t *ip);
+int ipv4_pkt_get_options(ipv4_packet_t *ip, uint8_t **buf);
+int ipv4_pkt_get_payload_len(ipv4_packet_t *ip);
+int ipv4_pkt_get_payload(ipv4_packet_t *ip, uint8_t **buf);
+int ipv4_pkt_get_len(ipv4_packet_t *ip);
+int ipv4_buf_to_pkt(uint8_t *buf, int len, ipv4_packet_t *ip);
+int ipv4_pkt_to_buf(ipv4_packet_t *ip, uint8_t *buf);
 ```
 
 **Dependencies**  
