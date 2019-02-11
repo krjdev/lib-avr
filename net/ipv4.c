@@ -7,7 +7,7 @@
  * Created  : 2018-09-24
  * Modified : 2019-02-11
  * Revised  : 
- * Version  : 0.4.1.0
+ * Version  : 0.4.1.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -63,24 +63,28 @@ static uint32_t pkt_hdr_sum(ipv4_packet_t *ip)
     tmp = ((uint16_t) ((ip->ip_hdr.ih_ver << 4) | ip->ip_hdr.ih_ihl) << 8);
     tmp |= (uint16_t) ((ip->ip_hdr.ih_dscp << 2) | ip->ip_hdr.ih_ecn);
     sum += tmp;
-    sum += ip->ip_hdr.ih_tlen;
-    sum += ip->ip_hdr.ih_id;
+    tmp = (uint16_t) (_HIGH16(ip->ip_hdr.ih_tlen) << 8);
+    tmp |= (uint16_t) _LOW16(ip->ip_hdr.ih_tlen);
+    sum += tmp;
+    tmp = (uint16_t) (_HIGH16(ip->ip_hdr.ih_id) << 8);
+    tmp |= (uint16_t) _LOW16(ip->ip_hdr.ih_id);
+    sum += tmp;
     tmp = ((((uint16_t) ip->ip_hdr.ih_flag << 13)) | (uint16_t) ip->ip_hdr.ih_foff);
     sum += tmp;
     tmp = ((uint16_t) ip->ip_hdr.ih_ttl << 8);
     tmp |= (uint16_t) ip->ip_hdr.ih_prot;
     sum += tmp;
     tmp = ((uint16_t) ip->ip_hdr.ih_src.ia_byte0 << 8);
-    tmp = (uint16_t) ip->ip_hdr.ih_src.ia_byte1;
+    tmp |= (uint16_t) ip->ip_hdr.ih_src.ia_byte1;
     sum += tmp;
     tmp = ((uint16_t) ip->ip_hdr.ih_src.ia_byte2 << 8);
-    tmp = (uint16_t) ip->ip_hdr.ih_src.ia_byte3;
+    tmp |= (uint16_t) ip->ip_hdr.ih_src.ia_byte3;
     sum += tmp;
     tmp = ((uint16_t) ip->ip_hdr.ih_dst.ia_byte0 << 8);
-    tmp = (uint16_t) ip->ip_hdr.ih_dst.ia_byte1;
+    tmp |= (uint16_t) ip->ip_hdr.ih_dst.ia_byte1;
     sum += tmp;
     tmp = ((uint16_t) ip->ip_hdr.ih_dst.ia_byte2 << 8);
-    tmp = (uint16_t) ip->ip_hdr.ih_dst.ia_byte3;
+    tmp |= (uint16_t) ip->ip_hdr.ih_dst.ia_byte3;
     sum += tmp;
     
     if (ip->ip_options_len > 0) {
@@ -560,7 +564,6 @@ int ipv4_buf_to_pkt(uint8_t *buf, int len, ipv4_packet_t *ip)
     if (pkt_hdr_verify_checksum(ip) != 1) {
         if (ip->ip_options_buf)
             free(ip->ip_options_buf);
-        
         return -1;
     }
     
