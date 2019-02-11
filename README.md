@@ -294,7 +294,7 @@ int ipv4_pkt_to_buf(ipv4_packet_t *ip, uint8_t *buf);
 **Dependencies**  
 * avr-libc
 
-### UDP Library (alpha version)
+### UDP Library (beta version)
 
 **Files:**  
 [net/udp.h](https://github.com/krjdev/lib-avr/blob/master/net/udp.h)  
@@ -302,14 +302,18 @@ int ipv4_pkt_to_buf(ipv4_packet_t *ip, uint8_t *buf);
 
 **Functions:**  
 ```c
-int udp_set_port_src(udp_hdr_t *udp, uint16_t src);
-int udp_set_port_dst(udp_hdr_t *udp, uint16_t dst);
-int udp_set_len(udp_hdr_t *udp, uint16_t len);
-int udp_set_chk(udp_hdr_t *udp, uint16_t chk);
-int udp_get_port_src(udp_hdr_t *udp, uint16_t *src);
-int udp_get_port_dst(udp_hdr_t *udp, uint16_t *dst);
-int udp_get_len(udp_hdr_t *udp, uint16_t *len);
-int udp_get_chk(udp_hdr_t *udp, uint16_t *chk);
+int udp_pkt_set_srcp(udp_packet_t *udp, uint16_t srcp);
+int udp_pkt_set_dstp(udp_packet_t *udp, uint16_t dstp);
+int udp_pkt_set_payload(udp_packet_t *udp, uint8_t *buf, int len);
+int udp_pkt_get_srcp(udp_packet_t *udp, uint16_t *srcp);
+int udp_pkt_get_dstp(udp_packet_t *udp, uint16_t *dstp);
+int udp_pkt_get_payload_len(udp_packet_t *udp);
+int udp_pkt_get_payload(udp_packet_t *udp, uint8_t **buf);
+int udp_pkt_get_len(udp_packet_t *udp);
+int udp_pkt_create(uint16_t srcp, uint16_t dstp, uint8_t *buf, int len, udp_packet_t *udp);
+int udp_pkt_free(udp_packet_t *udp);
+int udp_pkt_to_ip(udp_packet_t *udp, ipv4_packet_t *ip_udp);
+int udp_ip_to_pkt(ipv4_packet_t *ip_udp, udp_packet_t *udp);
 ```
 
 **Dependencies**  
