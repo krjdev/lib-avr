@@ -1,13 +1,13 @@
 /**
  *
  * File Name: udp.h
- * Title    : UDP definitions and helper functions header
+ * Title    : UDP library
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 
+ * Modified : 2019-02-11
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,6 +22,8 @@
 
 #include <stdint.h>
 
+#include "ipv4.h"
+
 typedef struct udp_hdr {
     uint16_t uh_srcp;   /* Source port */
     uint16_t uh_dstp;   /* Destination port */
@@ -29,13 +31,25 @@ typedef struct udp_hdr {
     uint16_t uh_chk;    /* Checksum */
 } udp_hdr_t;
 
-extern int udp_set_port_src(udp_hdr_t *udp, uint16_t src);
-extern int udp_set_port_dst(udp_hdr_t *udp, uint16_t dst);
-extern int udp_set_len(udp_hdr_t *udp, uint16_t len);
-extern int udp_set_chk(udp_hdr_t *udp, uint16_t chk);
-extern int udp_get_port_src(udp_hdr_t *udp, uint16_t *src);
-extern int udp_get_port_dst(udp_hdr_t *udp, uint16_t *dst);
-extern int udp_get_len(udp_hdr_t *udp, uint16_t *len);
-extern int udp_get_chk(udp_hdr_t *udp, uint16_t *chk);
+typedef struct udp_packet {
+    udp_hdr_t up_hdr;
+    uint8_t *up_payload_buf;
+    int up_payload_len;
+} udp_packet_t;
+
+extern int udp_pkt_set_srcp(udp_packet_t *udp, uint16_t srcp);
+extern int udp_pkt_set_dstp(udp_packet_t *udp, uint16_t dstp);
+extern int udp_pkt_set_payload(udp_packet_t *udp, uint8_t *buf, int len);
+extern int udp_pkt_get_srcp(udp_packet_t *udp, uint16_t *srcp);
+extern int udp_pkt_get_dstp(udp_packet_t *udp, uint16_t *dstp);
+extern int udp_pkt_get_payload_len(udp_packet_t *udp);
+extern int udp_pkt_get_payload(udp_packet_t *udp, uint8_t **buf);
+extern int udp_pkt_get_len(udp_packet_t *udp);
+extern int udp_pkt_create(uint16_t srcp, uint16_t dstp, 
+                          uint8_t *buf, int len, 
+                          udp_packet_t *udp);
+extern int udp_pkt_free(udp_packet_t *udp);
+extern int udp_pkt_to_ip(udp_packet_t *udp, ipv4_packet_t *ip_udp);
+extern int udp_ip_to_pkt(ipv4_packet_t *ip_udp, udp_packet_t *udp);
 
 #endif
