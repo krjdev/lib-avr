@@ -3,11 +3,11 @@
  * File Name: i2c.h
  * Title    : I2C interface library header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-21
- * Modified : 2018-12-03
+ * Modified : 2019-03-24
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *

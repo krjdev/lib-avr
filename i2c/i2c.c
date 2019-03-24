@@ -3,11 +3,11 @@
  * File Name: i2c.c
  * Title    : I2C interface library source
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-21
- * Modified : 2018-12-03
+ * Modified : 2019-03-24
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -89,12 +89,12 @@ static int i2c_data_send(uint8_t data)
     return 0;
 }
 
-static int i2c_data_recv(uint8_t *data, int len)
+static int i2c_data_recv(uint8_t *data, int last)
 {
-    if (len < 1)
+    if (!data)
         return -1;
     
-    if (len > 1)
+    if (last != 1)
         TWCR |= (1 << TWINT) | (1 << TWEN) | (1 << TWEA);
     else
         TWCR |= (1 << TWINT) | (1 << TWEN);
@@ -102,7 +102,7 @@ static int i2c_data_recv(uint8_t *data, int len)
     while (!(TWCR & (1 << TWINT)))
         ;
     
-    if (len > 1) {
+    if (last != 1) {
         if ((TWSR & 0xF8) != 0x50) {
             err = TWSR;
             return -1;
@@ -220,7 +220,10 @@ int i2c_master_recv(int opt,
     
     if (data_len > 0) {
         for (i = 0; i < data_len; i++) {
-            ret = i2c_data_recv(&data[i], data_len);
+            if (i == (data_len - 1))
+                ret = i2c_data_recv(&data[i], 1);
+            else
+                ret = i2c_data_recv(&data[i], 0);
             
             if (ret == -1)
                 return -1;
