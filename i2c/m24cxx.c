@@ -3,11 +3,11 @@
  * File Name: m24cxx.c
  * Title    : STmicroelectronics M24C01 - M24C64 I2C EEPROM source header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-12-04
- * Modified : 
+ * Modified : 2019-04-04
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -50,10 +50,7 @@ int m24cxx_write(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len
 {
     uint8_t i2c_addr;
     int subtype;
-    int page;
     int size;
-    int page_cnt;
-    int rest;
     int ret;
     int i;
     uint8_t addr_buf[2];
@@ -69,37 +66,30 @@ int m24cxx_write(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len
     switch (type) {
     case TYPE_M24C01:
         subtype = M24C01_16_SUBTYPE;
-        page = M24C01_16_PAGE_SIZE;
         size = M24C01_SIZE;
         break;
     case TYPE_M24C02:
         subtype = M24C01_16_SUBTYPE;
-        page = M24C01_16_PAGE_SIZE;
         size = M24C02_SIZE;
         break;
     case TYPE_M24C04:
         subtype = M24C01_16_SUBTYPE;
-        page = M24C01_16_PAGE_SIZE;
         size = M24C04_SIZE;
         break;
     case TYPE_M24C08:
         subtype = M24C01_16_SUBTYPE;
-        page = M24C01_16_PAGE_SIZE;
         size = M24C08_SIZE;
         break;
     case TYPE_M24C16:
         subtype = M24C01_16_SUBTYPE;
-        page = M24C01_16_PAGE_SIZE;
         size = M24C01_SIZE;
         break;
     case TYPE_M24C32:
         subtype = M24C32_64_SUBTYPE;
-        page = M24C32_64_PAGE_SIZE;
         size = M24C32_SIZE;
         break;
     case TYPE_M24C64:
         subtype = M24C32_64_SUBTYPE;
-        page = M24C32_64_PAGE_SIZE;
         size = M24C64_SIZE;
         break;
     default:
@@ -128,7 +118,7 @@ int m24cxx_write(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len
     }
     
     for (i = 0; i < len; i++) {
-        ret = i2c_master_send(I2C_OPT_NORMAL, i2c_addr, NULL, 0, buf[i], len);
+        ret = i2c_master_send(I2C_OPT_NORMAL, i2c_addr, NULL, 0, &buf[i], len);
         
         if (ret == -1)
             return -1;
@@ -209,7 +199,7 @@ int m24cxx_read(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len)
     }
     
     for (i = 0; i < len; i++) {
-        ret = i2c_master_recv(I2C_OPT_NORMAL, i2c_addr, NULL, 0, buf[i], len);
+        ret = i2c_master_recv(I2C_OPT_NORMAL, i2c_addr, NULL, 0, &buf[i], len);
         
         if (ret == -1)
             return -1;

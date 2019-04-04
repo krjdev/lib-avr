@@ -3,11 +3,11 @@
  * File Name: m24cxx.h
  * Title    : STmicroelectronics M24C01 - M24C64 I2C EEPROM driver header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-12-04
- * Modified : 
+ * Modified : 2019-04-04
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
