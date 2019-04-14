@@ -3,11 +3,11 @@
  * File Name: spi.c
  * Title    : SPI interface library source
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2018-12-03
+ * Modified : 2019-04-14
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -19,7 +19,7 @@
 
 #include "spi.h"
 
-void spi_master_init(int mode, int speed)
+void spi_master_init(int mode, int speed, int order)
 {
     /* set MOSI, SCK and SS as output */
     SPI_PORT |= (1 << SPI_MOSI) | (1 << SPI_SCK) | (1 << SPI_SS);
@@ -61,6 +61,16 @@ void spi_master_init(int mode, int speed)
         break;
     case SPI_MODE_3:
         SPCR |= (1 << CPOL) | (1 << CPHA);
+        break;
+    default:
+        return;
+    }
+    
+    switch (order) {
+    case SPI_ORDER_MSB:
+        break;
+    case SPI_ORDER_LSB:
+        SPCR |= (1 << DORD);
         break;
     default:
         return;

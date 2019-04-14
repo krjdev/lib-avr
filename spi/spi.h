@@ -3,11 +3,11 @@
  * File Name: spi.h
  * Title    : SPI interface library header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2018-12-03
+ * Modified : 2019-04-14
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -43,7 +43,11 @@
 #define SPI_MODE_2      2
 #define SPI_MODE_3      3
 
-extern void spi_master_init(int mode, int speed);
+/* SPI data order */
+#define SPI_ORDER_MSB   0
+#define SPI_ORDER_LSB   1
+
+extern void spi_master_init(int mode, int speed, int order);
 extern void spi_master_send(uint8_t *data, int len);
 extern void spi_master_recv(uint8_t *data, int len);
 
