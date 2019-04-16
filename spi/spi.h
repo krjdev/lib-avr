@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2019-04-14
+ * Modified : 2019-04-16
  * Revised  : 
- * Version  : 0.2.1.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -48,6 +48,7 @@
 #define SPI_ORDER_LSB   1
 
 extern void spi_master_init(int mode, int speed, int order);
+extern void spi_master_close(void);
 extern void spi_master_send(uint8_t *data, int len);
 extern void spi_master_recv(uint8_t *data, int len);
 
