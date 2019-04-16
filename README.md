@@ -132,6 +132,21 @@ uint8_t int_to_bcd(uint8_t i);
 **Dependencies**  
 * avr-libc
 
+### CRC7 for MMC/SD memory cards Library
+
+**Files:**  
+[lib/crc7.h](https://github.com/krjdev/lib-avr/blob/master/lib/crc7.h)  
+[lib/crc7.c](https://github.com/krjdev/lib-avr/blob/master/lib/crc7.c)
+
+**Functions:**  
+```c
+int crc7_calc(uint8_t *data, int len);
+int crc7_check(uint8_t *data, int len, uint8_t crc);
+```
+
+**Dependencies**  
+* avr-libc
+
 ### CRC8 Maxim (former Dallas) Library
 
 **Files:**  
