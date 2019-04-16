@@ -162,6 +162,29 @@ int crc8_dallas_check(uint8_t *data, int len, uint8_t crc);
 **Dependencies**  
 * avr-libc
 
+### Date Library
+
+**Files:**  
+[lib/date.h](https://github.com/krjdev/lib-avr/blob/master/lib/date.h)  
+[lib/date.c](https://github.com/krjdev/lib-avr/blob/master/lib/date.c)
+
+**Functions:**  
+```c
+int date_set(date_t *date, uint8_t day, uint8_t wday, uint8_t mon, uint16_t year);
+int date_set_day(date_t *date, uint8_t day);
+int date_set_wday(date_t *date, uint8_t wday);
+int date_set_month(date_t *date, uint8_t mon);
+int date_set_year(date_t *date, uint16_t year);
+int date_get(date_t *date, uint8_t *day, uint8_t *wday, uint8_t *mon, uint16_t *year);
+int date_get_day(date_t *date, uint8_t *day);
+int date_get_wday(date_t *date, uint8_t *wday);
+int date_get_month(date_t *date, uint8_t *mon);
+int date_get_year(date_t *date, uint16_t *year);
+```
+
+**Dependencies**  
+* avr-libc
+
 ### FIFO buffer Library
 
 **Files:**  
