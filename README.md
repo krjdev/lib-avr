@@ -499,7 +499,8 @@ int ds2430a_read_status(ow_rom_t *rom, uint8_t *status);
 
 **Functions:**  
 ```c
-void spi_master_init(int mode, int speed);
+void spi_master_init(int mode, int speed, int order);
+void spi_master_close(void);
 void spi_master_send(uint8_t *data, int len);
 void spi_master_recv(uint8_t *data, int len);
 ```
