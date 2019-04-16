@@ -223,6 +223,29 @@ int lifo_get_num(lifo_t *lifo);
 **Dependencies**  
 * avr-libc
 
+### Time Library
+
+**Files:**  
+[lib/time.h](https://github.com/krjdev/lib-avr/blob/master/lib/time.h)  
+[lib/time.c](https://github.com/krjdev/lib-avr/blob/master/lib/time.c)
+
+**Functions:**  
+```c
+int time_set(time_t *time, uint8_t hr, uint8_t min, uint8_t sec, uint16_t msec);
+int time_set_hour(time_t *time, uint8_t hr);
+int time_set_min(time_t *time, uint8_t min);
+int time_set_sec(time_t *time, uint8_t sec);
+int time_set_msec(time_t *time, uint16_t msec);
+int time_get(time_t *time, uint8_t *hr, uint8_t *min, uint8_t *sec, uint16_t *msec);
+int time_get_hour(time_t *time, uint8_t *hr);
+int time_get_min(time_t *time, uint8_t *min);
+int time_get_sec(time_t *time, uint8_t *sec);
+int time_get_msec(time_t *time, uint16_t *msec);
+```
+
+**Dependencies**  
+* avr-libc
+
 ## Network Libraries
 
 **Directory:**  
