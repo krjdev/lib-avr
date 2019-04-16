@@ -69,6 +69,36 @@ int m24cxx_read(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len)
 * i2c/i2c.h  
 * i2c/i2c.c
 
+### I2C device: NXP PCF8563 Real-time clock/calendar driver (alpha version)
+
+**Files:**  
+[i2c/pcf8574.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.h)  
+[i2c/pcf8574.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.c)
+
+
+**Functions:**  
+```c
+void pcf8563_init(void);
+int pcf8563_set_time(time_t *time);
+int pcf8563_get_time(time_t *time);
+int pcf8563_set_date(date_t *date);
+int pcf8563_get_date(date_t *date);
+int pcf8563_set_alarm(time_t *time, date_t *date, uint8_t flags);
+int pcf8563_check_alarm(void);
+int pcf8563_set_timer(int freq, uint8_t value);
+int pcf8563_check_timer(void);
+int pcf8563_set_clkout(int freq, int enable);
+```
+
+**Dependencies**  
+* avr-libc  
+* i2c/i2c.h  
+* i2c/i2c.c  
+* lib/date.h  
+* lib/date.c  
+* lib/time.h  
+* lib/time.c
+
 ### I2C device: NXP PCF8574(A) 8-Bit Remote I/O expander driver (beta version)
 
 **Files:**  
