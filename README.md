@@ -536,7 +536,7 @@ int ds2430a_read_status(ow_rom_t *rom, uint8_t *status);
 **Directory:**  
 [spi](https://github.com/krjdev/lib-avr/tree/master/spi)
 
-### SPI Interface (beta version)
+### SPI Interface
 
 **Files:**  
 [spi/spi.h](https://github.com/krjdev/lib-avr/blob/master/spi/spi.h)  
@@ -582,6 +582,29 @@ struct enc28j60_regs enc28j60_get_regs(void);
 * avr-libc  
 * net/ethernet.h  
 * net/ethernet.c  
+* spi/spi.h  
+* spi/spi.c
+
+### SPI device: SD card driver (alpha version)
+
+**Files:**  
+[spi/sdc.h](https://github.com/krjdev/lib-avr/blob/master/spi/sdc.h)  
+[spi/sdc.c](https://github.com/krjdev/lib-avr/blob/master/spi/sdc.c)
+
+**Functions:**  
+```c
+int sdc_init(void);
+uint64_t sdc_get_size(void);
+int sdc_rd_block(uint32_t addr, uint8_t *buf, int len);
+int sdc_wr_block(uint32_t addr, uint8_t *buf, int len);
+```
+
+**Dependencies**  
+* avr-libc  
+* lib/crc7.h  
+* lib/crc7.c  
+* lib/crc16_ccitt.h  
+* lib/crc16_ccitt.c  
 * spi/spi.h  
 * spi/spi.c
 
