@@ -162,6 +162,21 @@ uint8_t int_to_bcd(uint8_t i);
 **Dependencies**  
 * avr-libc
 
+### CRC-CCITT (CRC16) Library
+
+**Files:**  
+[lib/crc16_ccitt.h](https://github.com/krjdev/lib-avr/blob/master/lib/crc16_ccitt.h)  
+[lib/crc16_ccitt.c](https://github.com/krjdev/lib-avr/blob/master/lib/crc16_ccitt.c)
+
+**Functions:**  
+```c
+uint16_t crc16_ccitt_calc(uint8_t *data, int len);
+int crc16_ccitt_check(uint8_t *data, int len, uint16_t crc);
+```
+
+**Dependencies**  
+* avr-libc
+
 ### CRC7 for MMC/SD memory cards Library
 
 **Files:**  
