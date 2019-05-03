@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-02-11
+ * Modified : 2019-05-03
  * Revised  : 
- * Version  : 0.4.1.1
+ * Version  : 0.4.1.2
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -104,7 +104,6 @@ static uint32_t pkt_hdr_sum(ipv4_packet_t *ip)
 static int pkt_hdr_append_checksum(ipv4_packet_t *ip)
 {
     uint32_t sum;
-    uint16_t tmp;
     uint16_t carry;
     
     if (!ip)
@@ -121,7 +120,6 @@ static int pkt_hdr_append_checksum(ipv4_packet_t *ip)
 static int pkt_hdr_verify_checksum(ipv4_packet_t *ip)
 {
     uint32_t sum;
-    uint16_t tmp;
     uint16_t carry;
     uint16_t chk;
     
@@ -287,6 +285,8 @@ int ipv4_pkt_free(ipv4_packet_t *ip)
         free(ip->ip_payload_buf);
         ip->ip_payload_len = 0;
     }
+    
+    return 0;
 }
 
 int ipv4_pkt_set_id(ipv4_packet_t *ip, uint16_t id)
