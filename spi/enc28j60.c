@@ -1,13 +1,13 @@
 /**
  *
  * File Name: enc28j60.c
- * Title    : SPI device Microchip ENC28J60 Ethernet controller library source
+ * Title    : SPI device Microchip ENC28J60 Ethernet controller library
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2019-02-08
+ * Modified : 2019-05-04
  * Revised  : 
- * Version  : 0.4.1.2
+ * Version  : 0.4.2.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,7 +23,7 @@
 #include "enc28j60.h"
 #include "spi.h"
 
-#define VERSION             "ENC28J60 driver: 0.4.1.1"
+#define VERSION             "ENC28J60 driver: 0.4.2.0"
 
 #define _HIGH(u16)          ((uint8_t) (((u16) & 0xFF00) >> 8))
 #define _LOW(u16)           ((uint8_t) ((u16) & 0x00FF))
@@ -748,14 +748,12 @@ int enc28j60_init(int mode, mac_addr_t *addr)
     
     ethernet_addr_cpy(&mac, addr); 
     ptr_pkg_next = BUF_RX_START;
-    
-    /* Reset */
-//     ENC28J60_RS_CONFIG;
-//     ENC28J60_RS_ENABLE;
+    ENC28J60_RS_CONFIG;
+    ENC28J60_RS_HIGH;
     
     /* Init SPI interface */
     ENC28J60_CS_CONFIG;
-    spi_master_init(SPI_MODE_0, SPI_FOSC_2);
+    spi_master_init(SPI_MODE_0, SPI_FOSC_2, SPI_ORDER_MSB);
     
     /* Soft reset controller */
     tmp = SPI_SRC;
@@ -863,7 +861,7 @@ int enc28j60_send(eth_frame_t *frame)
     int frm_len;
     int timeout = TIMEOUT_CNT;
     uint8_t *p;
-    uint8_t tmp;
+    uint8_t tmp = 0x00;
     uint8_t tsv[7];
     
     if (!frame) {
@@ -896,8 +894,6 @@ int enc28j60_send(eth_frame_t *frame)
         free(p);
         return -1;
     }
-    
-    tmp = 0x00;
     
     if (write_buffer(BUF_TX_START, &tmp, 1) == -1) {
         free(p);
@@ -998,20 +994,6 @@ int enc28j60_recv(eth_frame_t *frame)
     ptr_pkg_next = (uint16_t) rsv[BUF_PTR_LO];
     ptr_pkg_next |= ((uint16_t)rsv[BUF_PTR_HI] << 8);
     
-#ifdef DEBUG
-    if (ptr_pkg_next >= BUF_RX_END) {
-        error = 10;
-        stats.rx_err++;
-        return -1;
-    }
-    
-    if (ptr_pkg_next == ptr_pkg_start) {
-        error = 11;
-        stats.rx_err++;
-        return -1;
-    }
-#endif
-    
     if (ptr_pkg_start < ptr_pkg_next) {
         ptr_rsv_start = ptr_pkg_start + 2;
         ptr_frm_start = ptr_rsv_start + 4;
@@ -1055,16 +1037,6 @@ int enc28j60_recv(eth_frame_t *frame)
     frm_len_rsv = (uint16_t) rsv[RSV_BCNTL];
     frm_len_rsv |= ((uint16_t) rsv[RSV_BCNTH] << 8);
     
-#ifdef DEBUG
-    if (frm_len_rsv > MAX_FRAME_SIZE) {
-        if (free_rx_memory() == -1)
-            return -1;
-        stats.rx_err++;
-        error = 12
-        return -1;
-    }
-#endif
-    
     if (_ISCLR(rsv[RSV_BYTE2], RSV_OK)) {
         stats.rx_err++;
         
@@ -1075,21 +1047,19 @@ int enc28j60_recv(eth_frame_t *frame)
         return -1;
     }
     
-#ifdef DEBUG
     if (frm_len_rsv & 1) {
         if ((frm_len_ptr - 1) != frm_len_rsv) {
             stats.rx_err++;
-            error = 13;
+            error = ERR_INTER;
             return -1;
         }
     } else {
         if (frm_len_ptr != frm_len_rsv) {
             stats.rx_err++;
-            error = 13;
+            error = ERR_INTER;
             return -1;
         }
     }
-#endif
     
     p = (uint8_t *) malloc(frm_len_rsv);
     
