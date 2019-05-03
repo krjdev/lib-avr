@@ -562,26 +562,24 @@ void spi_master_recv(uint8_t *data, int len);
 **Functions:**  
 ```c
 int enc28j60_init(int mode, mac_addr_t *addr);
-int enc28j60_send(eth_frame_t *frame);
-int enc28j60_recv(eth_frame_t *frame);
 int enc28j60_set_mac(mac_addr_t *addr);
 int enc28j60_get_mac(mac_addr_t *addr);
+int enc28j60_send(eth_frame_t *frame);
+int enc28j60_recv(eth_frame_t *frame);
 int enc28j60_is_link_up(void);
-uint32_t enc28j60_get_count_rx_frame(void);
-uint32_t enc28j60_get_count_tx_frame(void);
-uint16_t enc28j60_get_count_rx_err(void);
-uint16_t enc28j60_get_count_tx_err(void);
 int enc28j60_get_free_rx_space(void);
-char *enc28j60_get_version(void);
-char *enc28j60_get_chip_revision(void);
 int enc28j60_get_last_error(void);
-struct enc28j60_regs enc28j60_get_regs(void);
+char *enc28j60_get_ver(void);
+char *enc28j60_get_rev(void);
+nic_stats_t enc28j60_get_stats(void);
+struct enc28j60_regs enc28j60_dump_regs(void);
 ```
 
 **Dependencies**  
 * avr-libc  
 * net/ethernet.h  
 * net/ethernet.c  
+* net/nic.h  
 * spi/spi.h  
 * spi/spi.c
 
