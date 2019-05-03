@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-02-09
- * Modified : 2019-02-11
+ * Modified : 2019-05-03
  * Revised  : 
- * Version  : 0.1.1.0
+ * Version  : 0.1.1.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -67,7 +67,6 @@ static int pkt_append_checksum(icmp_packet_t *icmp)
 static int pkt_verify_checksum(icmp_packet_t *icmp)
 {
     uint32_t sum;
-    uint16_t tmp;
     uint16_t carry;
     uint16_t chksum;
     
