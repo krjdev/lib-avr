@@ -1,13 +1,13 @@
 /**
  *
  * File Name: sdc.h
- * Title    : SD card interface library header
+ * Title    : SD card interface library
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-04-14
- * Modified : 
+ * Modified : 2019-05-05
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -27,7 +27,12 @@
 #define SD_CS_ENABLE        (PORTJ &= ~(1 << PJ1))
 #define SD_CS_DISABLE       (PORTJ |= (1 << PJ1))
 
+#define SD_TYPE_SDSC        0
+#define SD_TYPE_SDHC        1
+#define SD_TYPE_SDXC        2
+
 extern int sdc_init(void);
+extern int sdc_get_type(void);
 extern uint64_t sdc_get_size(void);
 extern int sdc_rd_block(uint32_t addr, uint8_t *buf, int len);
 extern int sdc_wr_block(uint32_t addr, uint8_t *buf, int len);
