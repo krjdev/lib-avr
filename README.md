@@ -583,7 +583,7 @@ struct enc28j60_regs enc28j60_dump_regs(void);
 * spi/spi.h  
 * spi/spi.c
 
-### SPI device: SD card driver (alpha version)
+### SPI device: SD card driver
 
 **Files:**  
 [spi/sdc.h](https://github.com/krjdev/lib-avr/blob/master/spi/sdc.h)  
@@ -592,6 +592,7 @@ struct enc28j60_regs enc28j60_dump_regs(void);
 **Functions:**  
 ```c
 int sdc_init(void);
+int sdc_get_type(void);
 uint64_t sdc_get_size(void);
 int sdc_rd_block(uint32_t addr, uint8_t *buf, int len);
 int sdc_wr_block(uint32_t addr, uint8_t *buf, int len);
