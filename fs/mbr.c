@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-05-05
- * Modified : 
+ * Modified : 2019-05-06
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -44,56 +44,56 @@ mbr_t *mbr_open(uint8_t *buf, int len)
     p->part_tbl[0].boot = buf[446];
     p->part_tbl[0].type = buf[450];
     tmp = buf[454];
-    tmp |= (buf[455] << 8);
-    tmp |= (buf[456] << 16);
-    tmp |= (buf[457] << 24);
+    tmp |= ((uint32_t) buf[455] << 8);
+    tmp |= ((uint32_t) buf[456] << 16);
+    tmp |= ((uint32_t) buf[457] << 24);
     p->part_tbl[0].lba_start = tmp;
     tmp = buf[458];
-    tmp |= (buf[459] << 8);
-    tmp |= (buf[460] << 16);
-    tmp |= (buf[461] << 24);
+    tmp |= ((uint32_t) buf[459] << 8);
+    tmp |= ((uint32_t) buf[460] << 16);
+    tmp |= ((uint32_t) buf[461] << 24);
     p->part_tbl[0].lba_size = tmp;
     
     /* Partition 1 */
     p->part_tbl[1].boot = buf[462];
     p->part_tbl[1].type = buf[466];
     tmp = buf[470];
-    tmp |= (buf[471] << 8);
-    tmp |= (buf[472] << 16);
-    tmp |= (buf[473] << 24);
+    tmp |= ((uint32_t) buf[471] << 8);
+    tmp |= ((uint32_t) buf[472] << 16);
+    tmp |= ((uint32_t) buf[473] << 24);
     p->part_tbl[1].lba_start = tmp;
     tmp = buf[474];
-    tmp |= (buf[475] << 8);
-    tmp |= (buf[476] << 16);
-    tmp |= (buf[477] << 24);
+    tmp |= ((uint32_t) buf[475] << 8);
+    tmp |= ((uint32_t) buf[476] << 16);
+    tmp |= ((uint32_t) buf[477] << 24);
     p->part_tbl[1].lba_size = tmp;
     
     /* Partition 2 */
     p->part_tbl[2].boot = buf[478];
     p->part_tbl[2].type = buf[482];
     tmp = buf[486];
-    tmp |= (buf[487] << 8);
-    tmp |= (buf[488] << 16);
-    tmp |= (buf[489] << 24);
+    tmp |= ((uint32_t) buf[487] << 8);
+    tmp |= ((uint32_t) buf[488] << 16);
+    tmp |= ((uint32_t) buf[489] << 24);
     p->part_tbl[2].lba_start = tmp;
     tmp = buf[490];
-    tmp |= (buf[491] << 8);
-    tmp |= (buf[492] << 16);
-    tmp |= (buf[493] << 24);
+    tmp |= ((uint32_t) buf[491] << 8);
+    tmp |= ((uint32_t) buf[492] << 16);
+    tmp |= ((uint32_t) buf[493] << 24);
     p->part_tbl[2].lba_size = tmp;
     
     /* Partition 3 */
     p->part_tbl[3].boot = buf[494];
     p->part_tbl[3].type = buf[498];
     tmp = buf[502];
-    tmp |= (buf[503] << 8);
-    tmp |= (buf[504] << 16);
-    tmp |= (buf[505] << 24);
+    tmp |= ((uint32_t) buf[503] << 8);
+    tmp |= ((uint32_t) buf[504] << 16);
+    tmp |= ((uint32_t) buf[505] << 24);
     p->part_tbl[3].lba_start = tmp;
     tmp = buf[506];
-    tmp |= (buf[507] << 8);
-    tmp |= (buf[508] << 16);
-    tmp |= (buf[509] << 24);
+    tmp |= ((uint32_t) buf[507] << 8);
+    tmp |= ((uint32_t) buf[508] << 16);
+    tmp |= ((uint32_t) buf[509] << 24);
     p->part_tbl[3].lba_size = tmp;
     return p;
 }
