@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-02-11
+ * Modified : 2019-05-06
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -176,11 +176,13 @@ int udp_pkt_free(udp_packet_t *udp)
         
         free(udp->up_payload_buf);
     }
+    
+    return 0;
 }
 
 int udp_pkt_to_ip(udp_packet_t *udp, ipv4_packet_t *ip_udp)
 {
-    uint32_t sum;
+    uint32_t sum = 0;
     uint16_t tmp;
     uint16_t carry;
     uint8_t *p;
