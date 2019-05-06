@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-04-14
- * Modified : 2019-05-05
+ * Modified : 2019-05-06
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -451,6 +451,67 @@ int wr_block(uint32_t addr, uint8_t *buf, int len)
     return -1;
 }
 
+
+static int get_type(void)
+{
+    uint8_t csd[16];
+    uint32_t c_size;
+    
+    if (!init_done)
+        return -1;
+    
+    if (get_csd(csd, 16) == -1)
+        return -1;
+    
+    if ((csd[0] & 0xC0) == 0x00)
+        return SD_TYPE_SDSC;
+    else if ((csd[0] & 0xC0) == 0x40) {
+        c_size = (uint64_t) csd[7] << 16;
+        c_size |= (uint64_t) csd[8] << 8;
+        c_size |= (uint64_t) csd[9];
+        
+        if (c_size >= 0xFFFF)
+            return SD_TYPE_SDXC;
+        else
+            return SD_TYPE_SDHC;
+    } else
+        return -1;
+}
+
+static uint64_t get_size(void)
+{
+    uint8_t csd[16];
+    uint64_t size;
+    uint8_t blk_len;
+    uint8_t mul;
+    
+    if (!init_done)
+        return 0;
+    
+    if (get_csd(csd, 16) == -1)
+        return 0;
+    
+    if ((csd[0] & 0xC0) == 0x00) {
+        blk_len = (csd[5] & 0x0F);
+        mul = ((csd[9] & 0x03) << 2); 
+        mul |= ((csd[10] & 0x80) >> 1);
+        size = ((uint64_t) (csd[6] & 0x03) << 10);
+        size |= ((uint64_t) csd[7] << 2);
+        size |= (((uint64_t) csd[8] & 0xC0) >> 6);
+        size += 1;
+        size = ((size * (1 << (mul + 2))) * (1 << blk_len));
+    } else if ((csd[0] & 0xC0) == 0x40) {
+        size = (uint64_t) csd[7] << 16;
+        size |= (uint64_t) csd[8] << 8;
+        size |= (uint64_t) csd[9];
+        size += 1;
+        size *= 524288L;
+    } else
+        return 0;
+    
+    return size;
+}
+
 int sdc_init(void)
 {
     uint8_t dummy = 0xFF;
@@ -532,66 +593,6 @@ int sdc_init(void)
     return 0;
 }
 
-int sdc_get_type(void)
-{
-    uint8_t csd[16];
-    uint32_t c_size;
-    
-    if (!init_done)
-        return -1;
-    
-    if (get_csd(csd, 16) == -1)
-        return -1;
-    
-    if ((csd[0] & 0xC0) == 0x00)
-        return SD_TYPE_SDSC;
-    else if ((csd[0] & 0xC0) == 0x40) {
-        c_size = (uint64_t) csd[7] << 16;
-        c_size |= (uint64_t) csd[8] << 8;
-        c_size |= (uint64_t) csd[9];
-        
-        if (c_size >= 0xFFFF)
-            return SD_TYPE_SDXC;
-        else
-            return SD_TYPE_SDHC;
-    } else
-        return -1;
-}
-
-uint64_t sdc_get_size(void)
-{
-    uint8_t csd[16];
-    uint64_t size;
-    uint8_t blk_len;
-    uint8_t mul;
-    
-    if (!init_done)
-        return 0;
-    
-    if (get_csd(csd, 16) == -1)
-        return 0;
-    
-    if ((csd[0] & 0xC0) == 0x00) {
-        blk_len = (csd[5] & 0x0F);
-        mul = ((csd[9] & 0x03) << 2); 
-        mul |= ((csd[10] & 0x80) >> 1);
-        size = ((uint64_t) (csd[6] & 0x03) << 10);
-        size |= ((uint64_t) csd[7] << 2);
-        size |= (((uint64_t) csd[8] & 0xC0) >> 6);
-        size += 1;
-        size = ((size * (1 << (mul + 2))) * (1 << blk_len));
-    } else if ((csd[0] & 0xC0) == 0x40) {
-        size = (uint64_t) csd[7] << 16;
-        size |= (uint64_t) csd[8] << 8;
-        size |= (uint64_t) csd[9];
-        size += 1;
-        size *= 524288L;
-    } else
-        return 0;
-    
-    return size;
-}
-
 int sdc_rd_block(uint32_t addr, uint8_t *buf, int len)
 {
     if (!init_done)
@@ -608,6 +609,7 @@ int sdc_rd_block(uint32_t addr, uint8_t *buf, int len)
     
     return 0;
 }
+
 
 int sdc_wr_block(uint32_t addr, uint8_t *buf, int len)
 {
@@ -626,4 +628,71 @@ int sdc_wr_block(uint32_t addr, uint8_t *buf, int len)
     return 0;
 }
 
+int sdc_rd(uint64_t addr, uint8_t *buf, int len)
+{
+    uint8_t b[512];
+    uint32_t b_addr;
+    int start;
+    
+    if (!init_done)
+        return -1;
+    
+    if (!buf)
+        return -1;
+    
+    if (len < 1)
+        return -1;
+    
+    b_addr = addr / 512;
+    start = addr % 512;
+    
+    if (rd_block(b_addr, b, 512) == -1)
+        return -1;
+    
+    memcpy(buf, &b[start], len);
+    return 0;
+}
+
+int sdc_wr(uint64_t addr, uint8_t *buf, int len)
+{
+    uint8_t b[512];
+    uint32_t b_addr;
+    int start;
+    
+    if (!init_done)
+        return -1;
+    
+    if (!buf)
+        return -1;
+    
+    if (len < 1)
+        return -1;
+    
+    b_addr = addr / 512;
+    start = addr % 512;
+    
+    if (rd_block(b_addr, b, 512) == -1)
+        return -1;
+    
+    memcpy(&b[start], buf, len);
+    
+    if (wr_block(b_addr, b, 512) == -1)
+        return -1;
+    
+    return 0;
+}
+
+int sdc_ioctl(int type, void *unused, void **ret)
+{
+    switch (type) {
+    case SD_IOCTL_GETTYPE:
+        (*ret) = (void *) get_type();
+        break;
+    case SD_IOCTL_GETSIZE:
+        (*ret) = (void *) get_size();
+        break;
+    default:
+        return -1;
+    }
+}
 
