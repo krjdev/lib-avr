@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-04-04
- * Modified : 
+ * Modified : 2019-05-06
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -342,7 +342,7 @@ int pcf8563_set_alarm(time_t *time, date_t *date, uint8_t flags)
     cmd = PCF8563_REG_ALARM_MINUTE;
     val[0] = int_to_bcd(time->t_min);
     val[1] = int_to_bcd(time->t_hr);
-    val[2] = int_to_bcd(date_>d_day);
+    val[2] = int_to_bcd(date->d_day);
     
     switch (date->d_weekday) {
     case MON:
