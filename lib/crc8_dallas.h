@@ -3,11 +3,11 @@
  * File Name: crc_dallas.h
  * Title    : CRC calculation for Dallas/Maxim 1-Wire devices header
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-11-29
- * Modified : 
+ * Modified : 2019-05-07
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *

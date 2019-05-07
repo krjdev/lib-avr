@@ -3,11 +3,11 @@
  * File Name: crc_dallas.c
  * Title    : CRC calculation for Dallas/Maxim 1-Wire devices source
  * Project  : lib-avr
- * Author   : Copyright (C) 2018 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-11-29
- * Modified : 
+ * Modified : 2019-05-07
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,8 +23,8 @@
 
 int crc8_dallas_calc(uint8_t *data, int len)
 {
-    int i, j, carry;
-    uint8_t tmp, rem, crc;
+    int i, j;
+    uint8_t crc;
     
     if (!data)
         return -1;
@@ -35,19 +35,10 @@ int crc8_dallas_calc(uint8_t *data, int len)
     crc = 0x00;
     
     for (j = 0; j < len; j++) {
-        tmp = data[j];
-        rem = tmp;
+        crc ^= data[j];
         
         for (i = 0; i < 8; i++) {
-            rem ^= crc;
-            crc >>= 1;
-            tmp >>= 1;
-            carry = rem & 0x01;
-            
-            if (carry)
-                crc ^= CRC_POLY;
-            
-            rem = tmp;
+            crc = (crc & 0x01) ? ((crc >> 1) ^ CRC_POLY) : (crc >> 1);
         }
     }
     
