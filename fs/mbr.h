@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-05-05
- * Modified : 2019-05-06
+ * Modified : 2019-05-07
  * Revised  : 
- * Version  : 0.1.0.1
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -21,6 +21,28 @@
 #define LIBAVR_FS_MBR_H
 
 #include <stdint.h>
+
+#define MBR_PART_TYPE_EMPTY     0x00    /* Empty partition */
+#define MBR_PART_TYPE_FAT12     0x01    /* FAT12 partition */
+#define MBR_PART_TYPE_FAT16S32  0x04    /* FAT16 < 32MiB partition */
+#define MBR_PART_TYPE_EXTENDED  0x05    /* Extented partition */
+#define MBR_PART_TYPE_FAT16G32  0x06    /* FAT16 > 32MiB partition */
+#define MBR_PART_TYPE_NTFS      0x07    /* NTFS partition */
+#define MBR_PART_TYPE_FAT32     0x0B    /* FAT32 partition */
+#define MBR_PART_TYPE_FAT32L    0x0C    /* FAT32 partition (LBA mode) */
+#define MBR_PART_TYPE_FAT16L    0x0E    /* FAT16 partition (LBA mode) */
+#define MBR_PART_TYPE_EXTL      0x0F    /* Extented partition (LBA mode) */
+#define MBR_PART_TYPE_OEM       0x12    /* OEM partition */
+#define MBR_PART_TYPE_WINRE     0x27    /* Windows RE hidden partition */
+#define MBR_PART_TYPE_DYNAMIC   0x42    /* Dynamic volume partition */
+#define MBR_PART_TYPE_LINUXSWP  0x82    /* Linux Swap partition */
+#define MBR_PART_TYPE_LINUXNAT  0x83    /* Linux Native partition */
+#define MBR_PART_TYPE_LINUXLVM  0x8E    /* Linux LVM partition */
+#define MBR_PART_TYPE_FREEBSD   0xA5    /* FreeBSD partition */
+#define MBR_PART_TYPE_OPENBSD   0xA6    /* OpenBSD partition */
+#define MBR_PART_TYPE_NETBSD    0xA9    /* NetBSD partition */
+#define MBR_PART_TYPE_LMBR      0xEE    /* Legacy MBR partition */
+#define MBR_PART_TYPE_EFI       0xEF    /* EFI partition */
 
 typedef struct part {
     uint8_t boot;

@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-05-05
- * Modified : 2019-05-06
+ * Modified : 2019-05-07
  * Revised  : 
- * Version  : 0.1.0.1
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -115,7 +115,7 @@ int mbr_part_get_num(mbr_t *mbr)
         return -1;
     
     for (i = 0; i < 4; i++) {
-        if (mbr->part_tbl[i].lba_size != 0x00000000)
+        if (mbr->part_tbl[i].type != MBR_PART_TYPE_EMPTY)
             ret++;
     }
     
