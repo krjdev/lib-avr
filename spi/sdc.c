@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-04-14
- * Modified : 2019-05-06
+ * Modified : 2019-05-07
  * Revised  : 
- * Version  : 0.3.0.1
+ * Version  : 0.4.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -25,6 +25,9 @@
 #include "../lib/crc16_ccitt.h"
 #include "spi.h"
 #include "sdc.h"
+
+#define _HIGH(u16)          ((uint8_t) (((u16) & 0xFF00) >> 8))
+#define _LOW(u16)           ((uint8_t) ((u16) & 0x00FF))
 
 /* SD card commands */
 #define SD_CMD0             0  /* GO_IDLE_STATE */
@@ -50,6 +53,8 @@
 #define SD_R7               4
 
 #define SD_TOKEN            0xFE
+
+#define SD_BLOCK_SIZE       512
 
 int init_done;
 
@@ -574,11 +579,11 @@ int sdc_init(void)
             timeout--;
     }
     
-    /* set block length to 512 bytes */
+    /* set block length */
     args[0] = 0x00;
     args[1] = 0x00;
-    args[2] = 0x02;
-    args[3] = 0x00;
+    args[2] = _HIGH(SD_BLOCK_SIZE);
+    args[3] = _LOW(SD_BLOCK_SIZE);
     
     if (send_cmd(SD_CMD16, args, 4, resp, SD_R1) == -1)
         return -1;
@@ -601,7 +606,7 @@ int sdc_rd_block(uint32_t addr, uint8_t *buf, int len)
     if (!buf)
         return -1;
     
-    if (len != 512)
+    if (len != SD_BLOCK_SIZE)
         return -1;
     
     if (rd_block(addr, buf, len) == -1)
@@ -619,7 +624,7 @@ int sdc_wr_block(uint32_t addr, uint8_t *buf, int len)
     if (!buf)
         return -1;
     
-    if (len != 512)
+    if (len != SD_BLOCK_SIZE)
         return -1;
     
     if (wr_block(addr, buf, len) == -1)
@@ -630,8 +635,8 @@ int sdc_wr_block(uint32_t addr, uint8_t *buf, int len)
 
 int sdc_rd(uint64_t addr, uint8_t *buf, int len)
 {
-    uint8_t b[512];
-    uint32_t b_addr;
+    uint8_t b[SD_BLOCK_SIZE];
+    uint32_t blk_addr;
     int start;
     
     if (!init_done)
@@ -640,13 +645,18 @@ int sdc_rd(uint64_t addr, uint8_t *buf, int len)
     if (!buf)
         return -1;
     
-    if (len < 1)
+    if ((len < 1) && (len > SD_BLOCK_SIZE))
         return -1;
     
-    b_addr = addr / 512;
-    start = addr % 512;
+    if (addr < SD_BLOCK_SIZE) {
+        blk_addr = 0x00000000;
+        start = addr;
+    } else {
+        blk_addr = addr / SD_BLOCK_SIZE;
+        start = addr % SD_BLOCK_SIZE;
+    }
     
-    if (rd_block(b_addr, b, 512) == -1)
+    if (rd_block(blk_addr, b, SD_BLOCK_SIZE) == -1)
         return -1;
     
     memcpy(buf, &b[start], len);
@@ -655,8 +665,8 @@ int sdc_rd(uint64_t addr, uint8_t *buf, int len)
 
 int sdc_wr(uint64_t addr, uint8_t *buf, int len)
 {
-    uint8_t b[512];
-    uint32_t b_addr;
+    uint8_t b[SD_BLOCK_SIZE];
+    uint32_t blk_addr;
     int start;
     
     if (!init_done)
@@ -665,31 +675,45 @@ int sdc_wr(uint64_t addr, uint8_t *buf, int len)
     if (!buf)
         return -1;
     
-    if (len < 1)
+    if ((len < 1) && (len > SD_BLOCK_SIZE))
         return -1;
     
-    b_addr = addr / 512;
-    start = addr % 512;
+    if (addr < SD_BLOCK_SIZE) {
+        blk_addr = 0x00000000;
+        start = addr;
+    } else {
+        blk_addr = addr / SD_BLOCK_SIZE;
+        start = addr % SD_BLOCK_SIZE;
+    }
     
-    if (rd_block(b_addr, b, 512) == -1)
+    if (rd_block(blk_addr, b, SD_BLOCK_SIZE) == -1)
         return -1;
     
     memcpy(&b[start], buf, len);
     
-    if (wr_block(b_addr, b, 512) == -1)
+    if (wr_block(blk_addr, b, SD_BLOCK_SIZE) == -1)
         return -1;
     
     return 0;
 }
 
-int sdc_ioctl(int type, void *unused, void **ret)
+int sdc_ioctl(int type, void *unused, void *ret)
 {
+    if (!ret)
+        return -1;
+    
     switch (type) {
-    case SD_IOCTL_GETTYPE:
-        (*ret) = (void *) get_type();
+    case SD_IOCTL_GETINFO:
+        ((struct sd_info *) ret)->type = get_type();
+        ((struct sd_info *) ret)->size = get_size();
+        get_status(&((struct sd_info *) ret)->status);
+        get_ocr(&((struct sd_info *) ret)->ocr);
         break;
-    case SD_IOCTL_GETSIZE:
-        (*ret) = (void *) get_size();
+    case SD_IOCTL_GETCID:
+        get_cid(((struct sd_cid *) ret)->data, 16);
+        break;
+    case SD_IOCTL_GETCSD:
+        get_cid(((struct sd_csd *) ret)->data, 16);
         break;
     default:
         return -1;
