@@ -592,10 +592,11 @@ struct enc28j60_regs enc28j60_dump_regs(void);
 **Functions:**  
 ```c
 int sdc_init(void);
-int sdc_get_type(void);
-uint64_t sdc_get_size(void);
 int sdc_rd_block(uint32_t addr, uint8_t *buf, int len);
 int sdc_wr_block(uint32_t addr, uint8_t *buf, int len);
+int sdc_rd(uint64_t addr, uint8_t *buf, int len);
+int sdc_wr(uint64_t addr, uint8_t *buf, int len);
+int sdc_ioctl(int ioctl, void *unused, void *ret);
 ```
 
 **Dependencies**  
