@@ -21,6 +21,7 @@ SRC += i2c/pcf8574.c
 SRC += i2c/pcf8591.c
 SRC += lib/bcd.c
 SRC += lib/crc16_ccitt.c
+SRC += lib/crc32_ethernet.c
 SRC += lib/crc7.c
 SRC += lib/crc8_dallas.c
 SRC += lib/date.c
