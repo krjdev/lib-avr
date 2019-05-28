@@ -177,6 +177,21 @@ int crc16_ccitt_check(uint8_t *data, int len, uint16_t crc);
 **Dependencies**  
 * avr-libc
 
+### CRC32 for Ethernet (FCS) Library
+
+**Files:**  
+[lib/crc32_ethernet.h](https://github.com/krjdev/lib-avr/blob/master/lib/crc32_ethernet.h)  
+[lib/crc32_ethernet.c](https://github.com/krjdev/lib-avr/blob/master/lib/crc32_ethernet.c)
+
+**Functions:**  
+```c
+uint16_t crc16_ccitt_calc(uint8_t *data, int len);
+int crc16_ccitt_check(uint8_t *data, int len, uint16_t crc);
+```
+
+**Dependencies**  
+* avr-libc
+
 ### CRC7 for MMC/SD memory cards Library
 
 **Files:**  
