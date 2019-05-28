@@ -185,8 +185,8 @@ int crc16_ccitt_check(uint8_t *data, int len, uint16_t crc);
 
 **Functions:**  
 ```c
-uint16_t crc16_ccitt_calc(uint8_t *data, int len);
-int crc16_ccitt_check(uint8_t *data, int len, uint16_t crc);
+uint32_t crc32_calc(uint8_t *data, int len);
+int crc32_check(uint8_t *data, int len, uint32_t crc);
 ```
 
 **Dependencies**  
