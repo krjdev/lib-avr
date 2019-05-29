@@ -245,6 +245,31 @@ int date_get_year(date_t *date, uint16_t *year);
 **Dependencies**  
 * avr-libc
 
+### Endianness (Byte Order) Library
+
+**Files:**  
+[lib/endian.h](https://github.com/krjdev/lib-avr/blob/master/lib/endian.h)  
+[lib/endian.c](https://github.com/krjdev/lib-avr/blob/master/lib/endian.c)
+
+**Functions:**  
+```c
+uint16_t buf_to_uint16_le(uint8_t *buf);
+uint32_t buf_to_uint32_le(uint8_t *buf);
+uint64_t buf_to_uint64_le(uint8_t *buf);
+uint16_t buf_to_uint16_be(uint8_t *buf);
+uint32_t buf_to_uint32_be(uint8_t *buf);
+uint64_t buf_to_uint64_be(uint8_t *buf);
+void uint16_to_buf_le(uint16_t val, uint8_t *buf);
+void uint32_to_buf_le(uint32_t val, uint8_t *buf);
+void uint64_to_buf_le(uint64_t val, uint8_t *buf);
+void uint16_to_buf_be(uint16_t val, uint8_t *buf);
+void uint32_to_buf_be(uint32_t val, uint8_t *buf);
+void uint64_to_buf_be(uint64_t val, uint8_t *buf);
+```
+
+**Dependencies**  
+* avr-libc
+
 ### FIFO buffer Library
 
 **Files:**  
