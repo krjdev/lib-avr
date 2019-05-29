@@ -25,6 +25,7 @@ SRC += lib/crc32_ethernet.c
 SRC += lib/crc7.c
 SRC += lib/crc8_dallas.c
 SRC += lib/date.c
+SRC += lib/endian.c
 SRC += lib/fifo.c
 SRC += lib/lifo.c
 SRC += lib/time.c
