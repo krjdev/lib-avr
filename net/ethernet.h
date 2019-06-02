@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-05-31
+ * Modified : 2019-06-01
  * Revised  : 
- * Version  : 0.4.0.0
+ * Version  : 0.5.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -56,8 +56,10 @@ extern void ethernet_crc_enable(void);
 extern void ethernet_crc_disable(void);
 extern int ethernet_addr_aton(const char *str, mac_addr_t *mac);
 extern int ethernet_addr_ntoa(mac_addr_t *mac, char *str);
+extern int ethernet_addr_broadcast(mac_addr_t *mac);
 extern int ethernet_addr_cpy(mac_addr_t *dst, mac_addr_t *src);
 extern int ethernet_addr_equal(mac_addr_t *mac1, mac_addr_t *mac2);
+extern int ethernet_addr_is_broadcast(mac_addr_t *mac);
 extern int ethernet_frame_set_dst(eth_frame_t *frame, mac_addr_t *mac);
 extern int ethernet_frame_set_src(eth_frame_t *frame, mac_addr_t *mac);
 extern int ethernet_frame_set_type(eth_frame_t *frame, uint16_t type);

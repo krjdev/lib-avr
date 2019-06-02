@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-05-31
+ * Modified : 2019-06-01
  * Revised  : 
- * Version  : 0.4.0.0
+ * Version  : 0.5.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,7 +22,6 @@
 
 #define HDR_LEN         14
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -131,6 +130,22 @@ int ethernet_addr_ntoa(mac_addr_t *mac, char *str)
     return 0;
 }
 
+int ethernet_addr_broadcast(mac_addr_t *mac)
+{
+    if (!mac) {
+        error = ETHERNET_ERROR_INVAL;
+        return -1;
+    }
+    
+    mac->ma_byte0 = 0xFF;
+    mac->ma_byte1 = 0xFF;
+    mac->ma_byte2 = 0xFF;
+    mac->ma_byte3 = 0xFF;
+    mac->ma_byte4 = 0xFF;
+    mac->ma_byte5 = 0xFF;
+    return 0;
+}
+
 int ethernet_addr_cpy(mac_addr_t *dst, mac_addr_t *src)
 {
     if (!dst) {
@@ -170,6 +185,24 @@ int ethernet_addr_equal(mac_addr_t *mac1, mac_addr_t *mac2)
         (mac1->ma_byte3 == mac2->ma_byte3) && 
         (mac1->ma_byte4 == mac2->ma_byte4) && 
         (mac1->ma_byte5 == mac2->ma_byte5))
+        return 1;
+    
+    return 0;
+}
+
+int ethernet_addr_is_broadcast(mac_addr_t *mac)
+{
+    if (!mac) {
+        error = ETHERNET_ERROR_INVAL;
+        return -1;
+    }
+    
+    if ((mac->ma_byte0 == 0xFF) && 
+        (mac->ma_byte1 == 0xFF) && 
+        (mac->ma_byte2 == 0xFF) && 
+        (mac->ma_byte3 == 0xFF) && 
+        (mac->ma_byte4 == 0xFF) && 
+        (mac->ma_byte5 == 0xFF))
         return 1;
     
     return 0;
