@@ -1,13 +1,13 @@
 /**
  *
  * File Name: enc28j60.h
- * Title    : SPI device Microchip ENC28J60 Ethernet controller library header
+ * Title    : SPI device Microchip ENC28J60 Ethernet controller driver
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2019-05-04
+ * Modified : 2019-06-02
  * Revised  : 
- * Version  : 0.4.2.0
+ * Version  : 0.5.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -36,21 +36,22 @@
 #define ENC28J60_RS_HIGH    (PORTJ |= (1 << PJ1))
 #define ENC28J60_RS_LOW     (PORTJ &= ~(1 << PJ1))
 
-/* Duplex Mode */
-#define MODE_FDPX           0
-#define MODE_HDPX           1
+/* ENC28J60 Duplex Mode */
+#define ENC28J60_MODE_FDPX      0
+#define ENC28J60_MODE_HDPX      1
 
-/* Error codes */
-#define ERR_NOERR           0
-#define ERR_NOMEM           1
-#define ERR_INVAL           2
-#define ERR_TIMEO           3
-#define ERR_INTER           4
-#define ERR_ETLIB           5
-#define ERR_FRMIN           6
-#define ERR_TXABT           7
-#define ERR_FRMTB           8
-#define ERR_TXERR           9
+/* ENC28J60 Error codes */
+#define ENC28J60_ERR_NOERR      0
+#define ENC28J60_ERR_NOMEM      1
+#define ENC28J60_ERR_INVAL      2
+#define ENC28J60_ERR_TIMEO      3
+#define ENC28J60_ERR_INTER      4
+#define ENC28J60_ERR_ETLIB      5
+#define ENC28J60_ERR_FRMIN      6
+#define ENC28J60_ERR_TXABT      7
+#define ENC28J60_ERR_FRMTB      8
+#define ENC28J60_ERR_TXERR      9
+#define ENC28J60_ERR_RXCRC      10
 
 struct enc28j60_regs {
     int mode;
@@ -88,8 +89,9 @@ extern int enc28j60_recv(eth_frame_t *frame);
 extern int enc28j60_is_link_up(void);
 extern int enc28j60_get_free_rx_space(void);
 extern int enc28j60_get_last_error(void);
-extern char *enc28j60_get_ver(void);
-extern char *enc28j60_get_rev(void);
+extern char *enc28j60_get_driver_vers(void);
+extern char *enc28j60_get_driver_name(void);
+extern char *enc28j60_get_chip_rev(void);
 extern nic_stats_t enc28j60_get_stats(void);
 extern struct enc28j60_regs enc28j60_dump_regs(void);
 
