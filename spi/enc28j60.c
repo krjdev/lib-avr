@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-22
- * Modified : 2019-06-02
+ * Modified : 2019-06-08
  * Revised  : 
- * Version  : 0.5.0.0
+ * Version  : 0.5.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -24,7 +24,7 @@
 #include "spi.h"
 
 #define DRIVER_NAME         "ENC28J60"
-#define DRIVER_VERSION      "0.5.0.0"
+#define DRIVER_VERSION      "0.5.0.1"
 
 #define HI16(u16)           ((uint8_t) (((u16) & 0xFF00) >> 8))
 #define LO16(u16)           ((uint8_t) ((u16) & 0x00FF))
@@ -1133,6 +1133,16 @@ int enc28j60_recv(eth_frame_t *frame)
         }
     }
     
+    if (frm_len_rsv > ETHERNET_MAX_FRAME_SIZE) {
+        stats.tx_err++;
+        
+        if (free_rx_memory() == -1)
+            return -1;
+        
+        error = ENC28J60_ERR_FRMTB;
+        return -1;
+    }
+    
     p = (uint8_t *) malloc(frm_len_rsv);
     
     if (!p) {
@@ -1159,10 +1169,16 @@ int enc28j60_recv(eth_frame_t *frame)
     }
     
     if (ethernet_buf_to_frm(p, frm_len_rsv, frame) == -1) {
-        if (ethernet_get_last_error() == ETHERNET_ERROR_CRC)
+        switch (ethernet_get_last_error()) {
+        case ETHERNET_ERROR_CRC:
             error = ENC28J60_ERR_RXCRC;
-        else
+            break;
+        case ETHERNET_ERROR_NOMEM:
+            error = ENC28J60_ERR_NOMEM;
+            break;
+        default:
             error = ENC28J60_ERR_ETLIB;
+        }
         
         stats.rx_err++;
         free(p);
