@@ -1,13 +1,13 @@
 /**
  *
  * File Name: arp.c
- * Title    : ARP definitions and helper functions source
+ * Title    : ARP library
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-02-03
+ * Modified : 2019-06-09
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -267,7 +267,7 @@ int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf)
     return 0;
 }
 
-int arp_pkt_valid(arp_packet_t *arp)
+int arp_pkt_is_valid(arp_packet_t *arp)
 {
     if (!arp)
         return -1;
@@ -281,6 +281,16 @@ int arp_pkt_valid(arp_packet_t *arp)
     return 0;
 }
 
+int arp_pkt_is_query(arp_packet_t *arp)
+{
+    if (!arp)
+        return -1;
+    
+    if (arp->ap_oper == ARP_OPER_QUERY)
+        return 1;
+    
+    return 0;
+}
 
 int arp_pkt_create(arp_packet_t *arp)
 {
@@ -296,76 +306,81 @@ int arp_pkt_create(arp_packet_t *arp)
 
 int arp_pkt_create_probe(arp_packet_t *arp)
 {
-    mac_addr_t mac_b;
-    ipv4_addr_t ip_n;
-    
     if (!arp)
         return -1;
     
-    arp_pkt_create(arp);
-    arp_pkt_set_oper(arp, ARP_OPER_QUERY);
-    arp_pkt_set_sha(arp, &me_mac);
-    ipv4_addr_aton("0.0.0.0", &ip_n);
-    arp_pkt_set_spa(arp, &ip_n);
-    ethernet_addr_aton("00:00:00:00:00:00", &mac_b);
-    arp_pkt_set_tha(arp, &mac_b);
-    arp_pkt_set_tpa(arp, &me_ip);
+    arp->ap_htype = ARP_HTYPE_ETHERNET;
+    arp->ap_ptype = ARP_PTYPE_IPV4;
+    arp->ap_hlen = ARP_HLEN_ETHERNET;
+    arp->ap_plen = ARP_PLEN_IPV4;
+    arp->ap_oper = ARP_OPER_QUERY;
+    ethernet_addr_cpy(&arp->ap_sha, &me_mac);
+    arp->ap_spa.ia_byte0 = 0;
+    arp->ap_spa.ia_byte1 = 0;
+    arp->ap_spa.ia_byte2 = 0;
+    arp->ap_spa.ia_byte3 = 0;
+    arp->ap_tha.ma_byte0 = 0x00;
+    arp->ap_tha.ma_byte1 = 0x00;
+    arp->ap_tha.ma_byte2 = 0x00;
+    arp->ap_tha.ma_byte3 = 0x00;
+    arp->ap_tha.ma_byte4 = 0x00;
+    arp->ap_tha.ma_byte5 = 0x00;
+    ipv4_addr_cpy(&arp->ap_tpa, &me_ip);
     return 0;
     
 }
 
 int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp)
 {
-    mac_addr_t mac_b;
-    
     if (!dst_ip)
         return -1;
     
     if (!arp)
         return -1;
     
-    arp_pkt_create(arp);
-    arp_pkt_set_oper(arp, ARP_OPER_QUERY);
-    arp_pkt_set_sha(arp, &me_mac);
-    arp_pkt_set_spa(arp, &me_ip);
-    ethernet_addr_aton("00:00:00:00:00:00", &mac_b);
-    arp_pkt_set_tha(arp, &mac_b);
-    arp_pkt_set_tpa(arp, dst_ip);
+    arp->ap_htype = ARP_HTYPE_ETHERNET;
+    arp->ap_ptype = ARP_PTYPE_IPV4;
+    arp->ap_hlen = ARP_HLEN_ETHERNET;
+    arp->ap_plen = ARP_PLEN_IPV4;
+    arp->ap_oper = ARP_OPER_QUERY;
+    ethernet_addr_cpy(&arp->ap_sha, &me_mac);
+    ipv4_addr_cpy(&arp->ap_spa, &me_ip);
+    arp->ap_tha.ma_byte0 = 0x00;
+    arp->ap_tha.ma_byte1 = 0x00;
+    arp->ap_tha.ma_byte2 = 0x00;
+    arp->ap_tha.ma_byte3 = 0x00;
+    arp->ap_tha.ma_byte4 = 0x00;
+    arp->ap_tha.ma_byte5 = 0x00;
+    ipv4_addr_cpy(&arp->ap_tpa, dst_ip);
     return 0;
 }
 
 int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out)
 {
-    uint16_t oper;
-    ipv4_addr_t ip;
-    mac_addr_t mac;
-    
     if (!arp_in)
         return -1;
     
     if (!arp_out)
         return -1;
     
-    if (arp_pkt_valid(arp_in)) {
-        arp_pkt_get_tpa(arp_in, &ip);
-        arp_pkt_get_oper(arp_in, &oper);
-        
-        if (oper != ARP_OPER_QUERY)
-            return -1;
-        
-        if ((ipv4_addr_equal(&me_ip, &ip) != 1))
-            return -1;
-        
-        arp_pkt_create(arp_out);
-        arp_pkt_set_oper(arp_out, ARP_OPER_ANSWE);
-        arp_pkt_set_sha(arp_out, &me_mac);
-        arp_pkt_set_spa(arp_out, &me_ip);
-        arp_pkt_get_sha(arp_in, &mac);
-        arp_pkt_get_spa(arp_in, &ip);
-        arp_pkt_set_tha(arp_out, &mac);
-        arp_pkt_set_tpa(arp_out, &ip);
-    } else
+    if (arp_pkt_is_valid(arp_in) != 1)
         return -1;
+    
+    if (ipv4_addr_equal(&arp_in->ap_tpa, &me_ip) != 1)
+        return -1;
+    
+    if (arp_in->ap_oper != ARP_OPER_QUERY)
+        return -1;
+    
+    arp_out->ap_htype = ARP_HTYPE_ETHERNET;
+    arp_out->ap_ptype = ARP_PTYPE_IPV4;
+    arp_out->ap_hlen = ARP_HLEN_ETHERNET;
+    arp_out->ap_plen = ARP_PLEN_IPV4;
+    arp_out->ap_oper = ARP_OPER_ANSWE;
+    ethernet_addr_cpy(&arp_out->ap_sha, &me_mac);
+    ipv4_addr_cpy(&arp_out->ap_spa, &me_ip);
+    ethernet_addr_cpy(&arp_out->ap_tha, &arp_in->ap_sha);
+    ipv4_addr_cpy(&arp_out->ap_tpa, &arp_in->ap_tpa);
     
     return 0;
 }
