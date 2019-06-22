@@ -393,10 +393,14 @@ int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out);
 
 **Functions:**  
 ```c
+void ethernet_crc_enable(void);
+void ethernet_crc_disable(void);
 int ethernet_addr_aton(const char *str, mac_addr_t *mac);
 int ethernet_addr_ntoa(mac_addr_t *mac, char *str);
+int ethernet_addr_broadcast(mac_addr_t *mac);
 int ethernet_addr_cpy(mac_addr_t *dst, mac_addr_t *src);
 int ethernet_addr_equal(mac_addr_t *mac1, mac_addr_t *mac2);
+int ethernet_addr_is_broadcast(mac_addr_t *mac);
 int ethernet_frame_set_dst(eth_frame_t *frame, mac_addr_t *mac);
 int ethernet_frame_set_src(eth_frame_t *frame, mac_addr_t *mac);
 int ethernet_frame_set_type(eth_frame_t *frame, uint16_t type);
@@ -410,10 +414,13 @@ int ethernet_frame_get_len(eth_frame_t *frame);
 int ethernet_frame_payload_free(eth_frame_t *frame);
 int ethernet_buf_to_frm(uint8_t *buf, int len, eth_frame_t *frame);
 int ethernet_frm_to_buf(eth_frame_t *frame, uint8_t *buf);
+int ethernet_get_last_error(void);
 ```
 
 **Dependencies**  
-* avr-libc
+* avr-libc  
+* lib/crc23_ethernet.h  
+* lib/crc32_ethernet.c
 
 ### ICMP Library (beta version)
 
