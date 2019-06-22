@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-02-09
- * Modified : 2019-05-03
+ * Modified : 2019-06-22
  * Revised  : 
- * Version  : 0.1.1.1
+ * Version  : 0.2.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -143,6 +143,62 @@ int icmp_pkt_set_payload(icmp_packet_t *icmp, uint8_t *buf, int len)
     icmp->ip_payload_buf = p;
     icmp->ip_payload_len = len;
     pkt_append_checksum(icmp);
+    return 0;
+}
+
+int icmp_pkt_get_type(icmp_packet_t *icmp, uint8_t *type)
+{
+    if (!icmp)
+        return -1;
+    
+    if (!type)
+        return -1;
+    
+    (*type) = icmp->ip_hdr.ih_type;
+    return 0;
+}
+
+int icmp_pkt_get_code(icmp_packet_t *icmp, uint8_t *code)
+{
+    if (!icmp)
+        return -1;
+    
+    if (!code)
+        return -1;
+    
+    (*code) = icmp->ip_hdr.ih_code;
+    return 0;
+}
+
+int icmp_pkt_get_rest(icmp_packet_t *icmp, uint8_t *rest)
+{
+    if (!icmp)
+        return -1;
+    
+    if (!rest)
+        return -1;
+    
+    memcpy(rest, &icmp->ip_hdr.ih_rest, 4);
+    return 0;
+}
+
+int icmp_pkt_get_payload_len(icmp_packet_t *icmp)
+{
+    if (!icmp)
+        return -1;
+    
+    return icmp->ip_payload_len;
+}
+
+int icmp_pkt_get_payload(icmp_packet_t *icmp, uint8_t **buf)
+{
+    if (!icmp)
+        return -1;
+    
+    if (!buf)
+        return -1;
+    
+    (*buf) = icmp->ip_payload_buf;
     return 0;
 }
 
