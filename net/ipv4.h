@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-05-03
+ * Modified : 2019-06-22
  * Revised  : 
- * Version  : 0.4.1.2
+ * Version  : 0.5.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -62,11 +62,12 @@ typedef struct ipv4_packet {
     int ip_payload_len;
 } ipv4_packet_t;
 
-extern int ipv4_addr_aton(const char *str, ipv4_addr_t *ip);
-extern int ipv4_addr_ntoa(ipv4_addr_t *ip, char *str);
-extern int ipv4_addr_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2);
-extern int ipv4_addr_cpy(ipv4_addr_t *dst, ipv4_addr_t *src);
-extern int ipv4_addr_is_broadcast(ipv4_addr_t *ip);
+extern int ipv4_addr_aton(const char *str, ipv4_addr_t *ia);
+extern int ipv4_addr_ntoa(ipv4_addr_t *ia, char *str);
+extern int ipv4_addr_equal(ipv4_addr_t *ia1, ipv4_addr_t *ia2);
+extern int ipv4_addr_cpy(ipv4_addr_t *ia_dst, ipv4_addr_t *ia_src);
+extern int ipv4_addr_is_broadcast(ipv4_addr_t *ia);
+extern int ipv4_addr_is_localhost(ipv4_addr_t *ia);
 extern int ipv4_pkt_create_empty(ipv4_packet_t *ip);
 extern int ipv4_pkt_free(ipv4_packet_t *ip);
 extern int ipv4_pkt_set_id(ipv4_packet_t *ip, uint16_t id);

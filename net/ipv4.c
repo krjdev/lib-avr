@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-05-03
+ * Modified : 2019-06-22
  * Revised  : 
- * Version  : 0.4.1.2
+ * Version  : 0.5.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -137,7 +137,7 @@ static int pkt_hdr_verify_checksum(ipv4_packet_t *ip)
     return 0;
 }
 
-int ipv4_addr_aton(const char *str, ipv4_addr_t *ip)
+int ipv4_addr_aton(const char *str, ipv4_addr_t *ia)
 {
     char tmp[4];
     int i = 0;
@@ -146,7 +146,7 @@ int ipv4_addr_aton(const char *str, ipv4_addr_t *ip)
     if (!str)
         return -1;
     
-    if (!ip)
+    if (!ia)
         return -1;
     
     if (strlen(str) > 15 || strlen(str) < 7)
@@ -168,13 +168,13 @@ int ipv4_addr_aton(const char *str, ipv4_addr_t *ip)
             
             switch (cnt) {
             case 1:
-                sscanf(tmp, "%hhu", &ip->ia_byte0);
+                sscanf(tmp, "%hhu", &ia->ia_byte0);
                 break;
             case 2:
-                sscanf(tmp, "%hhu", &ip->ia_byte1);
+                sscanf(tmp, "%hhu", &ia->ia_byte1);
                 break;
             case 3:
-                sscanf(tmp, "%hhu", &ip->ia_byte2);
+                sscanf(tmp, "%hhu", &ia->ia_byte2);
                 break;
             default:
                 break;
@@ -185,64 +185,78 @@ int ipv4_addr_aton(const char *str, ipv4_addr_t *ip)
     end = i;
     memcpy(&tmp, &str[start], (end - start));
     tmp[end - start] = '\0';
-    sscanf(tmp, "%hhu", &ip->ia_byte3);
+    sscanf(tmp, "%hhu", &ia->ia_byte3);
     return 0;
 }
 
-int ipv4_addr_ntoa(ipv4_addr_t *ip, char *str)
+int ipv4_addr_ntoa(ipv4_addr_t *ia, char *str)
 {
-    if (!ip)
+    if (!ia)
         return -1;
     
     if (!str)
         return -1;
     
-    sprintf(str, "%hhu.%hhu.%hhu.%hhu", ip->ia_byte0, ip->ia_byte1, 
-            ip->ia_byte2, ip->ia_byte3);
+    sprintf(str, "%hhu.%hhu.%hhu.%hhu", ia->ia_byte0, ia->ia_byte1, 
+            ia->ia_byte2, ia->ia_byte3);
     return 0;
 }
 
-int ipv4_addr_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2)
+int ipv4_addr_equal(ipv4_addr_t *ia1, ipv4_addr_t *ia2)
 {
-    if (!ip1)
+    if (!ia1)
         return -1;
     
-    if (!ip2)
+    if (!ia2)
         return -1;
     
-    if ((ip1->ia_byte0 == ip2->ia_byte0) && 
-        (ip1->ia_byte1 == ip2->ia_byte1) && 
-        (ip1->ia_byte2 == ip2->ia_byte2) && 
-        (ip1->ia_byte3 == ip2->ia_byte3))
+    if ((ia1->ia_byte0 == ia2->ia_byte0) && 
+        (ia1->ia_byte1 == ia2->ia_byte1) && 
+        (ia1->ia_byte2 == ia2->ia_byte2) && 
+        (ia1->ia_byte3 == ia2->ia_byte3))
         return 1;
     
     return 0;
 }
 
-int ipv4_addr_cpy(ipv4_addr_t *dst, ipv4_addr_t *src)
+int ipv4_addr_cpy(ipv4_addr_t *ia_dst, ipv4_addr_t *ia_src)
 {
-    if (!dst)
+    if (!ia_dst)
         return -1;
     
-    if (!src)
+    if (!ia_src)
         return -1;
     
-    dst->ia_byte0 = src->ia_byte0;
-    dst->ia_byte1 = src->ia_byte1;
-    dst->ia_byte2 = src->ia_byte2;
-    dst->ia_byte3 = src->ia_byte3;
+    ia_dst->ia_byte0 = ia_src->ia_byte0;
+    ia_dst->ia_byte1 = ia_src->ia_byte1;
+    ia_dst->ia_byte2 = ia_src->ia_byte2;
+    ia_dst->ia_byte3 = ia_src->ia_byte3;
     return 0;
 }
 
-int ipv4_addr_is_broadcast(ipv4_addr_t *ip)
+int ipv4_addr_is_broadcast(ipv4_addr_t *ia)
 {
-    if (!ip)
+    if (!ia)
         return -1;
     
-    if ((ip->ia_byte0 == 0xFF) && 
-        (ip->ia_byte1 == 0xFF) && 
-        (ip->ia_byte2 == 0xFF) && 
-        (ip->ia_byte3 == 0xFF))
+    if ((ia->ia_byte0 == 0xFF) && 
+        (ia->ia_byte1 == 0xFF) && 
+        (ia->ia_byte2 == 0xFF) && 
+        (ia->ia_byte3 == 0xFF))
+        return 1;
+    
+    return 0;
+}
+
+int ipv4_addr_is_localhost(ipv4_addr_t *ia)
+{
+    if (!ia)
+        return -1;
+    
+    if ((ia->ia_byte0 == 127) && 
+        (ia->ia_byte1 == 0) && 
+        (ia->ia_byte2 == 0) && 
+        (ia->ia_byte3 == 1))
         return 1;
     
     return 0;
