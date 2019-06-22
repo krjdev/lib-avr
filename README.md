@@ -351,7 +351,7 @@ int time_get_msec(time_t *time, uint16_t *msec);
 **Directory:**  
 [net](https://github.com/krjdev/lib-avr/tree/master/net)
 
-### ARP Library (beta version)
+### ARP Library
 
 **Files:**  
 [net/arp.h](https://github.com/krjdev/lib-avr/blob/master/net/arp.h)  
@@ -373,7 +373,8 @@ int arp_pkt_get_tpa(arp_packet_t *arp, ipv4_addr_t *ip);
 int arp_pkt_get_len(arp_packet_t *arp);
 int arp_buf_to_pkt(uint8_t *buf, int len, arp_packet_t *arp);
 int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf);
-int arp_pkt_valid(arp_packet_t *arp);
+int arp_pkt_is_valid(arp_packet_t *arp);
+int arp_pkt_is_query(arp_packet_t *arp);
 int arp_pkt_create(arp_packet_t *arp);
 int arp_pkt_create_probe(arp_packet_t *arp);
 int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp);
