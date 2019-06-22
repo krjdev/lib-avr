@@ -444,7 +444,7 @@ int icmp_pkt_free(icmp_packet_t *icmp);
 **Dependencies**  
 * avr-libc
 
-### IPv4 Library (beta version)
+### IPv4 Library
 
 **Files:**  
 [net/ipv4.h](https://github.com/krjdev/lib-avr/blob/master/net/ipv4.h)  
@@ -453,11 +453,12 @@ int icmp_pkt_free(icmp_packet_t *icmp);
 
 **Functions:**  
 ```c
-int ipv4_addr_aton(const char *str, ipv4_addr_t *ip);
-int ipv4_addr_ntoa(ipv4_addr_t *ip, char *str);
-int ipv4_addr_equal(ipv4_addr_t *ip1, ipv4_addr_t *ip2);
-int ipv4_addr_cpy(ipv4_addr_t *dst, ipv4_addr_t *src);
-int ipv4_addr_is_broadcast(ipv4_addr_t *ip);
+int ipv4_addr_aton(const char *str, ipv4_addr_t *ia);
+int ipv4_addr_ntoa(ipv4_addr_t *ia, char *str);
+int ipv4_addr_equal(ipv4_addr_t *ia1, ipv4_addr_t *ia2);
+int ipv4_addr_cpy(ipv4_addr_t *ia_dst, ipv4_addr_t *ia_src);
+int ipv4_addr_is_broadcast(ipv4_addr_t *ia);
+int ipv4_addr_is_localhost(ipv4_addr_t *ia);
 int ipv4_pkt_create_empty(ipv4_packet_t *ip);
 int ipv4_pkt_free(ipv4_packet_t *ip);
 int ipv4_pkt_set_id(ipv4_packet_t *ip, uint16_t id);
