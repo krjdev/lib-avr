@@ -289,6 +289,21 @@ int fifo_get_num(fifo_t *fifo);
 **Dependencies**  
 * avr-libc
 
+### HEX conversion Library
+
+**Files:**  
+[lib/hexconv.h](https://github.com/krjdev/lib-avr/blob/master/lib/hexconv.h)  
+[lib/hexconv.c](https://github.com/krjdev/lib-avr/blob/master/lib/hexconv.c)
+
+**Functions:**  
+```c
+char *uint8_to_hex(uint8_t data);
+uint8_t hex_to_uint8(const char *hex);
+```
+
+**Dependencies**  
+* avr-libc
+
 ### LIFO (Stack) buffer Library
 
 **Files:**  
