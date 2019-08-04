@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-08-04
- * Modified : 
+ * Modified : 2019-08-05
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.1.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -215,6 +215,8 @@ int ipv6_pkt_create_empty(ipv6_packet_t *ip)
     ip->ip_hdr.ih_ver = 6;
     ip->ip_hdr.ih_ecn = 0;
     ip->ip_hdr.ih_dscp = 0;
+    ip->ip_payload_buf = NULL;
+    ip->ip_payload_len = 0;
     return 0;
 }
 
