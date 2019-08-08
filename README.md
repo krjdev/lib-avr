@@ -491,6 +491,40 @@ int ipv4_pkt_to_buf(ipv4_packet_t *ip, uint8_t *buf);
 **Dependencies**  
 * avr-libc
 
+### IPv6 Library
+
+**Files:**  
+[net/ipv6.h](https://github.com/krjdev/lib-avr/blob/master/net/ipv6.h)  
+[net/ipv6.c](https://github.com/krjdev/lib-avr/blob/master/net/ipv6.c)
+
+
+**Functions:**  
+```c
+int ipv6_addr_equal(ipv6_addr_t *ia1, ipv6_addr_t *ia2);
+int ipv6_addr_cpy(ipv6_addr_t *ia_dst, ipv6_addr_t *ia_src);
+int ipv6_pkt_set_flow(ipv6_packet_t *ip, uint32_t flow);
+int ipv6_pkt_set_nhdr(ipv6_packet_t *ip, uint8_t nhdr);
+int ipv6_pkt_set_hopl(ipv6_packet_t *ip, uint8_t hopl);
+int ipv6_pkt_set_src(ipv6_packet_t *ip, ipv6_addr_t *src);
+int ipv6_pkt_set_dst(ipv6_packet_t *ip, ipv6_addr_t *dst);
+int ipv6_pkt_set_payload(ipv6_packet_t *ip, uint8_t *buf, int len);
+int ipv6_pkt_get_flow(ipv6_packet_t *ip, uint32_t *flow);
+int ipv6_pkt_get_nhdr(ipv6_packet_t *ip, uint8_t *nhdr);
+int ipv6_pkt_get_hopl(ipv6_packet_t *ip, uint8_t *hopl);
+int ipv6_pkt_get_src(ipv6_packet_t *ip, ipv6_addr_t *src);
+int ipv6_pkt_get_dst(ipv6_packet_t *ip, ipv6_addr_t *dst);
+int ipv6_pkt_get_payload_len(ipv6_packet_t *ip);
+int ipv6_pkt_get_payload(ipv6_packet_t *ip, uint8_t **buf);
+int ipv6_pkt_create_empty(ipv6_packet_t *ip);
+int ipv6_pkt_free(ipv6_packet_t *ip);
+int ipv6_pkt_get_len(ipv6_packet_t *ip);
+int ipv6_buf_to_pkt(uint8_t *buf, int len, ipv6_packet_t *ip);
+int ipv6_pkt_to_buf(ipv6_packet_t *ip, uint8_t *buf);
+```
+
+**Dependencies**  
+* avr-libc
+
 ### UDP Library (beta version)
 
 **Files:**  
