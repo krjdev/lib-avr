@@ -525,7 +525,47 @@ int ipv6_pkt_to_buf(ipv6_packet_t *ip, uint8_t *buf);
 **Dependencies**  
 * avr-libc
 
-### UDP Library (beta version)
+### TCP Library
+
+**Files:**  
+[net/tcp.h](https://github.com/krjdev/lib-avr/blob/master/net/tcp.h)  
+[net/tcp.c](https://github.com/krjdev/lib-avr/blob/master/net/tcp.c)
+
+**Functions:**  
+```c
+int tcp_pkt_set_srcp(tcp_packet_t *tcp, uint16_t srcp);
+int tcp_pkt_set_dstp(tcp_packet_t *tcp, uint16_t dstp);
+int tcp_pkt_set_seqn(tcp_packet_t *tcp, uint32_t seqn);
+int tcp_pkt_set_ackn(tcp_packet_t *tcp, uint32_t ackn);
+int tcp_pkt_set_flags(tcp_packet_t *tcp, uint8_t flags);
+int tcp_pkt_set_win(tcp_packet_t *tcp, uint16_t win);
+int tcp_pkt_set_urgp(tcp_packet_t *tcp, uint16_t urgp);
+int tcp_pkt_set_options(tcp_packet_t *tcp, uint8_t *buf, int len);
+int tcp_pkt_set_payload(tcp_packet_t *tcp, uint8_t *buf, int len);
+int tcp_pkt_get_srcp(tcp_packet_t *tcp, uint16_t *srcp);
+int tcp_pkt_get_dstp(tcp_packet_t *tcp, uint16_t *dstp);
+int tcp_pkt_get_seqn(tcp_packet_t *tcp, uint32_t *seqn);
+int tcp_pkt_get_ackn(tcp_packet_t *tcp, uint32_t *ackn);
+int tcp_pkt_get_flags(tcp_packet_t *tcp, uint8_t *flags);
+int tcp_pkt_get_win(tcp_packet_t *tcp, uint16_t *win);
+int tcp_pkt_get_urgp(tcp_packet_t *tcp, uint16_t *urgp);
+int tcp_pkt_get_options(tcp_packet_t *tcp, uint8_t **buf);
+int tcp_pkt_get_options_len(tcp_packet_t *tcp);
+int tcp_pkt_get_payload(tcp_packet_t *tcp, uint8_t **buf);
+int tcp_pkt_get_payload_len(tcp_packet_t *tcp);
+int tcp_pkt_get_len(tcp_packet_t *tcp);
+int tcp_pkt_create(uint16_t srcp, uint16_t dstp, uint32_t seqn, uint32_t ackn, uint16_t win, uint8_t flags, uint16_t urgp, tcp_packet_t *tcp);
+int tcp_pkt_free(tcp_packet_t *tcp);
+int tcp_ip_to_pkt(ipv4_packet_t *ip, tcp_packet_t *tcp);
+int tcp_pkt_to_ip(tcp_packet_t *tcp, ipv4_packet_t *ip);
+int tcp_get_last_error(void);
+```
+
+**Dependencies**  
+* avr-libc
+* net/ipv4.c
+
+### UDP Library
 
 **Files:**  
 [net/udp.h](https://github.com/krjdev/lib-avr/blob/master/net/udp.h)  
@@ -549,6 +589,7 @@ int udp_ip_to_pkt(ipv4_packet_t *ip_udp, udp_packet_t *udp);
 
 **Dependencies**  
 * avr-libc
+* net/ipv4.c
 
 ## Maxim (former Dallas) 1-Wire
 
