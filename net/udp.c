@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-05-06
+ * Modified : 2019-08-09
  * Revised  : 
- * Version  : 0.2.0.1
+ * Version  : 0.2.0.2
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -296,8 +296,8 @@ int udp_ip_to_pkt(ipv4_packet_t *ip_udp, udp_packet_t *udp)
     chk = (uint16_t) sum;
     
     if (udp->up_hdr.uh_chk != chk) {
-        return -1;
         udp_pkt_free(udp);
+        return -1;
     }
     
     return 0;
