@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-04-14
- * Modified : 2019-05-07
+ * Modified : 2019-07-15
  * Revised  : 
- * Version  : 0.4.0.0
+ * Version  : 0.4.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -218,17 +218,17 @@ int get_cid(uint8_t *buf, int len)
     uint8_t recv;
     uint8_t dummy = 0xFF;
     uint8_t cid[18];
-	uint16_t crc;
+    uint16_t crc;
     int i;
     int timeout_out = 255;
     int timeout_in = 255;
     
-	if (!buf)
-		return -1;
-	
-	if (len != 16)
-		return -1;
-	
+    if (!buf)
+        return -1;
+    
+    if (len != 16)
+        return -1;
+    
     send[0] = 0x40 | SD_CMD10;
     send[1] = 0x00;
     send[2] = 0x00;
@@ -713,7 +713,7 @@ int sdc_ioctl(int type, void *unused, void *ret)
         get_cid(((struct sd_cid *) ret)->data, 16);
         break;
     case SD_IOCTL_GETCSD:
-        get_cid(((struct sd_csd *) ret)->data, 16);
+        get_csd(((struct sd_csd *) ret)->data, 16);
         break;
     default:
         return -1;
