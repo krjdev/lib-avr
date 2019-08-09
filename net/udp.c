@@ -7,7 +7,7 @@
  * Created  : 2019-01-30
  * Modified : 2019-08-09
  * Revised  : 
- * Version  : 0.3.0.0
+ * Version  : 0.3.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -19,7 +19,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "udp.h"
 
@@ -50,8 +49,8 @@ static uint32_t ipv4_sum(ipv4_packet_t *ip)
     tmp = ((uint16_t) ip->ip_hdr.ih_dst.ia_byte2 << 8);
     tmp |= (uint16_t) ip->ip_hdr.ih_dst.ia_byte3;
     sum += tmp;
-    tmp = ip->ip_hdr.ih_prot;
-    sum += tmp;
+    sum += ip->ip_hdr.ih_prot;
+    sum += (ip->ip_hdr.ih_tlen - (ip->ip_hdr.ih_ihl * 4));
     return sum;
 }
 
@@ -272,7 +271,7 @@ int udp_pkt_to_ip(udp_packet_t *udp, ipv4_packet_t *ip_udp)
     sum = ipv4_sum(ip_udp);
     sum += udp_sum(udp);
     carry = (uint16_t) (sum >> 16);
-    sum += carry;
+    sum = ((sum & 0xFFFF) + carry);
     sum = ~sum;
     udp->up_hdr.uh_chk = (uint16_t) sum;
     p = (uint8_t *) malloc(udp->up_hdr.uh_len);
@@ -312,6 +311,7 @@ int udp_pkt_to_ip(udp_packet_t *udp, ipv4_packet_t *ip_udp)
 int udp_ip_to_pkt(ipv4_packet_t *ip_udp, udp_packet_t *udp)
 {
     uint8_t *p;
+    uint8_t *p_pay;
     uint32_t sum;
     uint16_t carry;
     uint16_t chk;
@@ -345,10 +345,28 @@ int udp_ip_to_pkt(ipv4_packet_t *ip_udp, udp_packet_t *udp)
     udp->up_hdr.uh_len |= (uint16_t) p[i++];
     udp->up_hdr.uh_chk = ((uint16_t) p[i++] << 8);
     udp->up_hdr.uh_chk |= (uint16_t) p[i++];
-    udp_pkt_set_payload(udp, &p[i], len);
+    
+    if (udp->up_hdr.uh_len != len) {
+        error = UDP_ERROR_UNKNOWN;
+        return -1;
+    }
+    
+    if (len > UDP_HDR_LEN) {
+        p_pay = (uint8_t *) malloc((len - UDP_HDR_LEN));
+        
+        if (!p_pay) {
+            error = UDP_ERROR_NOMEM;
+            return -1;
+        }
+        
+        udp->up_payload_buf = p_pay;
+        udp->up_payload_len = (len - UDP_HDR_LEN);
+        memcpy(udp->up_payload_buf, &p[i], udp->up_payload_len);
+    }
+    
     sum += udp_sum(udp);
     carry = (uint16_t) (sum >> 16);
-    sum += carry;
+    sum = ((sum & 0xFFFF) + carry);
     sum = ~sum;
     chk = (uint16_t) sum;
     
