@@ -7,7 +7,7 @@
  * Created  : 2019-01-30
  * Modified : 2019-08-09
  * Revised  : 
- * Version  : 0.2.0.2
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,6 +23,13 @@
 #include <stdint.h>
 
 #include "ipv4.h"
+
+#define UDP_ERROR_SUCCESS       0
+#define UDP_ERROR_INVAL         1
+#define UDP_ERROR_NOMEM         2
+#define UDP_ERROR_CHKSUM        3
+#define UDP_ERROR_UNKNOWN       4
+#define UDP_ERROR_INTERNAL      5
 
 typedef struct udp_hdr {
     uint16_t uh_srcp;   /* Source port */
@@ -51,5 +58,6 @@ extern int udp_pkt_create(uint16_t srcp, uint16_t dstp,
 extern int udp_pkt_free(udp_packet_t *udp);
 extern int udp_pkt_to_ip(udp_packet_t *udp, ipv4_packet_t *ip_udp);
 extern int udp_ip_to_pkt(ipv4_packet_t *ip_udp, udp_packet_t *udp);
+extern int udp_get_last_error(void);
 
 #endif
