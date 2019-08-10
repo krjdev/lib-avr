@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-08-09
- * Modified : 
+ * Modified : 2019-08-10
  * Revised  : 
- * Version  : 0.1.0.0
+ * Version  : 0.1.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "tcp.h"
 
@@ -49,9 +50,8 @@ static uint32_t ipv4_sum(ipv4_packet_t *ip)
     tmp = ((uint16_t) ip->ip_hdr.ih_dst.ia_byte2 << 8);
     tmp |= (uint16_t) ip->ip_hdr.ih_dst.ia_byte3;
     sum += tmp;
-    tmp = ip->ip_hdr.ih_prot;
-    sum += tmp;
-    sum += ip->ip_hdr.ih_tlen;
+    sum += ip->ip_hdr.ih_prot;
+    sum += (ip->ip_hdr.ih_tlen - (ip->ip_hdr.ih_ihl * 4));
     return sum;
 }
 
@@ -71,9 +71,10 @@ static uint32_t tcp_sum(tcp_packet_t *tcp)
     sum += (tcp->tp_hdr.th_seqn & 0xFFFF);
     sum += (tcp->tp_hdr.th_ackn >> 16);
     sum += (tcp->tp_hdr.th_ackn & 0xFFFF);
-    sum += (((uint16_t) tcp->tp_hdr.th_off << 20) | 
-            ((uint16_t) tcp->tp_hdr.th_res << 16) | 
-            ((uint16_t) tcp->tp_hdr.th_flags));
+    tmp = tcp->tp_hdr.th_off << 12;
+    tmp |= tcp->tp_hdr.th_res << 8;
+    tmp |= tcp->tp_hdr.th_flags;
+    sum += tmp;
     sum += tcp->tp_hdr.th_win;
     sum += tcp->tp_hdr.th_urgp;
     
@@ -86,7 +87,14 @@ static uint32_t tcp_sum(tcp_packet_t *tcp)
             tmp |= tcp->tp_options_buf[i++];
             sum += tmp;
         }
+        
+        if (tcp->tp_options_len & 1) {
+            tmp = ((uint16_t) tcp->tp_options_buf[i] << 8);
+            sum += tmp;
+        }
     }
+    
+    i = 0;
     
     if (tcp->tp_payload_len > 0) {
         if (!tcp->tp_payload_buf)
@@ -494,6 +502,8 @@ int tcp_ip_to_pkt(ipv4_packet_t *ip_tcp, tcp_packet_t *tcp)
     uint16_t carry;
     uint16_t chk;
     uint8_t *p;
+    uint8_t *p_opt;
+    uint8_t *p_pay;
     int len;
     int opt_len = 0;
     
@@ -540,16 +550,39 @@ int tcp_ip_to_pkt(ipv4_packet_t *ip_tcp, tcp_packet_t *tcp)
     
     if (tcp->tp_hdr.th_off > (TCP_HDR_LEN / 4)) {
         opt_len = (tcp->tp_hdr.th_off * 4) - TCP_HDR_LEN;
-        tcp_pkt_set_options(tcp, &p[i], opt_len);
+        
+        p_opt = (uint8_t *) malloc(opt_len);
+        
+        if (!p_opt) {
+            error = TCP_ERROR_NOMEM;
+            return -1;
+        }
+        
+        tcp->tp_options_buf = p_opt;
+        tcp->tp_options_len = opt_len;
+        memcpy(tcp->tp_options_buf, &p[i], tcp->tp_options_len);
         i += opt_len;
     }
     
-    if (len > (TCP_HDR_LEN + opt_len))
-        tcp_pkt_set_payload(tcp, &p[i], len - TCP_HDR_LEN - opt_len);
+    if (len > (TCP_HDR_LEN + opt_len)) {
+        p_pay = (uint8_t *) malloc(len - TCP_HDR_LEN - opt_len);
+        
+        if (!p_pay) {
+            if (tcp->tp_options_buf)
+                free(tcp->tp_options_buf);
+            
+            error = TCP_ERROR_NOMEM;
+            return -1;
+        }
+        
+        tcp->tp_payload_buf = p_pay;
+        tcp->tp_payload_len = len - TCP_HDR_LEN - opt_len;
+        memcpy(tcp->tp_payload_buf, &p[i], tcp->tp_payload_len);
+    }
     
-    sum = tcp_sum(tcp);
+    sum += tcp_sum(tcp);
     carry = (uint16_t) (sum >> 16);
-    sum += carry;
+    sum = ((sum & 0xFFFF) + carry);
     sum = ~sum;
     chk = (uint16_t) sum;
     
@@ -583,7 +616,7 @@ int tcp_pkt_to_ip(tcp_packet_t *tcp, ipv4_packet_t *ip_tcp)
     sum = ipv4_sum(ip_tcp);
     sum += tcp_sum(tcp);
     carry = (uint16_t) (sum >> 16);
-    sum += carry;
+    sum = ((sum & 0xFFFF) + carry);
     sum = ~sum;
     tcp->tp_hdr.th_chk = (uint16_t) sum;
     len = tcp_pkt_get_len(tcp);
