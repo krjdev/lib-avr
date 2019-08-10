@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-08-10
+ * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.3.0.0
+ * Version  : 0.4.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -124,10 +124,15 @@ int arp_pkt_set_tpa(arp_packet_t *arp, ipv4_addr_t *ip)
     ipv4_addr_cpy(&arp->ap_tpa, ip);
     return 0;
 }
-// TODO
+
 int arp_pkt_get_oper(arp_packet_t *arp, uint16_t *oper)
 {
     if (!arp) {
+        error = ARP_ERROR_INVAL;
+        return -1;
+    }
+    
+    if (!oper) {
         error = ARP_ERROR_INVAL;
         return -1;
     }
@@ -351,6 +356,19 @@ int arp_pkt_is_query(arp_packet_t *arp)
     }
     
     if (arp->ap_oper == ARP_OPER_QUERY)
+        return 1;
+    
+    return 0;
+}
+
+int arp_pkt_is_answer(arp_packet_t *arp)
+{
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
+        return -1;
+    }
+    
+    if (arp->ap_oper == ARP_OPER_ANSWE)
         return 1;
     
     return 0;

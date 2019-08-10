@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-08-10
+ * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.3.0.0
+ * Version  : 0.4.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -61,6 +61,7 @@ extern int arp_buf_to_pkt(uint8_t *buf, int len, arp_packet_t *arp);
 extern int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf);
 extern int arp_pkt_is_valid(arp_packet_t *arp);
 extern int arp_pkt_is_query(arp_packet_t *arp);
+extern int arp_pkt_is_answer(arp_packet_t *arp);
 extern int arp_pkt_create(arp_packet_t *arp);
 extern int arp_pkt_create_probe(arp_packet_t *arp);
 extern int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp);
