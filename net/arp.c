@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-06-09
+ * Modified : 2019-08-10
  * Revised  : 
- * Version  : 0.2.1.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -17,21 +17,33 @@
  *
  */
 
-#define _HIGH16(val)   ((uint8_t) (((val) & 0xFF00) >> 8))
-#define _LOW16(val)    ((uint8_t) ((val) & 0x00FF))
+#define ARP_PKT_LEN         28
+
+#define ARP_HTYPE_ETHERNET  0x0001
+#define ARP_PTYPE_IPV4      0x0800
+#define ARP_HLEN_ETHERNET   6
+#define ARP_PLEN_IPV4       4
+
+#define HI16(val)       ((uint8_t) (((val) & 0xFF00) >> 8))
+#define LO16(val)       ((uint8_t) ((val) & 0x00FF))
 
 #include "arp.h"
 
-mac_addr_t me_mac;
-ipv4_addr_t me_ip;
+static int error = ARP_ERROR_SUCCESS;
+static mac_addr_t me_mac;
+static ipv4_addr_t me_ip;
 
 int arp_init(mac_addr_t *src_mac, ipv4_addr_t *src_ip)
 {
-    if (!src_mac)
+    if (!src_mac) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!src_ip)
+    if (!src_ip) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ethernet_addr_cpy(&me_mac, src_mac);
     ipv4_addr_cpy(&me_ip, src_ip);
@@ -40,8 +52,10 @@ int arp_init(mac_addr_t *src_mac, ipv4_addr_t *src_ip)
 
 int arp_pkt_set_oper(arp_packet_t *arp, uint16_t oper)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     arp->ap_oper = oper;
     return 0;
@@ -49,11 +63,15 @@ int arp_pkt_set_oper(arp_packet_t *arp, uint16_t oper)
 
 int arp_pkt_set_sha(arp_packet_t *arp, mac_addr_t *mac)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!mac)
+    if (!mac) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ethernet_addr_cpy(&arp->ap_sha, mac);
     return 0;
@@ -61,11 +79,15 @@ int arp_pkt_set_sha(arp_packet_t *arp, mac_addr_t *mac)
 
 int arp_pkt_set_spa(arp_packet_t *arp, ipv4_addr_t *ip)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!ip)
+    if (!ip) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ipv4_addr_cpy(&arp->ap_spa, ip);
     return 0;
@@ -73,11 +95,15 @@ int arp_pkt_set_spa(arp_packet_t *arp, ipv4_addr_t *ip)
 
 int arp_pkt_set_tha(arp_packet_t *arp, mac_addr_t *mac)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!mac)
+    if (!mac) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ethernet_addr_cpy(&arp->ap_tha, mac);
     return 0;
@@ -85,20 +111,26 @@ int arp_pkt_set_tha(arp_packet_t *arp, mac_addr_t *mac)
 
 int arp_pkt_set_tpa(arp_packet_t *arp, ipv4_addr_t *ip)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!ip)
+    if (!ip) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ipv4_addr_cpy(&arp->ap_tpa, ip);
     return 0;
 }
-
+// TODO
 int arp_pkt_get_oper(arp_packet_t *arp, uint16_t *oper)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     (*oper) = arp->ap_oper;
     return 0;
@@ -106,11 +138,15 @@ int arp_pkt_get_oper(arp_packet_t *arp, uint16_t *oper)
 
 int arp_pkt_get_sha(arp_packet_t *arp, mac_addr_t *mac)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!mac)
+    if (!mac) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ethernet_addr_cpy(mac, &arp->ap_sha);
     return 0;
@@ -118,11 +154,15 @@ int arp_pkt_get_sha(arp_packet_t *arp, mac_addr_t *mac)
 
 int arp_pkt_get_spa(arp_packet_t *arp, ipv4_addr_t *ip)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!ip)
+    if (!ip) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ipv4_addr_cpy(ip, &arp->ap_spa);
     return 0;
@@ -130,11 +170,15 @@ int arp_pkt_get_spa(arp_packet_t *arp, ipv4_addr_t *ip)
 
 int arp_pkt_get_tha(arp_packet_t *arp, mac_addr_t *mac)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!mac)
+    if (!mac) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ethernet_addr_cpy(mac, &arp->ap_tha);
     return 0;
@@ -142,11 +186,15 @@ int arp_pkt_get_tha(arp_packet_t *arp, mac_addr_t *mac)
 
 int arp_pkt_get_tpa(arp_packet_t *arp, ipv4_addr_t *ip)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!ip)
+    if (!ip) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     ipv4_addr_cpy(ip, &arp->ap_tpa);
     return 0;
@@ -154,10 +202,12 @@ int arp_pkt_get_tpa(arp_packet_t *arp, ipv4_addr_t *ip)
 
 int arp_pkt_get_len(arp_packet_t *arp)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    return 28;
+    return ARP_PKT_LEN;
 }
 
 int arp_buf_to_pkt(uint8_t *buf, int len, arp_packet_t *arp)
@@ -165,14 +215,20 @@ int arp_buf_to_pkt(uint8_t *buf, int len, arp_packet_t *arp)
     int i = 0;
     uint16_t tmp;
     
-    if (!buf)
+    if (!buf) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (len < 28)
+    if (len != ARP_PKT_LEN) {
+        error = ARP_ERROR_UNKNOWN;
         return -1;
+    }
     
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     /* Hardware address type */
     tmp = (buf[i++] << 8);
@@ -221,25 +277,29 @@ int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf)
 {
     int i = 0;
     
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!buf)
+    if (!buf) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     /* Hardware address type */
-    buf[i++] = _HIGH16(arp->ap_htype);
-    buf[i++] = _LOW16(arp->ap_htype);
+    buf[i++] = HI16(arp->ap_htype);
+    buf[i++] = LO16(arp->ap_htype);
     /* Protocol address type */
-    buf[i++] = _HIGH16(arp->ap_ptype);
-    buf[i++] = _LOW16(arp->ap_ptype);
+    buf[i++] = HI16(arp->ap_ptype);
+    buf[i++] = LO16(arp->ap_ptype);
     /* Hardware address length */
     buf[i++] = arp->ap_hlen;
     /* Protocol address length */
     buf[i++] = arp->ap_plen;
     /* ARP operation */
-    buf[i++] = _HIGH16(arp->ap_oper);
-    buf[i++] = _LOW16(arp->ap_oper);
+    buf[i++] = HI16(arp->ap_oper);
+    buf[i++] = LO16(arp->ap_oper);
     /* Source hardware address */
     buf[i++] = arp->ap_sha.ma_byte0;
     buf[i++] = arp->ap_sha.ma_byte1;
@@ -269,8 +329,10 @@ int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf)
 
 int arp_pkt_is_valid(arp_packet_t *arp)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     if ((arp->ap_htype == ARP_HTYPE_ETHERNET) && 
         (arp->ap_ptype == ARP_PTYPE_IPV4) && 
@@ -283,8 +345,10 @@ int arp_pkt_is_valid(arp_packet_t *arp)
 
 int arp_pkt_is_query(arp_packet_t *arp)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     if (arp->ap_oper == ARP_OPER_QUERY)
         return 1;
@@ -294,8 +358,10 @@ int arp_pkt_is_query(arp_packet_t *arp)
 
 int arp_pkt_create(arp_packet_t *arp)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     arp->ap_htype = ARP_HTYPE_ETHERNET;
     arp->ap_ptype = ARP_PTYPE_IPV4;
@@ -306,8 +372,10 @@ int arp_pkt_create(arp_packet_t *arp)
 
 int arp_pkt_create_probe(arp_packet_t *arp)
 {
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     arp->ap_htype = ARP_HTYPE_ETHERNET;
     arp->ap_ptype = ARP_PTYPE_IPV4;
@@ -332,11 +400,15 @@ int arp_pkt_create_probe(arp_packet_t *arp)
 
 int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp)
 {
-    if (!dst_ip)
+    if (!dst_ip) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!arp)
+    if (!arp) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
     arp->ap_htype = ARP_HTYPE_ETHERNET;
     arp->ap_ptype = ARP_PTYPE_IPV4;
@@ -357,20 +429,15 @@ int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp)
 
 int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out)
 {
-    if (!arp_in)
+    if (!arp_in) {
+        error = ARP_ERROR_INVAL;
         return -1;
+    }
     
-    if (!arp_out)
+    if (!arp_out) {
+        error = ARP_ERROR_INVAL;
         return -1;
-    
-    if (arp_pkt_is_valid(arp_in) != 1)
-        return -1;
-    
-    if (ipv4_addr_equal(&arp_in->ap_tpa, &me_ip) != 1)
-        return -1;
-    
-    if (arp_in->ap_oper != ARP_OPER_QUERY)
-        return -1;
+    }
     
     arp_out->ap_htype = ARP_HTYPE_ETHERNET;
     arp_out->ap_ptype = ARP_PTYPE_IPV4;
@@ -381,6 +448,14 @@ int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out)
     ipv4_addr_cpy(&arp_out->ap_spa, &me_ip);
     ethernet_addr_cpy(&arp_out->ap_tha, &arp_in->ap_sha);
     ipv4_addr_cpy(&arp_out->ap_tpa, &arp_in->ap_tpa);
-    
     return 0;
+}
+
+int arp_get_last_error(void)
+{
+    int err;
+    
+    err = error;
+    error = ARP_ERROR_SUCCESS;
+    return err;
 }

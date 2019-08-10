@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-01-30
- * Modified : 2019-06-09
+ * Modified : 2019-08-10
  * Revised  : 
- * Version  : 0.2.1.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -25,10 +25,10 @@
 #include "ethernet.h"
 #include "ipv4.h"
 
-#define ARP_HTYPE_ETHERNET  0x0001
-#define ARP_PTYPE_IPV4      0x0800
-#define ARP_HLEN_ETHERNET   6
-#define ARP_PLEN_IPV4       4
+#define ARP_ERROR_SUCCESS   0
+#define ARP_ERROR_INVAL     1
+#define ARP_ERROR_UNKNOWN   2
+
 #define ARP_OPER_QUERY      1
 #define ARP_OPER_ANSWE      2
 
@@ -65,5 +65,6 @@ extern int arp_pkt_create(arp_packet_t *arp);
 extern int arp_pkt_create_probe(arp_packet_t *arp);
 extern int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp);
 extern int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out);
+extern int arp_get_last_error(void);
 
 #endif
