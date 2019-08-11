@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-08-09
- * Modified : 2019-08-10
+ * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.1.0.1
+ * Version  : 0.1.0.2
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -650,7 +650,7 @@ int tcp_pkt_to_ip(tcp_packet_t *tcp, ipv4_packet_t *ip_tcp)
     p[i++] = LO16(tcp->tp_hdr.th_urgp);
     
     if (tcp->tp_options_len > 0) {
-        if (tcp->tp_options_buf) {
+        if (!tcp->tp_options_buf) {
             free(p);
             error = TCP_ERROR_INTERNAL;
             return -1;
@@ -661,7 +661,7 @@ int tcp_pkt_to_ip(tcp_packet_t *tcp, ipv4_packet_t *ip_tcp)
     }
     
     if (tcp->tp_payload_len > 0) {
-        if (tcp->tp_payload_buf) {
+        if (!tcp->tp_payload_buf) {
             free(p);
             error = TCP_ERROR_INTERNAL;
             return -1;
