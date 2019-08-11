@@ -7,7 +7,7 @@
  * Created  : 2019-02-09
  * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.4.0.0
+ * Version  : 0.4.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -71,7 +71,7 @@ static int pkt_append_checksum(icmp_packet_t *icmp)
     
     sum = pkt_sum(icmp);
     carry = (uint16_t) (sum >> 16);
-    sum += carry;
+    sum = (sum & 0xFFFF) + carry;
     sum = ~sum;
     icmp->ip_hdr.ih_chk = (uint16_t) sum;
     return 0;
@@ -85,7 +85,7 @@ static int pkt_verify_checksum(icmp_packet_t *icmp)
     
     sum = pkt_sum(icmp);
     carry = (uint16_t) (sum >> 16);
-    sum += carry;
+    sum = (sum & 0xFFFF) + carry;
     sum = ~sum;
     chksum = (uint16_t) sum;
         
