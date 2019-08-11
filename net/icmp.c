@@ -7,7 +7,7 @@
  * Created  : 2019-02-09
  * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.3.0.0
+ * Version  : 0.4.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -25,6 +25,9 @@
 
 #define ICMP_HDR_LEN        8
 #define ICMP_HDR_REST_LEN   4
+
+#define ICMP_UNREACH_PROT   2
+#define ICMP_UNREACH_PORT   3
 
 #define HI(val)             ((uint8_t) (((val) & 0xFF00) >> 8))
 #define LO(val)             ((uint8_t) ((val) & 0x00FF))
@@ -365,6 +368,54 @@ int icmp_create_echo_reply(icmp_packet_t *icmp_in, icmp_packet_t *icmp_out)
     memcpy(p, icmp_in->ip_payload_buf, icmp_in->ip_payload_len);
     icmp_out->ip_payload_buf = p;
     icmp_out->ip_payload_len = icmp_in->ip_payload_len;
+    pkt_append_checksum(icmp_out);
+    return 0;
+}
+
+int icmp_create_unreachable_prot(uint8_t *buf, int len, uint16_t mtu, icmp_packet_t *icmp_out)
+{
+    uint8_t *p;
+    
+    icmp_out->ip_hdr.ih_type = ICMP_TYPE_UNREACH;
+    icmp_out->ip_hdr.ih_code = ICMP_UNREACH_PROT;
+    icmp_out->ip_hdr.ih_rest[0] = 0;
+    icmp_out->ip_hdr.ih_rest[1] = 0;
+    icmp_out->ip_hdr.ih_rest[2] = HI(mtu);
+    icmp_out->ip_hdr.ih_rest[3] = LO(mtu);
+    p = (uint8_t *) malloc(len);
+    
+    if (!p) {
+        error = ICMP_ERROR_NOMEM;
+        return -1;
+    }
+    
+    memcpy(p, buf, len);
+    icmp_out->ip_payload_buf = p;
+    icmp_out->ip_payload_len = len;
+    pkt_append_checksum(icmp_out);
+    return 0;
+}
+
+int icmp_create_unreachable_port(uint8_t *buf, int len, uint16_t mtu, icmp_packet_t *icmp_out)
+{
+    uint8_t *p;
+    
+    icmp_out->ip_hdr.ih_type = ICMP_TYPE_UNREACH;
+    icmp_out->ip_hdr.ih_code = ICMP_UNREACH_PORT;
+    icmp_out->ip_hdr.ih_rest[0] = 0;
+    icmp_out->ip_hdr.ih_rest[1] = 0;
+    icmp_out->ip_hdr.ih_rest[2] = HI(mtu);
+    icmp_out->ip_hdr.ih_rest[3] = LO(mtu);
+    p = (uint8_t *) malloc(len);
+    
+    if (!p) {
+        error = ICMP_ERROR_NOMEM;
+        return -1;
+    }
+    
+    memcpy(p, buf, len);
+    icmp_out->ip_payload_buf = p;
+    icmp_out->ip_payload_len = len;
     pkt_append_checksum(icmp_out);
     return 0;
 }

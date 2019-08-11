@@ -7,7 +7,7 @@
  * Created  : 2019-02-09
  * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.3.0.0
+ * Version  : 0.4.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -59,6 +59,8 @@ extern int icmp_pkt_get_len(icmp_packet_t *icmp);
 extern int icmp_buf_to_pkt(uint8_t *buf, int len, icmp_packet_t *icmp);
 extern int icmp_pkt_to_buf(icmp_packet_t *icmp, uint8_t *buf);
 extern int icmp_create_echo_reply(icmp_packet_t *icmp_in, icmp_packet_t *icmp_out);
+extern int icmp_create_unreachable_prot(uint8_t *buf, int len, uint16_t mtu, icmp_packet_t *icmp_out);
+extern int icmp_create_unreachable_port(uint8_t *buf, int len, uint16_t mtu, icmp_packet_t *icmp_out);
 extern int icmp_pkt_free(icmp_packet_t *icmp);
 extern int icmp_get_last_error(void);
 
