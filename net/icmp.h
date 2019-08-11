@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-02-09
- * Modified : 2019-06-22
+ * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.3.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,9 +22,16 @@
 
 #include <stdint.h>
 
-#define ICMP_TYPE_ECHOREP   0
-#define ICMP_TYPE_UNREACH   3
-#define ICMP_TYPE_ECHOREQ   8
+#define ICMP_ERROR_SUCCESS      0
+#define ICMP_ERROR_INVAL        1
+#define ICMP_ERROR_NOMEM        2
+#define ICMP_ERROR_CHKSUM       3
+#define ICMP_ERROR_UNKNOWN      4
+#define ICMP_ERROR_INTERNAL     5
+
+#define ICMP_TYPE_ECHOREP       0
+#define ICMP_TYPE_UNREACH       3
+#define ICMP_TYPE_ECHOREQ       8
 
 typedef struct icmp_hdr {
     uint8_t ih_type;
@@ -47,11 +54,12 @@ extern int icmp_pkt_get_type(icmp_packet_t *icmp, uint8_t *type);
 extern int icmp_pkt_get_code(icmp_packet_t *icmp, uint8_t *code);
 extern int icmp_pkt_get_rest(icmp_packet_t *icmp, uint8_t *rest);
 extern int icmp_pkt_get_payload_len(icmp_packet_t *icmp);
-extern int icmp_pkt_get_payload(icmp_packet_t *icmp, uint8_t **buf;
+extern int icmp_pkt_get_payload(icmp_packet_t *icmp, uint8_t **buf);
 extern int icmp_pkt_get_len(icmp_packet_t *icmp);
 extern int icmp_buf_to_pkt(uint8_t *buf, int len, icmp_packet_t *icmp);
 extern int icmp_pkt_to_buf(icmp_packet_t *icmp, uint8_t *buf);
 extern int icmp_create_echo_reply(icmp_packet_t *icmp_in, icmp_packet_t *icmp_out);
 extern int icmp_pkt_free(icmp_packet_t *icmp);
+extern int icmp_get_last_error(void);
 
 #endif
