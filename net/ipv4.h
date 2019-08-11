@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-09-24
- * Modified : 2019-06-22
+ * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.5.0.0
+ * Version  : 0.6.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -22,9 +22,16 @@
 
 #include <stdint.h>
 
-#define IPV4_PROT_ICMP  1
-#define IPV4_PROT_TCP   6
-#define IPV4_PROT_UDP   17
+#define IPV4_ERROR_SUCCESS      0
+#define IPV4_ERROR_INVAL        1
+#define IPV4_ERROR_NOMEM        2
+#define IPV4_ERROR_CHKSUM       3
+#define IPV4_ERROR_UNKNOWN      4
+#define IPV4_ERROR_INTERNAL     5
+
+#define IPV4_PROT_ICMP          1
+#define IPV4_PROT_TCP           6
+#define IPV4_PROT_UDP           17
 
 typedef struct ipv4_addr {
     uint8_t ia_byte0;
@@ -87,7 +94,10 @@ extern int ipv4_pkt_get_options(ipv4_packet_t *ip, uint8_t **buf);
 extern int ipv4_pkt_get_payload_len(ipv4_packet_t *ip);
 extern int ipv4_pkt_get_payload(ipv4_packet_t *ip, uint8_t **buf);
 extern int ipv4_pkt_get_len(ipv4_packet_t *ip);
+extern int ipv4_pkt_get_len_icmp(ipv4_packet_t *ip);
 extern int ipv4_buf_to_pkt(uint8_t *buf, int len, ipv4_packet_t *ip);
 extern int ipv4_pkt_to_buf(ipv4_packet_t *ip, uint8_t *buf);
+extern int ipv4_pkt_to_buf_icmp(ipv4_packet_t *ip, uint8_t *buf);
+extern int ipv4_get_last_error(void);
 
 #endif
