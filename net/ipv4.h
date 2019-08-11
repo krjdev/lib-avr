@@ -7,7 +7,7 @@
  * Created  : 2018-09-24
  * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.6.0.0
+ * Version  : 0.7.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -32,6 +32,9 @@
 #define IPV4_PROT_ICMP          1
 #define IPV4_PROT_TCP           6
 #define IPV4_PROT_UDP           17
+
+#define IPV4_FLAG_DF            0x2
+#define IPV4_FLAG_MF            0x4
 
 typedef struct ipv4_addr {
     uint8_t ia_byte0;
@@ -75,9 +78,13 @@ extern int ipv4_addr_equal(ipv4_addr_t *ia1, ipv4_addr_t *ia2);
 extern int ipv4_addr_cpy(ipv4_addr_t *ia_dst, ipv4_addr_t *ia_src);
 extern int ipv4_addr_is_broadcast(ipv4_addr_t *ia);
 extern int ipv4_addr_is_localhost(ipv4_addr_t *ia);
-extern int ipv4_pkt_create_empty(ipv4_packet_t *ip);
+extern int ipv4_pkt_create_empty(ipv4_packet_t *ip, uint8_t flag, uint16_t foff);
 extern int ipv4_pkt_free(ipv4_packet_t *ip);
+extern int ipv4_pkt_is_df(ipv4_packet_t *ip);
+extern int ipv4_pkt_is_mf(ipv4_packet_t *ip);
 extern int ipv4_pkt_set_id(ipv4_packet_t *ip, uint16_t id);
+extern int ipv4_pkt_set_flag(ipv4_packet_t *ip, uint8_t flag);
+extern int ipv4_pkt_set_foff(ipv4_packet_t *ip, uint16_t foff);
 extern int ipv4_pkt_set_ttl(ipv4_packet_t *ip, uint8_t ttl);
 extern int ipv4_pkt_set_prot(ipv4_packet_t *ip, uint8_t prot);
 extern int ipv4_pkt_set_src(ipv4_packet_t *ip, ipv4_addr_t *src);
@@ -85,6 +92,8 @@ extern int ipv4_pkt_set_dst(ipv4_packet_t *ip, ipv4_addr_t *dst);
 extern int ipv4_pkt_set_options(ipv4_packet_t *ip, uint8_t *buf, int len);
 extern int ipv4_pkt_set_payload(ipv4_packet_t *ip, uint8_t *buf, int len);
 extern int ipv4_pkt_get_id(ipv4_packet_t *ip, uint16_t *id);
+extern int ipv4_pkt_get_flag(ipv4_packet_t *ip, uint8_t *flag);
+extern int ipv4_pkt_get_foff(ipv4_packet_t *ip, uint16_t *foff);
 extern int ipv4_pkt_get_ttl(ipv4_packet_t *ip, uint8_t *ttl);
 extern int ipv4_pkt_get_prot(ipv4_packet_t *ip, uint8_t *prot);
 extern int ipv4_pkt_get_src(ipv4_packet_t *ip, ipv4_addr_t *src);

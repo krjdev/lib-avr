@@ -7,7 +7,7 @@
  * Created  : 2018-09-24
  * Modified : 2019-08-11
  * Revised  : 
- * Version  : 0.6.0.0
+ * Version  : 0.7.0.0
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -23,9 +23,6 @@
 #include <ctype.h>
 
 #include "ipv4.h"
-
-#define FLAG_DF         1
-#define FLAG_MF         2
 
 #define IPV4_HDR_LEN    20
 
@@ -288,7 +285,7 @@ int ipv4_addr_is_localhost(ipv4_addr_t *ia)
     return 0;
 }
 
-int ipv4_pkt_create_empty(ipv4_packet_t *ip)
+int ipv4_pkt_create_empty(ipv4_packet_t *ip, uint8_t flag, uint16_t foff)
 {
     if (!ip) {
         error = IPV4_ERROR_INVAL;
@@ -301,8 +298,8 @@ int ipv4_pkt_create_empty(ipv4_packet_t *ip)
     ip->ip_hdr.ih_ecn = 0;
     ip->ip_hdr.ih_tlen = 20;
     ip->ip_hdr.ih_id = 0;
-    ip->ip_hdr.ih_flag = (1 << FLAG_DF);
-    ip->ip_hdr.ih_foff = 0;
+    ip->ip_hdr.ih_flag = flag;
+    ip->ip_hdr.ih_foff = foff;
     ip->ip_hdr.ih_ttl = 64;
     ip->ip_hdr.ih_prot = 0;
     ip->ip_options_buf = NULL;
@@ -333,6 +330,32 @@ int ipv4_pkt_free(ipv4_packet_t *ip)
     return 0;
 }
 
+int ipv4_pkt_is_df(ipv4_packet_t *ip)
+{
+    if (!ip) {
+        error = IPV4_ERROR_INVAL;
+        return -1;
+    }
+    
+    if (ip->ip_hdr.ih_flag & IPV4_FLAG_DF)
+        return 1;
+    
+    return 0;
+}
+
+int ipv4_pkt_is_mf(ipv4_packet_t *ip)
+{
+    if (!ip) {
+        error = IPV4_ERROR_INVAL;
+        return -1;
+    }
+    
+    if (ip->ip_hdr.ih_flag & IPV4_FLAG_MF)
+        return 1;
+    
+    return 0;
+}
+
 int ipv4_pkt_set_id(ipv4_packet_t *ip, uint16_t id)
 {
     if (!ip) {
@@ -341,6 +364,30 @@ int ipv4_pkt_set_id(ipv4_packet_t *ip, uint16_t id)
     }
     
     ip->ip_hdr.ih_id = id;
+    pkt_hdr_append_checksum(ip);
+    return 0;
+}
+
+int ipv4_pkt_set_flag(ipv4_packet_t *ip, uint8_t flag)
+{
+    if (!ip) {
+        error = IPV4_ERROR_INVAL;
+        return -1;
+    }
+    
+    ip->ip_hdr.ih_flag = flag;
+    pkt_hdr_append_checksum(ip);
+    return 0;
+}
+
+int ipv4_pkt_set_foff(ipv4_packet_t *ip, uint16_t foff)
+{
+    if (!ip) {
+        error = IPV4_ERROR_INVAL;
+        return -1;
+    }
+    
+    ip->ip_hdr.ih_foff = foff;
     pkt_hdr_append_checksum(ip);
     return 0;
 }
@@ -490,6 +537,38 @@ int ipv4_pkt_get_id(ipv4_packet_t *ip, uint16_t *id)
     }
     
     (*id) = ip->ip_hdr.ih_id;
+    return 0;
+}
+
+int ipv4_pkt_get_flag(ipv4_packet_t *ip, uint8_t *flag)
+{
+    if (!ip) {
+        error = IPV4_ERROR_INVAL;
+        return -1;
+    }
+    
+    if (!flag) {
+        error = IPV4_ERROR_INVAL;
+        return -1;
+    }
+    
+    (*flag) = ip->ip_hdr.ih_flag;
+    return 0;
+}
+
+int ipv4_pkt_get_foff(ipv4_packet_t *ip, uint16_t *foff)
+{
+    if (!ip) {
+        error = IPV4_ERROR_INVAL;
+        return -1;
+    }
+    
+    if (!foff) {
+        error = IPV4_ERROR_INVAL;
+        return -1;
+    }
+    
+    (*foff) = ip->ip_hdr.ih_foff;
     return 0;
 }
 
