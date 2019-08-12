@@ -375,10 +375,12 @@ int arp_buf_to_pkt(uint8_t *buf, int len, arp_packet_t *arp);
 int arp_pkt_to_buf(arp_packet_t *arp, uint8_t *buf);
 int arp_pkt_is_valid(arp_packet_t *arp);
 int arp_pkt_is_query(arp_packet_t *arp);
+int arp_pkt_is_answer(arp_packet_t *arp);
 int arp_pkt_create(arp_packet_t *arp);
 int arp_pkt_create_probe(arp_packet_t *arp);
 int arp_pkt_create_query(ipv4_addr_t *dst_ip, arp_packet_t *arp);
 int arp_pkt_create_answer(arp_packet_t *arp_in, arp_packet_t *arp_out);
+int arp_get_last_error(void);
 ```
 
 **Dependencies**  
