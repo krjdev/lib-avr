@@ -599,6 +599,8 @@ int udp_pkt_create(uint16_t srcp, uint16_t dstp, uint8_t *buf, int len, udp_pack
 int udp_pkt_free(udp_packet_t *udp);
 int udp_pkt_to_ip(udp_packet_t *udp, ipv4_packet_t *ip_udp);
 int udp_ip_to_pkt(ipv4_packet_t *ip_udp, udp_packet_t *udp);
+int udp_get_last_error(void);
+
 ```
 
 **Dependencies**  
