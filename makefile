@@ -34,6 +34,7 @@ SRC += net/ethernet.c
 SRC += net/icmp.c
 SRC += net/ipv4.c
 SRC += net/ipv6.c
+SRC += net/nic.c
 SRC += net/udp.c
 SRC += onewire/ds18x20.c
 SRC += onewire/ds2430a.c
