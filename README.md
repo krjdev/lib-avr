@@ -10,8 +10,8 @@ This repository contains generic libraries and device driver for Microchip (form
 ### UART (RS232) Interface (beta version)
 
 **Files:**  
-[uart.h](https://github.com/krjdev/lib-avr/blob/master/uart.h)  
-[uart.c](https://github.com/krjdev/lib-avr/blob/master/uart.c)
+[uart.h](https://github.com/krjdev/lib-avr/blob/inet/uart.h)  
+[uart.c](https://github.com/krjdev/lib-avr/blob/inet/uart.c)
 
 **Functions:**  
 ```c
@@ -32,13 +32,13 @@ int uart_getc(uart_t *uart, char *c);
 ## I2C
 
 **Directory:**  
-[i2c](https://github.com/krjdev/lib-avr/tree/master/i2c)
+[i2c](https://github.com/krjdev/lib-avr/tree/inet/i2c)
 
 ### I2C Interface (beta version)
 
 **Files:**  
-[i2c/i2c.h](https://github.com/krjdev/lib-avr/blob/master/i2c/i2c.h)  
-[i2c/i2c.c](https://github.com/krjdev/lib-avr/blob/master/i2c/i2c.c)
+[i2c/i2c.h](https://github.com/krjdev/lib-avr/blob/inet/i2c/i2c.h)  
+[i2c/i2c.c](https://github.com/krjdev/lib-avr/blob/inet/i2c/i2c.c)
 
 **Functions:**  
 ```c
@@ -54,8 +54,8 @@ int i2c_get_error(void);
 ### I2C device: STmicroelectronics M24C01 - M24C64 I2C EEPROM driver (alpha version)
 
 **Files:**  
-[i2c/m24cxx.h](https://github.com/krjdev/lib-avr/blob/master/i2c/m24cxx.h)  
-[i2c/m24cxx.c](https://github.com/krjdev/lib-avr/blob/master/i2c/m24cxx.c)
+[i2c/m24cxx.h](https://github.com/krjdev/lib-avr/blob/inet/i2c/m24cxx.h)  
+[i2c/m24cxx.c](https://github.com/krjdev/lib-avr/blob/inet/i2c/m24cxx.c)
 
 **Functions:**  
 ```c
@@ -72,8 +72,8 @@ int m24cxx_read(int type, uint8_t subaddr, uint16_t addr, uint8_t *buf, int len)
 ### I2C device: NXP PCF8563 Real-time clock/calendar driver (alpha version)
 
 **Files:**  
-[i2c/pcf8574.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.h)  
-[i2c/pcf8574.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.c)
+[i2c/pcf8574.h](https://github.com/krjdev/lib-avr/blob/inet/i2c/pcf8574.h)  
+[i2c/pcf8574.c](https://github.com/krjdev/lib-avr/blob/inet/i2c/pcf8574.c)
 
 
 **Functions:**  
@@ -102,8 +102,8 @@ int pcf8563_set_clkout(int freq, int enable);
 ### I2C device: NXP PCF8574(A) 8-Bit Remote I/O expander driver (beta version)
 
 **Files:**  
-[i2c/pcf8574.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.h)  
-[i2c/pcf8574.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8574.c)
+[i2c/pcf8574.h](https://github.com/krjdev/lib-avr/blob/inet/i2c/pcf8574.h)  
+[i2c/pcf8574.c](https://github.com/krjdev/lib-avr/blob/inet/i2c/pcf8574.c)
 
 
 **Functions:**  
@@ -127,8 +127,8 @@ int pcf8574_get_pin(gpio_t *gpio, int pin, int *value);
 ### I2C device: NXP PCF8591 8-Bit A/D and D/A converter driver (alpha version)
 
 **Files:**  
-[i2c/pcf8591.h](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8591.h)  
-[i2c/pcf8591.c](https://github.com/krjdev/lib-avr/blob/master/i2c/pcf8591.c)
+[i2c/pcf8591.h](https://github.com/krjdev/lib-avr/blob/inet/i2c/pcf8591.h)  
+[i2c/pcf8591.c](https://github.com/krjdev/lib-avr/blob/inet/i2c/pcf8591.c)
 
 **Functions:**  
 ```c
@@ -145,13 +145,13 @@ int pcf8591_set_dac(uint8_t subaddr, uint8_t *value)
 ## Generic Libraries
 
 **Directory:**  
-[lib](https://github.com/krjdev/lib-avr/tree/master/lib)
+[lib](https://github.com/krjdev/lib-avr/tree/inet/lib)
 
 ### BCD Library
 
 **Files:**  
-[lib/bcd.h](https://github.com/krjdev/lib-avr/blob/master/lib/bcd.h)  
-[lib/bcd.c](https://github.com/krjdev/lib-avr/blob/master/lib/bcd.c)
+[lib/bcd.h](https://github.com/krjdev/lib-avr/blob/inet/lib/bcd.h)  
+[lib/bcd.c](https://github.com/krjdev/lib-avr/blob/inet/lib/bcd.c)
 
 **Functions:**  
 ```c
@@ -165,8 +165,8 @@ uint8_t int_to_bcd(uint8_t i);
 ### CRC-CCITT (CRC16) Library
 
 **Files:**  
-[lib/crc16_ccitt.h](https://github.com/krjdev/lib-avr/blob/master/lib/crc16_ccitt.h)  
-[lib/crc16_ccitt.c](https://github.com/krjdev/lib-avr/blob/master/lib/crc16_ccitt.c)
+[lib/crc16_ccitt.h](https://github.com/krjdev/lib-avr/blob/inet/lib/crc16_ccitt.h)  
+[lib/crc16_ccitt.c](https://github.com/krjdev/lib-avr/blob/inet/lib/crc16_ccitt.c)
 
 **Functions:**  
 ```c
@@ -180,8 +180,8 @@ int crc16_ccitt_check(uint8_t *data, int len, uint16_t crc);
 ### CRC32 for Ethernet (FCS) Library
 
 **Files:**  
-[lib/crc32_ethernet.h](https://github.com/krjdev/lib-avr/blob/master/lib/crc32_ethernet.h)  
-[lib/crc32_ethernet.c](https://github.com/krjdev/lib-avr/blob/master/lib/crc32_ethernet.c)
+[lib/crc32_ethernet.h](https://github.com/krjdev/lib-avr/blob/inet/lib/crc32_ethernet.h)  
+[lib/crc32_ethernet.c](https://github.com/krjdev/lib-avr/blob/inet/lib/crc32_ethernet.c)
 
 **Functions:**  
 ```c
@@ -195,8 +195,8 @@ int crc32_check(uint8_t *data, int len, uint32_t crc);
 ### CRC7 for MMC/SD memory cards Library
 
 **Files:**  
-[lib/crc7.h](https://github.com/krjdev/lib-avr/blob/master/lib/crc7.h)  
-[lib/crc7.c](https://github.com/krjdev/lib-avr/blob/master/lib/crc7.c)
+[lib/crc7.h](https://github.com/krjdev/lib-avr/blob/inet/lib/crc7.h)  
+[lib/crc7.c](https://github.com/krjdev/lib-avr/blob/inet/lib/crc7.c)
 
 **Functions:**  
 ```c
@@ -210,8 +210,8 @@ int crc7_check(uint8_t *data, int len, uint8_t crc);
 ### CRC8 Maxim (former Dallas) Library
 
 **Files:**  
-[lib/crc8_dallas.h](https://github.com/krjdev/lib-avr/blob/master/lib/crc8_dallas.h)  
-[lib/crc8_dallas.c](https://github.com/krjdev/lib-avr/blob/master/lib/crc8_dallas.c)
+[lib/crc8_dallas.h](https://github.com/krjdev/lib-avr/blob/inet/lib/crc8_dallas.h)  
+[lib/crc8_dallas.c](https://github.com/krjdev/lib-avr/blob/inet/lib/crc8_dallas.c)
 
 **Functions:**  
 ```c
@@ -225,8 +225,8 @@ int crc8_dallas_check(uint8_t *data, int len, uint8_t crc);
 ### Date Library
 
 **Files:**  
-[lib/date.h](https://github.com/krjdev/lib-avr/blob/master/lib/date.h)  
-[lib/date.c](https://github.com/krjdev/lib-avr/blob/master/lib/date.c)
+[lib/date.h](https://github.com/krjdev/lib-avr/blob/inet/lib/date.h)  
+[lib/date.c](https://github.com/krjdev/lib-avr/blob/inet/lib/date.c)
 
 **Functions:**  
 ```c
@@ -248,8 +248,8 @@ int date_get_year(date_t *date, uint16_t *year);
 ### Endianness (Byte Order) Library
 
 **Files:**  
-[lib/endian.h](https://github.com/krjdev/lib-avr/blob/master/lib/endian.h)  
-[lib/endian.c](https://github.com/krjdev/lib-avr/blob/master/lib/endian.c)
+[lib/endian.h](https://github.com/krjdev/lib-avr/blob/inet/lib/endian.h)  
+[lib/endian.c](https://github.com/krjdev/lib-avr/blob/inet/lib/endian.c)
 
 **Functions:**  
 ```c
@@ -273,8 +273,8 @@ void uint64_to_buf_be(uint64_t val, uint8_t *buf);
 ### FIFO buffer Library
 
 **Files:**  
-[lib/fifo.h](https://github.com/krjdev/lib-avr/blob/master/lib/fifo.h)  
-[lib/fifo.c](https://github.com/krjdev/lib-avr/blob/master/lib/fifo.c)
+[lib/fifo.h](https://github.com/krjdev/lib-avr/blob/inet/lib/fifo.h)  
+[lib/fifo.c](https://github.com/krjdev/lib-avr/blob/inet/lib/fifo.c)
 
 **Functions:**  
 ```c
@@ -292,8 +292,8 @@ int fifo_get_num(fifo_t *fifo);
 ### HEX conversion Library
 
 **Files:**  
-[lib/hexconv.h](https://github.com/krjdev/lib-avr/blob/master/lib/hexconv.h)  
-[lib/hexconv.c](https://github.com/krjdev/lib-avr/blob/master/lib/hexconv.c)
+[lib/hexconv.h](https://github.com/krjdev/lib-avr/blob/inet/lib/hexconv.h)  
+[lib/hexconv.c](https://github.com/krjdev/lib-avr/blob/inet/lib/hexconv.c)
 
 **Functions:**  
 ```c
@@ -307,8 +307,8 @@ uint8_t hex_to_uint8(const char *hex);
 ### LIFO (Stack) buffer Library
 
 **Files:**  
-[lib/lifo.h](https://github.com/krjdev/lib-avr/blob/master/lib/lifo.h)  
-[lib/lifo.c](https://github.com/krjdev/lib-avr/blob/master/lib/lifo.c)
+[lib/lifo.h](https://github.com/krjdev/lib-avr/blob/inet/lib/lifo.h)  
+[lib/lifo.c](https://github.com/krjdev/lib-avr/blob/inet/lib/lifo.c)
 
 **Functions:**  
 ```c
@@ -326,8 +326,8 @@ int lifo_get_num(lifo_t *lifo);
 ### Time Library
 
 **Files:**  
-[lib/time.h](https://github.com/krjdev/lib-avr/blob/master/lib/time.h)  
-[lib/time.c](https://github.com/krjdev/lib-avr/blob/master/lib/time.c)
+[lib/time.h](https://github.com/krjdev/lib-avr/blob/inet/lib/time.h)  
+[lib/time.c](https://github.com/krjdev/lib-avr/blob/inet/lib/time.c)
 
 **Functions:**  
 ```c
@@ -349,13 +349,13 @@ int time_get_msec(time_t *time, uint16_t *msec);
 ## Network Libraries
 
 **Directory:**  
-[net](https://github.com/krjdev/lib-avr/tree/master/net)
+[net](https://github.com/krjdev/lib-avr/tree/inet/net)
 
 ### ARP Library
 
 **Files:**  
-[net/arp.h](https://github.com/krjdev/lib-avr/blob/master/net/arp.h)  
-[net/arp.c](https://github.com/krjdev/lib-avr/blob/master/net/arp.c)
+[net/arp.h](https://github.com/krjdev/lib-avr/blob/inet/net/arp.h)  
+[net/arp.c](https://github.com/krjdev/lib-avr/blob/inet/net/arp.c)
 
 **Functions:**  
 ```c
@@ -391,8 +391,8 @@ int arp_get_last_error(void);
 ### Ethernet Library (beta version)
 
 **Files:**  
-[net/ethernet.h](https://github.com/krjdev/lib-avr/blob/master/net/ethernet.h)  
-[net/ethernet.c](https://github.com/krjdev/lib-avr/blob/master/net/ethernet.c)
+[net/ethernet.h](https://github.com/krjdev/lib-avr/blob/inet/net/ethernet.h)  
+[net/ethernet.c](https://github.com/krjdev/lib-avr/blob/inet/net/ethernet.c)
 
 **Functions:**  
 ```c
@@ -428,8 +428,8 @@ int ethernet_get_last_error(void);
 ### ICMP Library
 
 **Files:**  
-[net/icmp.h](https://github.com/krjdev/lib-avr/blob/master/net/icmp.h)  
-[net/icmp.c](https://github.com/krjdev/lib-avr/blob/master/net/icmp.c)
+[net/icmp.h](https://github.com/krjdev/lib-avr/blob/inet/net/icmp.h)  
+[net/icmp.c](https://github.com/krjdev/lib-avr/blob/inet/net/icmp.c)
 
 **Functions:**  
 ```c
@@ -458,8 +458,8 @@ int icmp_get_last_error(void);
 ### IPv4 Library
 
 **Files:**  
-[net/ipv4.h](https://github.com/krjdev/lib-avr/blob/master/net/ipv4.h)  
-[net/ipv4.c](https://github.com/krjdev/lib-avr/blob/master/net/ipv4.c)
+[net/ipv4.h](https://github.com/krjdev/lib-avr/blob/inet/net/ipv4.h)  
+[net/ipv4.c](https://github.com/krjdev/lib-avr/blob/inet/net/ipv4.c)
 
 
 **Functions:**  
@@ -508,8 +508,8 @@ int ipv4_get_last_error(void);
 ### IPv6 Library
 
 **Files:**  
-[net/ipv6.h](https://github.com/krjdev/lib-avr/blob/master/net/ipv6.h)  
-[net/ipv6.c](https://github.com/krjdev/lib-avr/blob/master/net/ipv6.c)
+[net/ipv6.h](https://github.com/krjdev/lib-avr/blob/inet/net/ipv6.h)  
+[net/ipv6.c](https://github.com/krjdev/lib-avr/blob/inet/net/ipv6.c)
 
 
 **Functions:**  
@@ -539,11 +539,33 @@ int ipv6_pkt_to_buf(ipv6_packet_t *ip, uint8_t *buf);
 **Dependencies**  
 * avr-libc
 
+### Generic NIC Library
+
+**Files:**  
+[net/nic.h](https://github.com/krjdev/lib-avr/blob/inet/net/nic.h)  
+[net/nic.c](https://github.com/krjdev/lib-avr/blob/inet/net/nic.c)
+
+
+**Functions:**  
+```c
+int nic_init(mac_addr_t *addr);
+int nic_is_link_up(void);
+int nic_send(eth_frame_t *frame);
+int nic_recv(eth_frame_t *frame);
+char *nic_get_driver_name(void);
+char *nic_get_driver_vers(void);
+nic_stats_t nic_get_stats(void);
+int nic_get_last_error(void);
+```
+
+**Dependencies**  
+* avr-libc
+
 ### TCP Library
 
 **Files:**  
-[net/tcp.h](https://github.com/krjdev/lib-avr/blob/master/net/tcp.h)  
-[net/tcp.c](https://github.com/krjdev/lib-avr/blob/master/net/tcp.c)
+[net/tcp.h](https://github.com/krjdev/lib-avr/blob/inet/net/tcp.h)  
+[net/tcp.c](https://github.com/krjdev/lib-avr/blob/inet/net/tcp.c)
 
 **Functions:**  
 ```c
@@ -582,8 +604,8 @@ int tcp_get_last_error(void);
 ### UDP Library
 
 **Files:**  
-[net/udp.h](https://github.com/krjdev/lib-avr/blob/master/net/udp.h)  
-[net/udp.c](https://github.com/krjdev/lib-avr/blob/master/net/udp.c)
+[net/udp.h](https://github.com/krjdev/lib-avr/blob/inet/net/udp.h)  
+[net/udp.c](https://github.com/krjdev/lib-avr/blob/inet/net/udp.c)
 
 **Functions:**  
 ```c
@@ -610,14 +632,14 @@ int udp_get_last_error(void);
 ## Maxim (former Dallas) 1-Wire
 
 **Directory:**  
-[onewire](https://github.com/krjdev/lib-avr/tree/master/onewire)
+[onewire](https://github.com/krjdev/lib-avr/tree/inet/onewire)
 
 
 ### 1-Wire Interface (Software-based)
 
 **Files:**  
-[onewire/sw-onewire.h](https://github.com/krjdev/lib-avr/blob/master/onewire/sw-onewire.h)  
-[onewire/sw-onewire.c](https://github.com/krjdev/lib-avr/blob/master/onewire/sw-onewire.c)
+[onewire/sw-onewire.h](https://github.com/krjdev/lib-avr/blob/inet/onewire/sw-onewire.h)  
+[onewire/sw-onewire.c](https://github.com/krjdev/lib-avr/blob/inet/onewire/sw-onewire.c)
 
 **Functions:**  
 ```c
@@ -643,8 +665,8 @@ int onewire_get_crc(ow_rom_t *rom, uint8_t *crc);
 ### 1-Wire device: Maxim (former Dallas) DS18S20 and DS18B20 Digital Thermometer driver
 
 **Files:**  
-[onewire/ds18x20.h](https://github.com/krjdev/lib-avr/blob/master/onewire/ds18x20.h)  
-[onewire/ds18x20.c](https://github.com/krjdev/lib-avr/blob/master/onewire/ds18x20.c)
+[onewire/ds18x20.h](https://github.com/krjdev/lib-avr/blob/inet/onewire/ds18x20.h)  
+[onewire/ds18x20.c](https://github.com/krjdev/lib-avr/blob/inet/onewire/ds18x20.c)
 
 **Functions:**  
 ```c
@@ -668,8 +690,8 @@ int ds18x20_set_alarm(ow_rom_t *rom, int type, int8_t temp_high, int8_t temp_low
 ### 1-Wire device: Dallas/Maxim DS2430A 256-Bit EEPROM driver
 
 **Files:**  
-[onewire/ds2430a.h](https://github.com/krjdev/lib-avr/blob/master/onewire/ds2430a.h)  
-[onewire/ds2430a.c](https://github.com/krjdev/lib-avr/blob/master/onewire/ds2430a.c)
+[onewire/ds2430a.h](https://github.com/krjdev/lib-avr/blob/inet/onewire/ds2430a.h)  
+[onewire/ds2430a.c](https://github.com/krjdev/lib-avr/blob/inet/onewire/ds2430a.c)
 
 **Functions:**  
 ```c
@@ -694,13 +716,13 @@ int ds2430a_read_status(ow_rom_t *rom, uint8_t *status);
 ## SPI
 
 **Directory:**  
-[spi](https://github.com/krjdev/lib-avr/tree/master/spi)
+[spi](https://github.com/krjdev/lib-avr/tree/inet/spi)
 
 ### SPI Interface
 
 **Files:**  
-[spi/spi.h](https://github.com/krjdev/lib-avr/blob/master/spi/spi.h)  
-[spi/spi.c](https://github.com/krjdev/lib-avr/blob/master/spi/spi.c)
+[spi/spi.h](https://github.com/krjdev/lib-avr/blob/inet/spi/spi.h)  
+[spi/spi.c](https://github.com/krjdev/lib-avr/blob/inet/spi/spi.c)
 
 **Functions:**  
 ```c
@@ -716,8 +738,8 @@ void spi_master_recv(uint8_t *data, int len);
 ### SPI device: Microchip ENC28J60 Ethernet controller driver
 
 **Files:**  
-[spi/enc28j60.h](https://github.com/krjdev/lib-avr/blob/master/spi/enc28j60.h)  
-[spi/enc28j60.c](https://github.com/krjdev/lib-avr/blob/master/spi/enc28j60.c)
+[spi/enc28j60.h](https://github.com/krjdev/lib-avr/blob/inet/spi/enc28j60.h)  
+[spi/enc28j60.c](https://github.com/krjdev/lib-avr/blob/inet/spi/enc28j60.c)
 
 **Functions:**  
 ```c
@@ -746,8 +768,8 @@ struct enc28j60_regs enc28j60_dump_regs(void);
 ### SPI device: SD card driver
 
 **Files:**  
-[spi/sdc.h](https://github.com/krjdev/lib-avr/blob/master/spi/sdc.h)  
-[spi/sdc.c](https://github.com/krjdev/lib-avr/blob/master/spi/sdc.c)
+[spi/sdc.h](https://github.com/krjdev/lib-avr/blob/inet/spi/sdc.h)  
+[spi/sdc.c](https://github.com/krjdev/lib-avr/blob/inet/spi/sdc.c)
 
 **Functions:**  
 ```c
