@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-05-05
- * Modified : 2019-11-09
+ * Modified : 2019-11-10
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *

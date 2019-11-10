@@ -5,9 +5,9 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-05-05
- * Modified : 2019-11-09
+ * Modified : 2019-11-10
  * Revised  : 
- * Version  : 0.2.0.0
+ * Version  : 0.2.0.1
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR Series
  *
@@ -158,10 +158,10 @@ int mbr_get_sig(mbr_t *mbr, uint32_t *sig)
         return -1;
     }
     
-    (*sig) = (24 << (uint32_t) mbr->sig[0]);
-    (*sig) += (16 << (uint32_t) mbr->sig[1]);
-    (*sig) += (8 << (uint32_t) mbr->sig[2]);
-    (*sig) += mbr->sig[3];
+    (*sig) = mbr->sig[0];
+    (*sig) += ((uint32_t) mbr->sig[1] << 8);
+    (*sig) += ((uint32_t) mbr->sig[2] << 16);
+    (*sig) += ((uint32_t) mbr->sig[3] << 24);
     return 0;
 }
 
