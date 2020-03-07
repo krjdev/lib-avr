@@ -1,13 +1,13 @@
 /**
  *
  * File Name: uart.h
- * Title    : UART (RS232) library header
+ * Title    : UART (RS232) Library
  * Project  : lib-avr
- * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2020 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-07-14
- * Modified : 2019-02-03
+ * Modified : 2020-03-07
  * Revised  : 
- * Version  : 0.2.0.1
+ * Version  : 0.2.0.2
  * License  : ISC (see file LICENSE.txt)
  * Target   : Atmel AVR ATMEGA2560
  *
