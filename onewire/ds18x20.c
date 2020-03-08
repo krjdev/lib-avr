@@ -5,7 +5,7 @@
  * Project  : lib-avr
  * Author   : Copyright (C) 2018-2019 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-11-30
- * Modified : 2018-01-13
+ * Modified : 2019-01-13
  * Revised  : 
  * Version  : 0.2.2.0
  * License  : ISC (see file LICENSE.txt)
