@@ -12,11 +12,11 @@ TARGET = main
 
 # List of C source files. (C dependencies are automatically generated.)
 SRC = $(TARGET).c
-SRC += ../../../uart.c
-SRC += ../../../lib/crc8_dallas.c
-SRC += ../../../lib/fifo.c
-SRC += ../../../onewire/ds18x20.c
-SRC += ../../../onewire/sw-onewire.c
+SRC += ../../uart.c
+SRC += ../../lib/crc8_dallas.c
+SRC += ../../lib/fifo.c
+SRC += ../../onewire/ds18x20.c
+SRC += ../../onewire/sw-onewire.c
 
 # List of Assembler source files (*.S and *.s).
 ASRC = 
