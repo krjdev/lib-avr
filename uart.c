@@ -1,15 +1,15 @@
 /**
  *
  * File Name: uart.c
- * Title    : UART (RS232) Library
+ * Title    : UART (RS232) interface
  * Project  : lib-avr
- * Author   : Copyright (C) 2018-2020 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2018-2021 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2018-07-14
- * Modified : 2020-03-07
+ * Modified : 2021-07-05
  * Revised  : 
  * Version  : 0.2.0.2
  * License  : ISC (see file LICENSE.txt)
- * Target   : Atmel AVR ATMEGA2560
+ * Target   : Microchip AVR ATMEGA2560
  *
  * NOTE: This code is currently below version 1.0, and therefore is considered
  * to be lacking in some functionality or documentation, or may not be fully
@@ -21,8 +21,8 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
-#include "lib/fifo.h"
-#include "uart.h"
+#include <fifo.h>
+#include <uart.h>
 
 #define _HIGH(u16)  ((uint8_t) (((u16) & 0xFF00) >> 8))
 #define _LOW(u16)   ((uint8_t) ((u16) & 0x00FF))
