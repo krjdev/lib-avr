@@ -13,3 +13,6 @@
 *.*.swp
 *.*.kate-swp
 .directory
+TODO
+GIT_COMMIT.txt
+GIT_TAG.txt
