@@ -1,15 +1,15 @@
 /**
  *
- * File Name: fifo.c
- * Title    : FIFO buffer library source
+ * File Name: lib/fifo.c
+ * Title    : FIFO buffer
  * Project  : lib-avr
- * Author   : Copyright (C) 2019 Johannes Krottmayer <krjdev@gmail.com>
+ * Author   : Copyright (C) 2019-2021 Johannes Krottmayer <krjdev@gmail.com>
  * Created  : 2019-02-02
- * Modified : 
+ * Modified : 2021-07-05
  * Revised  : 
  * Version  : 0.1.0.0
  * License  : ISC (see file LICENSE.txt)
- * Target   : Atmel AVR Series
+ * Target   : Microchip AVR Series
  *
  * NOTE: This code is currently below version 1.0, and therefore is considered
  * to be lacking in some functionality or documentation, or may not be fully
@@ -19,7 +19,7 @@
 
 #include <stdlib.h>
 
-#include "fifo.h"
+#include <fifo.h>
 
 fifo_t *fifo_init(int len)
 {
