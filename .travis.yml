@@ -7,7 +7,7 @@ compiler:
     - gcc
 
 before_script:
-    - apt-get install avr-libc binutils-avr gcc-avr
+    - sudo apt-get install avr-libc binutils-avr gcc-avr
 
 script:
     - make
